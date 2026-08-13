@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.kodiakso" name="PZ8" version="1.4.3" provider-name="Luigi">
+<addon id="plugin.video.kodiakso" name="PZ8" version="1.4.4" provider-name="Luigi">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.28.0"/>
@@ -19,7 +19,7 @@
         <license>MIT</license>
         <source>https://github.com/luishighnest/kodi</source>
         <website>https://luishighnest.github.io/kodi/</website>
-        <news>v1.4.3: rinominato PZ8, nuovo logo. v1.4.2: Sky divisa in Intrattenimento e Sport, nomi senza maiuscole. v1.4.1: loghi Sky per ogni canale, nomi senza FHD. v1.4.0: categoria Sky con risoluzione dinamica dei link. v1.3.0: inoltro di tutte le proprieta inputstream.*.</news>
+        <news>v1.4.4: ordine canali Sky stabile, nomi Sky Sport 25x corretti. v1.4.3: rinominato PZ8, nuovo logo. v1.4.2: Sky divisa in Intrattenimento e Sport, nomi senza maiuscole. v1.4.1: loghi Sky per ogni canale, nomi senza FHD. v1.4.0: categoria Sky con risoluzione dinamica dei link. v1.3.0: inoltro di tutte le proprieta inputstream.*.</news>
     </extension>
 </addon>
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>

@@ -170,13 +170,20 @@ def parse_m3u(text):
 
 
 def sky_channels():
-    available = set()
+    order = []
+    seen = set()
+
+    def push(cid):
+        if cid not in seen:
+            seen.add(cid)
+            order.append(cid)
+
     try:
         data = requests.get(API + '?numTest=A1A260', headers={'User-Agent': API_UA}, timeout=15).json()
         for it in (data.get('items', data) if isinstance(data, dict) else data):
             mr = it.get('myresolve', '') or ''
             if mr.startswith('sky@@'):
-                available.add(mr.split('@@', 1)[1])
+                push(mr.split('@@', 1)[1])
     except Exception as e:
         log('sky A1A260 fail: ' + str(e))
     try:
@@ -188,16 +195,22 @@ def sky_channels():
                 cid = clean.replace(' ', '').lower()
                 if cid == 'skytg24':
                     cid = 'tg24'
-                available.add(cid)
+                push(cid)
     except Exception as e:
         log('sky A1A122 fail: ' + str(e))
-    if not available:
-        available.update(SKY_DEFS.keys())
+    if not order:
+        for cid in SKY_DEFS:
+            push(cid)
     for n in range(251, 260):
-        available.add('skysport%d' % n)
+        push('skysport%d' % n)
     channels = {CAT_INT: [], CAT_SPORT: []}
-    for cid in available:
-        name, cat = SKY_DEFS.get(cid, (cid, CAT_SPORT if cid.startswith('skysport') else CAT_INT))
+    for cid in order:
+        if cid.startswith('skysport') and cid not in SKY_DEFS:
+            m = re.match(r'^skysport(\d+)$', cid)
+            name = ('Sky Sport ' + m.group(1)) if m else cid
+        else:
+            name = SKY_DEFS.get(cid, (cid, ''))[0]
+        cat = SKY_DEFS.get(cid, (cid, CAT_SPORT if cid.startswith('skysport') else CAT_INT))[1]
         channels[cat].append((name, cid))
     return channels
 
