@@ -475,7 +475,7 @@ def films_view():
 
 def root_view():
     home_items = [
-        ('SKY', LOGO_BASE + 'sky.png', BASE + '?action=sky'),
+        ('SKY', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
         ('EVENTI', LOGO_BASE + 'eventi.png', BASE + '?group=' + urllib.parse.quote('Eventi')),
         ('TV', LOGO_BASE + 'tv.png', BASE + '?action=tv'),
