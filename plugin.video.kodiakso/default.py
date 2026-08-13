@@ -288,17 +288,33 @@ def sky_cat_view(cat):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def root_view():
+def tv_view():
     channels = fetch_channels()
     groups = {}
     for ch in channels:
+        if ch['group'].lower() == 'dazn':
+            continue
         groups.setdefault(ch['group'], []).append(ch)
     for group in sorted(groups):
         li = xbmcgui.ListItem(label=group)
         url = BASE + '?group=' + urllib.parse.quote(group)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-    sky = xbmcgui.ListItem(label='Sky')
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def films_view():
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def root_view():
+    sky = xbmcgui.ListItem(label='SKY')
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', sky, isFolder=True)
+    dazn = xbmcgui.ListItem(label='DAZN')
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('DAZN'), dazn, isFolder=True)
+    tv = xbmcgui.ListItem(label='TV')
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=tv', tv, isFolder=True)
+    films = xbmcgui.ListItem(label='FILM & SERIE TV')
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=films', films, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -308,6 +324,10 @@ def main():
         action = query['action'][0]
         if action == 'sky':
             sky_view()
+        elif action == 'tv':
+            tv_view()
+        elif action == 'films':
+            films_view()
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0])
         elif action == 'skyplay':
