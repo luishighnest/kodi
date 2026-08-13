@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import json
+import base64
 import urllib.parse
 import xbmcgui
 import xbmcplugin
@@ -74,6 +75,12 @@ def play(url, props):
     xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
+def encode_payload(title, url, props):
+    payload = json.dumps({'label': title, 'url': url, 'props': props})
+    token = base64.urlsafe_b64encode(payload.encode('utf-8')).decode('ascii').rstrip('=')
+    return token
+
+
 def group_view(group):
     channels = parse_m3u(get_playlist())
     for ch in channels:
@@ -83,8 +90,8 @@ def group_view(group):
         if ch['logo']:
             li.setArt({'thumb': ch['logo']})
         li.setProperty('IsPlayable', 'true')
-        data = urllib.parse.quote(json.dumps({'url': ch['url'], 'props': ch['props']}))
-        url = BASE + '?play=' + data
+        token = encode_payload(ch['label'], ch['url'], ch['props'])
+        url = BASE + '?play=' + urllib.parse.quote(token)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -104,7 +111,9 @@ def root_view():
 def main():
     query = urllib.parse.parse_qs(sys.argv[2][1:])
     if 'play' in query:
-        data = json.loads(urllib.parse.unquote(query['play'][0]))
+        token = urllib.parse.unquote(query['play'][0])
+        padded = token + '=' * (-len(token) % 4)
+        data = json.loads(base64.urlsafe_b64decode(padded.encode('ascii')).decode('utf-8'))
         play(data['url'], data['props'])
     elif 'group' in query:
         group_view(query['group'][0])
