@@ -28,7 +28,7 @@ UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 HOST = 'https://www.nowtv.it'
 LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
 SQUARE_ICON = LOGO_BASE + 'square.png'
-DOT_ICON = LOGO_BASE + 'dot.png'
+DOT_ICON = LOGO_BASE + 'bullet.png'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
 
 
