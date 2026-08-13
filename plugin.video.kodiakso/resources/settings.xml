@@ -1,4 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-    <setting id="playlist_url" type="text" label="Playlist URL (M3U)" default="https://luishighnest.github.io/kodi/playlist.m3u" />
+    <category label="Playlist">
+        <setting id="playlist_url" type="text" label="URL playlist M3U" default="https://luishighnest.github.io/kodi/playlist.m3u" />
+        <setting id="playlist_timestamp" type="bool" label="Aggiungi parametro anti-cache alla playlist" default="true" />
+    </category>
+    <category label="Sky">
+        <setting id="sky_api" type="text" label="Endpoint API canali Sky" default="https://test34344.herokuapp.com/filter.php" />
+        <setting id="sky_host" type="text" label="Host referer (Now TV)" default="https://www.nowtv.it" />
+        <setting id="sky_api_ua" type="text" label="User-Agent API Sky" default="Kodi/19.0 (Windows NT 10.0; Win64; x64) App_Bitness/64 Version/19.0-Matrix" />
+        <setting id="sky_stream_ua" type="text" label="User-Agent streaming" default="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36" />
+    </category>
+    <category label="Film &amp; Serie TV (TMDB)">
+        <setting id="tmdb_key" type="text" label="Chiave API TMDB" default="2e0b38cfb2936cec8ab1ce48e4335ac3" />
+        <setting id="tmdb_language" type="select" label="Lingua contenuti" default="it-IT">
+            <option>it-IT</option>
+            <option>en-US</option>
+            <option>es-ES</option>
+            <option>fr-FR</option>
+            <option>de-DE</option>
+        </setting>
+        <setting id="tmdb_adult" type="bool" label="Consenti contenuti adulti" default="false" />
+    </category>
+    <category label="Lettore">
+        <setting id="buffer_enabled" type="bool" label="Abilita buffering rete" default="true" />
+        <setting id="buffer_size" type="slider" label="Dimensione buffer (MB)" range="1,32,1" default="10" option="int" />
+        <setting id="max_bandwidth" type="slider" label="Bandwidth massima (Kbps, 0 = auto)" range="0,30000,500" default="0" option="int" />
+        <setting id="live_async" type="bool" label="Streaming live asincrono" default="true" />
+        <setting id="manifest_upd" type="bool" label="Aggiornamento manifest automatico" default="true" />
+    </category>
+    <category label="Interfaccia">
+        <setting id="show_warnings" type="bool" label="Mostra notifiche di errore" default="true" />
+        <setting id="home_tmdb" type="bool" label="Mostra categoria FILM &amp; SERIE TV in home" default="true" />
+    </category>
 </settings>

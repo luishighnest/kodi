@@ -19,13 +19,14 @@ NAME = ADDON.getAddonInfo('name')
 
 DEFAULT_URL = 'https://luishighnest.github.io/kodi/playlist.m3u'
 PLAYLIST_URL = ADDON.getSetting('playlist_url').strip() or DEFAULT_URL
+PLAYLIST_TS = ADDON.getSetting('playlist_timestamp') == 'true'
 
-API = 'https://test34344.herokuapp.com/filter.php'
+API = ADDON.getSetting('sky_api').strip() or 'https://test34344.herokuapp.com/filter.php'
 SECRET = b'my_secret_key'
-API_UA = 'Kodi/19.0 (Windows NT 10.0; Win64; x64) App_Bitness/64 Version/19.0-Matrix'
+API_UA = ADDON.getSetting('sky_api_ua').strip() or 'Kodi/19.0 (Windows NT 10.0; Win64; x64) App_Bitness/64 Version/19.0-Matrix'
 
-UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
-HOST = 'https://www.nowtv.it'
+UA = ADDON.getSetting('sky_stream_ua').strip() or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+HOST = ADDON.getSetting('sky_host').strip() or 'https://www.nowtv.it'
 LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
 SQUARE_ICON = LOGO_BASE + 'square.png'
 DOT_ICON = LOGO_BASE + 'bullet.png'
@@ -132,17 +133,24 @@ def clean_title(txt):
 
 
 def get_playlist():
-    url = PLAYLIST_URL + ('&' if '?' in PLAYLIST_URL else '?') + '_=' + str(int(time.time()))
+    url = PLAYLIST_URL
+    if PLAYLIST_TS:
+        url += ('&' if '?' in url else '?') + '_=' + str(int(time.time()))
     r = requests.get(url, timeout=15)
     r.raise_for_status()
     return r.text
+
+
+def notify(title, msg, err=False):
+    if ADDON.getSetting('show_warnings') == 'true' or not err:
+        xbmcgui.Dialog().notification(title, msg, xbmcgui.NOTIFICATION_ERROR if err else xbmcgui.NOTIFICATION_INFO)
 
 
 def fetch_channels():
     try:
         return parse_m3u(get_playlist())
     except Exception:
-        xbmcgui.Dialog().notification(NAME, 'Impossibile scaricare la playlist', xbmcgui.NOTIFICATION_ERROR)
+        notify(NAME, 'Impossibile scaricare la playlist', True)
         return []
 
 
@@ -230,7 +238,7 @@ def resolve_sky(parIn, title):
         data = json.loads(xor_decrypt(resp.json()['data']))
     except Exception as e:
         xbmc.log('KODIAKSO sky resolve ERR: ' + str(e), xbmc.LOGERROR)
-        xbmcgui.Dialog().notification(title or parIn, 'Errore risoluzione link', xbmc.NOTIFICATION_ERROR)
+        notify(title or parIn, 'Errore risoluzione link', True)
         return xbmcgui.ListItem()
 
     manifest = data['manifest']
@@ -241,8 +249,7 @@ def resolve_sky(parIn, title):
         try:
             exp = datetime.strptime(fine, '%d/%m/%Y %H:%M:%S') + timedelta(hours=2)
             if exp < datetime.now():
-                xbmcgui.Dialog().notification(title or parIn, 'Link scaduto ' + exp.strftime('%d/%m/%Y %H:%M:%S'),
-                                              xbmcgui.NOTIFICATION_ERROR, 5000)
+                notify(title or parIn, 'Link scaduto ' + exp.strftime('%d/%m/%Y %H:%M:%S'), True)
         except Exception:
             pass
 
@@ -254,6 +261,15 @@ def resolve_sky(parIn, title):
     li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + kid + ':' + key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    if ADDON.getSetting('manifest_upd') == 'true':
+        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
     return li
 
 
@@ -315,7 +331,9 @@ def tv_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-TMDB_KEY = '2e0b38cfb2936cec8ab1ce48e4335ac3'
+TMDB_KEY = ADDON.getSetting('tmdb_key').strip() or '2e0b38cfb2936cec8ab1ce48e4335ac3'
+TMDB_LANG = ADDON.getSetting('tmdb_language').strip() or 'it-IT'
+TMDB_ADULT = ADDON.getSetting('tmdb_adult') == 'true'
 TMDB_URL = 'https://api.themoviedb.org/3'
 TMDB_IMG = 'https://image.tmdb.org/t/p/'
 
@@ -330,7 +348,7 @@ TV_CATS = [('Popolari', 'popular'), ('In onda oggi', 'airing_today'),
 
 def tmdb_get(path, **params):
     params['api_key'] = TMDB_KEY
-    params.setdefault('language', 'it-IT')
+    params.setdefault('language', TMDB_LANG)
     r = requests.get(TMDB_URL + path, params=params, timeout=15)
     r.raise_for_status()
     return r.json()
@@ -448,7 +466,7 @@ def tmdb_search(query='', page=1):
             xbmcplugin.endOfDirectory(HANDLE)
             return
         query = kb.getText().strip()
-    j = tmdb_get('/search/multi', query=query, include_adult='false', page=page)
+    j = tmdb_get('/search/multi', query=query, include_adult='true' if TMDB_ADULT else 'false', page=page)
     xbmcplugin.setContent(HANDLE, 'movies')
     for it in j.get('results', []):
         if it.get('media_type') in ('movie', 'tv'):
@@ -479,8 +497,9 @@ def root_view():
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?group=' + urllib.parse.quote('Eventi')),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
-        ('FILM & SERIE TV', LOGO_BASE + 'netflix.png', BASE + '?action=films'),
     ]
+    if ADDON.getSetting('home_tmdb') != 'false':
+        home_items.append(('FILM & SERIE TV', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
     for label, icon, url in home_items:
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': icon or SQUARE_ICON})
