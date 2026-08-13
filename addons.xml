@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.kodiakso" name="PZ8" version="1.7.1" provider-name="Luigi">
+<addon id="plugin.video.kodiakso" name="PZ8" version="1.7.2" provider-name="Luigi">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.28.0"/>
@@ -18,7 +18,7 @@
         <license>MIT</license>
         <source>https://github.com/luishighnest/kodi</source>
         <website>https://luishighnest.github.io/kodi/</website>
-        <news>v1.7.1: fix XML addon per installazione (bye cache CDN). v1.7.0: nuovo logo addon senza scritte, menu configurazione organizzato in categorie. v1.6.7: icone reali per EVENTI e TV in home. v1.6.6: pallino sottocategorie piccolissimo. v1.5.2: loghi playlist ora visibili (URL assoluti). v1.5.0: categorie SKY, DAZN, TV e FILM &amp; SERIE TV. v1.4.4: ordine canali Sky stabile, nomi Sky Sport 25x corretti. v1.4.3: rinominato PZ8, nuovo logo. v1.4.2: Sky divisa in Intrattenimento e Sport, nomi senza maiuscole. v1.4.1: loghi Sky per ogni canale, nomi senza FHD. v1.4.0: categoria Sky con risoluzione dinamica dei link (come mandrakodi). v1.3.0: inoltro di tutte le proprieta inputstream.*.</news>
+        <news>v1.7.2: sottocategorie senza icone. v1.7.1: fix XML addon per installazione (bye cache CDN). v1.6.7: icone reali per EVENTI e TV in home. v1.6.6: pallino sottocategorie piccolissimo. v1.5.2: loghi playlist ora visibili (URL assoluti). v1.5.0: categorie SKY, DAZN, TV e FILM &amp; SERIE TV. v1.4.4: ordine canali Sky stabile, nomi Sky Sport 25x corretti. v1.4.3: rinominato PZ8, nuovo logo. v1.4.2: Sky divisa in Intrattenimento e Sport, nomi senza maiuscole. v1.4.1: loghi Sky per ogni canale, nomi senza FHD. v1.4.0: categoria Sky con risoluzione dinamica dei link (come mandrakodi). v1.3.0: inoltro di tutte le proprieta inputstream.*.</news>
     </extension>
 </addon>
 <addon id="repository.luishighnest" name="Luigi Repo" version="1.0.0" provider-name="Luigi">
