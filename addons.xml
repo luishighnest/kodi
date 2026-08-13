@@ -23,6 +23,27 @@
     </extension>
 </addon>
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.dazn206" name="DAZN 206 + Sky" version="1.1.0" provider-name="DAZNNav">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="inputstream.adaptive" version="21.0.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="default.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">DAZN Linear 206 + Sky channels</summary>
+        <summary lang="it">DAZN Linear 206 e canali Sky</summary>
+        <description lang="en">Watch DAZN Linear 206 and Sky channels with dynamic link resolution.</description>
+        <description lang="it">Guarda DAZN Linear 206 e i canali Sky con risoluzione dinamica del link.</description>
+        <platform>all</platform>
+        <license>MIT</license>
+        <source>https://github.com/luishighnest/kodi</source>
+        <website>https://luishighnest.github.io/kodi/</website>
+        <news>v1.1.0: aggiunti canali Sky con risoluzione dinamica dei link.</news>
+    </extension>
+</addon>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="repository.luishighnest" name="Luigi Repo" version="1.0.0" provider-name="Luigi">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
