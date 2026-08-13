@@ -310,16 +310,17 @@ def films_view():
 
 
 def root_view():
-    sky = xbmcgui.ListItem(label='SKY')
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', sky, isFolder=True)
-    dazn = xbmcgui.ListItem(label='DAZN')
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('DAZN'), dazn, isFolder=True)
-    eventi = xbmcgui.ListItem(label='EVENTI')
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('Eventi'), eventi, isFolder=True)
-    tv = xbmcgui.ListItem(label='TV')
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=tv', tv, isFolder=True)
-    films = xbmcgui.ListItem(label='FILM & SERIE TV')
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=films', films, isFolder=True)
+    home_items = [
+        ('SKY', LOGO_BASE + 'sky.png', BASE + '?action=sky'),
+        ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
+        ('EVENTI', LOGO_BASE + 'eventi.png', BASE + '?group=' + urllib.parse.quote('Eventi')),
+        ('TV', LOGO_BASE + 'tv.png', BASE + '?action=tv'),
+        ('FILM & SERIE TV', LOGO_BASE + 'filmserie.png', BASE + '?action=films'),
+    ]
+    for label, icon, url in home_items:
+        li = xbmcgui.ListItem(label=label)
+        li.setArt({'thumb': icon})
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
