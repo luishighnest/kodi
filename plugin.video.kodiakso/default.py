@@ -46,7 +46,7 @@ def parse_m3u(text):
             continue
         if line.startswith('#KODIPROP:'):
             key, _, value = line[len('#KODIPROP:'):].partition('=')
-            props[key.strip()] = value.strip().strip('"')
+            props[key.strip()] = urllib.parse.unquote(value.strip().strip('"'))
         elif line.startswith('#EXTINF:'):
             meta = line[8:]
             label = meta.partition(',')[2].strip()
