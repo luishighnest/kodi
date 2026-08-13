@@ -7,10 +7,6 @@
 #EXTINF:-1 tvg-logo="https://image.discovery.indazn.com/eu/v2/eu/image?id=sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000&quality=80&width=800&height=450" tvg-provider="DAZN" group-title="DAZN", DAZN 1
 https://dcs-fs-live-dazn-cdn.dazn.com/dash/dazn-linear-206/stream.mpd?p=web&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODY3MDY4ODYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODY2MjA0ODZ9.jmqvgn42RZfTCh3MBSB5VLiMPDqS_jpwNjAlSO8s2sA
 
-#KODIPROP:inputstream.adaptive.license_type=clearkey
-#KODIPROP:inputstream.adaptive.license_key={"1118a48358c744f5075ddd54441c9207":"c0cd1f001bba58b1261d12ff04e4d5bd"}
-#EXTINF:-1 tvg-logo="https://ui-avatars.com/api/?name=Sky+Tg+24+Fhd&background=FF9900&color=fff&size=256&font-size=0.3&v=3" group-title="News", Sky Tg 24 Fhd
-https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1786663879_f~0_g~1_s~f8b11501-6983-48c7-a3ce-6e4e15f20bb5_u~c0712fe81439b039492d5b58a626d540e0f19c1da6e63a813cb8c4d6f65e95b309ba4ab0223c0a47120cc0d2625c6b24_k~A_l~50_x~44455799449b373f860d2247a33ba4a1/nowitlin2/Content/CMAF_CTR_H1/Live/channel(tg24)/master_2hr-all.mpd
 
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|7f9f6e3c78b2486f9fe13e06bdb768d2:b341c1136a3738f3a6ea197d31fab35c
 #EXTINF:-1 tvg-logo="/logos/rai1.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai 1
