@@ -6,6 +6,7 @@ import urllib.parse
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
+import xbmc
 import requests
 
 ADDON = xbmcaddon.Addon()
@@ -23,15 +24,18 @@ MANIFEST_PROP = 'inputstream.adaptive.manifest_type'
 
 def get_playlist():
     url = PLAYLIST_URL + ('&' if '?' in PLAYLIST_URL else '?') + '_=' + str(int(time.time()))
+    xbmc.log('[kodiakso] download playlist: ' + url, xbmc.LOGDEBUG)
     r = requests.get(url, timeout=15)
     r.raise_for_status()
+    xbmc.log('[kodiakso] playlist scaricata: %d byte' % len(r.text), xbmc.LOGDEBUG)
     return r.text
 
 
 def fetch_channels():
     try:
         return parse_m3u(get_playlist())
-    except Exception:
+    except Exception as e:
+        xbmc.log('[kodiakso] ERRORE download playlist: %r' % e, xbmc.LOGERROR)
         xbmcgui.Dialog().notification(NAME, 'Impossibile scaricare la playlist', xbmcgui.NOTIFICATION_ERROR)
         return []
 
@@ -87,6 +91,7 @@ def group_view(group):
 
 def root_view():
     channels = fetch_channels()
+    xbmc.log('[kodiakso] canali totali: %d' % len(channels), xbmc.LOGDEBUG)
     groups = {}
     for ch in channels:
         groups.setdefault(ch['group'], []).append(ch)
