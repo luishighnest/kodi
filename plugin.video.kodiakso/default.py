@@ -67,6 +67,39 @@ LOGOS = {
     'skysport259': 'sksport.png',
 }
 
+CAT_INT = 'Intrattenimento'
+CAT_SPORT = 'Sport'
+
+SKY_DEFS = {
+    'tg24': ('Sky TG 24', CAT_INT),
+    'skyuno': ('Sky Uno', CAT_INT),
+    'skyunoplus': ('Sky Uno +1', CAT_INT),
+    'skyatlantic': ('Sky Atlantic', CAT_INT),
+    'skyserie': ('Sky Serie', CAT_INT),
+    'skycollection': ('Sky Collection', CAT_INT),
+    'skyinvestigation': ('Sky Investigation', CAT_INT),
+    'skyadventure': ('Sky Adventure', CAT_INT),
+    'skycrime': ('Sky Crime', CAT_INT),
+    'skydocumentaries': ('Sky Documentaries', CAT_INT),
+    'skynature': ('Sky Nature', CAT_INT),
+    'historychannel': ('History', CAT_INT),
+    'comedycentral': ('Comedy Central', CAT_INT),
+    'skyarte': ('Sky Arte', CAT_INT),
+    'mtv': ('MTV', CAT_INT),
+    'skysportuno': ('Sky Sport Uno', CAT_SPORT),
+    'skysport24': ('Sky Sport 24', CAT_SPORT),
+    'skysportarena': ('Sky Sport Arena', CAT_SPORT),
+    'skysportbasket': ('Sky Sport Basket', CAT_SPORT),
+    'skysportcalcio': ('Sky Sport Calcio', CAT_SPORT),
+    'skysportf1': ('Sky Sport F1', CAT_SPORT),
+    'skysportgolf': ('Sky Sport Golf', CAT_SPORT),
+    'skysportlegend': ('Sky Sport Legend', CAT_SPORT),
+    'skysportmax': ('Sky Sport Max', CAT_SPORT),
+    'skysportmix': ('Sky Sport Mix', CAT_SPORT),
+    'skysportmotogp': ('Sky Sport MotoGP', CAT_SPORT),
+    'skysporttennis': ('Sky Sport Tennis', CAT_SPORT),
+}
+
 
 def log(m):
     xbmc.log('KODIAKSO: ' + m, xbmc.LOGINFO)
@@ -137,17 +170,13 @@ def parse_m3u(text):
 
 
 def sky_channels():
-    channels = []
-    seen = set()
+    available = set()
     try:
         data = requests.get(API + '?numTest=A1A260', headers={'User-Agent': API_UA}, timeout=15).json()
         for it in (data.get('items', data) if isinstance(data, dict) else data):
             mr = it.get('myresolve', '') or ''
             if mr.startswith('sky@@'):
-                cid = mr.split('@@', 1)[1]
-                if cid not in seen:
-                    seen.add(cid)
-                    channels.append((clean_title(it.get('title', cid)), cid))
+                available.add(mr.split('@@', 1)[1])
     except Exception as e:
         log('sky A1A260 fail: ' + str(e))
     try:
@@ -159,32 +188,17 @@ def sky_channels():
                 cid = clean.replace(' ', '').lower()
                 if cid == 'skytg24':
                     cid = 'tg24'
-                if cid not in seen:
-                    seen.add(cid)
-                    channels.append((clean, cid))
+                available.add(cid)
     except Exception as e:
         log('sky A1A122 fail: ' + str(e))
-    if not channels:
-        fallback = [("Sky TG 24", "tg24"), ("Sky Uno", "skyuno"), ("Sky Uno +1", "skyunoplus"),
-                    ("Sky Atlantic", "skyatlantic"), ("Sky Serie", "skyserie"),
-                    ("Sky Collection", "skycollection"), ("Sky Investigation", "skyinvestigation"),
-                    ("Sky Adventure", "skyadventure"), ("Sky Crime", "skycrime"),
-                    ("Sky Documentaries", "skydocumentaries"), ("Sky Nature", "skynature"),
-                    ("History", "historychannel"), ("Comedy Central", "comedycentral"),
-                    ("Sky Arte", "skyarte"), ("MTV", "mtv"), ("Sky Sport Uno", "skysportuno"),
-                    ("Sky Sport 24", "skysport24"), ("Sky Sport Arena", "skysportarena"),
-                    ("Sky Sport Calcio", "skysportcalcio"), ("Sky Sport F1", "skysportf1"),
-                    ("Sky Sport Golf", "skysportgolf"), ("Sky Sport Legend", "skysportlegend"),
-                    ("Sky Sport Max", "skysportmax"), ("Sky Sport Mix", "skysportmix"),
-                    ("Sky Sport MotoGP", "skysportmotogp"), ("Sky Sport Tennis", "skysporttennis"),
-                    ("Sky Sport Basket", "skysportbasket")]
-        for t, c in fallback:
-            channels.append((t, c))
+    if not available:
+        available.update(SKY_DEFS.keys())
     for n in range(251, 260):
-        cid = 'skysport%d' % n
-        if cid not in seen:
-            seen.add(cid)
-            channels.append(('Sky Sport %d' % n, cid))
+        available.add('skysport%d' % n)
+    channels = {CAT_INT: [], CAT_SPORT: []}
+    for cid in available:
+        name, cat = SKY_DEFS.get(cid, (cid, CAT_SPORT if cid.startswith('skysport') else CAT_INT))
+        channels[cat].append((name, cid))
     return channels
 
 
@@ -242,7 +256,15 @@ def group_view(group):
 
 
 def sky_view():
-    for title, cid in sky_channels():
+    for cat in (CAT_INT, CAT_SPORT):
+        li = xbmcgui.ListItem(label=cat)
+        url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky_cat_view(cat):
+    for title, cid in sky_channels().get(cat, []):
         li = xbmcgui.ListItem(label=title)
         logo = LOGOS.get(cid, '')
         if logo:
@@ -273,6 +295,8 @@ def main():
         action = query['action'][0]
         if action == 'sky':
             sky_view()
+        elif action == 'skycat':
+            sky_cat_view(query.get('cat', [''])[0])
         elif action == 'skyplay':
             li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
