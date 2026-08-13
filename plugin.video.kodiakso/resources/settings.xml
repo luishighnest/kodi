@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <setting id="playlist_url" type="text" label="Playlist URL (M3U, opzionale)" default="" />
+</settings>
