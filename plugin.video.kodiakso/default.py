@@ -477,8 +477,8 @@ def root_view():
     home_items = [
         ('SKY', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
-        ('EVENTI', LOGO_BASE + 'eventi.png', BASE + '?group=' + urllib.parse.quote('Eventi')),
-        ('TV', LOGO_BASE + 'tv.png', BASE + '?action=tv'),
+        ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?group=' + urllib.parse.quote('Eventi')),
+        ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
         ('FILM & SERIE TV', LOGO_BASE + 'netflix.png', BASE + '?action=films'),
     ]
     for label, icon, url in home_items:
