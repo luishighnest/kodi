@@ -257,7 +257,10 @@ def group_view(group):
             continue
         li = xbmcgui.ListItem(label=ch['label'], path=ch['url'])
         if ch['logo']:
-            li.setArt({'thumb': ch['logo']})
+            logo = ch['logo']
+            if logo.startswith('/logos/'):
+                logo = LOGO_BASE + logo[len('/logos/'):]
+            li.setArt({'thumb': logo})
         li.setProperty('isPlayable', 'true')
         li.setProperty('inputstream', 'inputstream.adaptive')
         for k, v in ch['props'].items():
