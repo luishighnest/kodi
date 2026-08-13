@@ -292,7 +292,7 @@ def tv_view():
     channels = fetch_channels()
     groups = {}
     for ch in channels:
-        if ch['group'].lower() == 'dazn':
+        if ch['group'].lower() in ('dazn', 'eventi'):
             continue
         groups.setdefault(ch['group'], []).append(ch)
     for group in sorted(groups):
@@ -311,6 +311,8 @@ def root_view():
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', sky, isFolder=True)
     dazn = xbmcgui.ListItem(label='DAZN')
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('DAZN'), dazn, isFolder=True)
+    eventi = xbmcgui.ListItem(label='EVENTI')
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('Eventi'), eventi, isFolder=True)
     tv = xbmcgui.ListItem(label='TV')
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=tv', tv, isFolder=True)
     films = xbmcgui.ListItem(label='FILM & SERIE TV')
