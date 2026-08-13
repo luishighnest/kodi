@@ -28,6 +28,7 @@ UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 HOST = 'https://www.nowtv.it'
 LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
 SQUARE_ICON = LOGO_BASE + 'square.png'
+DOT_ICON = LOGO_BASE + 'dot.png'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
 
 
@@ -282,7 +283,7 @@ def group_view(group):
 def sky_view():
     for cat in (CAT_INT, CAT_SPORT):
         li = xbmcgui.ListItem(label=lbl(cat))
-        li.setArt({'thumb': SQUARE_ICON})
+        li.setArt({'thumb': DOT_ICON})
         url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -308,7 +309,7 @@ def tv_view():
         groups.setdefault(ch['group'], []).append(ch)
     for group in sorted(groups):
         li = xbmcgui.ListItem(label=lbl(group))
-        li.setArt({'thumb': SQUARE_ICON})
+        li.setArt({'thumb': DOT_ICON})
         url = BASE + '?group=' + urllib.parse.quote(group)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -379,7 +380,7 @@ def tmdb_list(mtype, kind='', genre='', page=1):
         tmdb_add_item(it, mtype)
     if page < (j.get('total_pages') or 1) and j.get('results'):
         li = xbmcgui.ListItem(label=lbl('Prossima pagina  ►'))
-        li.setArt({'thumb': SQUARE_ICON})
+        li.setArt({'thumb': DOT_ICON})
         url = _tmdb_url('list', mt=mtype, kind=kind, genre=genre, page=str(page + 1))
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -389,7 +390,7 @@ def tmdb_cats(mtype):
     cats = FILM_CATS if mtype == 'movie' else TV_CATS
     for label, kind in cats:
         li = xbmcgui.ListItem(label=lbl(label))
-        li.setArt({'thumb': SQUARE_ICON})
+        li.setArt({'thumb': DOT_ICON})
         url = _tmdb_url('genres', mt=mtype) if not kind else _tmdb_url('list', mt=mtype, kind=kind, page='1')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -399,7 +400,7 @@ def tmdb_genres(mtype):
     j = tmdb_get('/genre/%s/list' % mtype)
     for g in sorted(j.get('genres', []), key=lambda x: x['name']):
         li = xbmcgui.ListItem(label=lbl(g['name']))
-        li.setArt({'thumb': SQUARE_ICON})
+        li.setArt({'thumb': DOT_ICON})
         url = _tmdb_url('list', mt=mtype, genre=str(g['id']), page='1')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -454,7 +455,7 @@ def tmdb_search(query='', page=1):
             tmdb_add_item(it, it.get('media_type'))
     if page < (j.get('total_pages') or 1) and j.get('results'):
         li = xbmcgui.ListItem(label=lbl('Prossima pagina  ►'))
-        li.setArt({'thumb': SQUARE_ICON})
+        li.setArt({'thumb': DOT_ICON})
         url = _tmdb_url('search', q=query, page=str(page + 1))
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -462,11 +463,11 @@ def tmdb_search(query='', page=1):
 
 def films_view():
     li = xbmcgui.ListItem(label=lbl('Ricerca'))
-    li.setArt({'thumb': SQUARE_ICON})
+    li.setArt({'thumb': DOT_ICON})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('search'), li, isFolder=True)
     for label, mtype in HOME_SECTIONS:
         li = xbmcgui.ListItem(label=lbl(label))
-        li.setArt({'thumb': SQUARE_ICON})
+        li.setArt({'thumb': DOT_ICON})
         url = _tmdb_url('cats', mt=mtype)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
