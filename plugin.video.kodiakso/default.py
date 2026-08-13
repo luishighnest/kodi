@@ -453,6 +453,10 @@ def tmdb_details(mtype, id_):
     if fan:
         li.setArt({'fanart': TMDB_IMG + 'w1280' + fan})
     xbmcgui.Dialog().info(li)
+
+    play = xbmcgui.ListItem(label=lbl('▶  Riproduci con Mandrakodi'))
+    play.setArt({'thumb': SQUARE_ICON})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('msearch', q=title, mt=mtype), play, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -475,6 +479,178 @@ def tmdb_search(query='', page=1):
         
         url = _tmdb_url('search', q=query, page=str(page + 1))
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+CS_URL_FILE = 'https://raw.githubusercontent.com/mandrakodi/mandrakodi.github.io/main/data/cs_url.txt'
+SC_DEFAULT = 'https://streamingunity.vip/'
+
+
+def mandra_cs():
+    try:
+        return requests.get(CS_URL_FILE, timeout=10).text.strip()
+    except Exception:
+        return SC_DEFAULT
+
+
+def man_title(it):
+    t = clean_title(it.get('title', ''))
+    t = re.sub(r'^SL\s*\d+\s*\*+\s*', '', t)
+    return t.strip()
+
+
+def resolve_scws(parIn, title):
+    cs = SC_DEFAULT
+    try:
+        cs = mandra_cs()
+        base = cs + 'it/iframe/' + parIn
+        rnd = UA
+        r = requests.get(base, headers={'user-agent': rnd}, timeout=25)
+        r.raise_for_status()
+        page = r.text.replace('\n', '').replace('\r', '').replace('\t', '')
+        m3u8Url = ''
+        for src in re.findall(r'src="(.*?)"', page):
+            if 'vixcloud.co' in src:
+                m3u8Url = src
+        if not m3u8Url:
+            raise Exception('embed vixcloud non trovato')
+        full_embed = m3u8Url.replace('&amp;', '&')
+        r2 = requests.get(full_embed, headers={'user-agent': rnd}, timeout=25)
+        r2.raise_for_status()
+        page2 = r2.text.replace('\n', '').replace('\r', '').replace('\t', '')
+        mp = page2[page2.find('masterPlaylist') if page2.find('masterPlaylist') >= 0 else 0:]
+        mtok = re.search(r"'token':\s*'([^']+)'", mp)
+        mexp = re.search(r"'expires':\s*'([^']+)'", mp)
+        murl = re.search(r"url:\s*'([^']+)'", mp)
+        if not (mtok and mexp and murl):
+            raise Exception('masterPlaylist non trovato')
+        urlSc = murl.group(1)
+        sep = '&' if '?' in urlSc else '?'
+        urlSc = urlSc + sep + 'token=' + mtok.group(1) + '&expires=' + mexp.group(1) + '&n=1'
+        if 'canPlayFHD=1' in full_embed:
+            urlSc += '&h=1'
+        if 'b=1' in full_embed:
+            urlSc += '&b=1'
+    except Exception as e:
+        xbmc.log('KODIAKSO scws resolve ERR: ' + str(e), xbmc.LOGERROR)
+        notify(title or parIn, 'Errore risoluzione link', True)
+        return xbmcgui.ListItem()
+
+    hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
+    li = xbmcgui.ListItem(path=urlSc, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    return li
+
+
+def mandra_search_view(query, mtype=''):
+    if not query:
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    data = requests.get(API + '?numTest=A1A332A' + ('&mode=1' if mtype == 'tv' else '') + '&search=' + urllib.parse.quote(query),
+                        headers={'User-Agent': API_UA}, timeout=25).json()
+    xbmcplugin.setContent(HANDLE, 'movies' if mtype == 'movie' else 'tvshows')
+    added = 0
+    for it in data.get('items', []):
+        title = man_title(it)
+        thumb = it.get('thumbnail') or SQUARE_ICON
+        fan = it.get('fanart') or ''
+        info = it.get('info') or ''
+        li = xbmcgui.ListItem(label=lbl(title))
+        li.setArt({'thumb': thumb})
+        if fan:
+            li.setArt({'fanart': fan})
+        li.setInfo('video', {'title': title, 'plot': info})
+        mr = it.get('myresolve', '') or ''
+        ext = it.get('externallink', '') or ''
+        if mr.startswith('scws2@@'):
+            par = mr.split('@@', 1)[1]
+            li.setProperty('isPlayable', 'true')
+            url = _tmdb_url('mplay', p=par, t=title)
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+            added += 1
+        elif ext and 'mode=2&code=' in ext:
+            m = re.search(r'code=([^&]+)', ext)
+            if m:
+                li.setProperty('isPlayable', 'false')
+                url = _tmdb_url('mseason', code=m.group(1))
+                xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+                added += 1
+    if not added:
+        li = xbmcgui.ListItem(label=lbl('Nessun risultato su Mandrakodi'))
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('msearch', q=query), li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def mandra_season_view(code):
+    data = requests.get(API + '?numTest=A1A356&mode=2&code=' + urllib.parse.quote(code),
+                        headers={'User-Agent': API_UA}, timeout=25).json()
+    xbmcplugin.setContent(HANDLE, 'tvshows')
+    for it in data.get('items', []):
+        mr = it.get('myresolve', '') or ''
+        if not mr.startswith('seriesc@@'):
+            continue
+        par = mr.split('@@', 1)[1]
+        title = man_title(it) or ('Stagione ' + par.split('---')[-1])
+        li = xbmcgui.ListItem(label=lbl(title))
+        li.setArt({'thumb': it.get('thumbnail') or SQUARE_ICON})
+        if it.get('fanart'):
+            li.setArt({'fanart': it['fanart']})
+        li.setInfo('video', {'title': title, 'plot': it.get('info') or ''})
+        url = _tmdb_url('mepisodes', par=par)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def mandra_episodes_view(par):
+    idSea, numSea = par.split('---')
+    cs = mandra_cs()
+    url = cs + 'it/titles/' + idSea + '/season-' + numSea
+    r = requests.get(url, headers={'user-agent': UA}, timeout=30)
+    r.raise_for_status()
+    m = re.search(r'<div id="app" data-page="(.*?)"', r.text)
+    if not m:
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    props = json.loads(m.group(1).replace('&quot;', '"'))['props']
+    show_name = props['title']['name']
+    cover = SQUARE_ICON
+    for im in props['title'].get('images', []):
+        if im.get('type') == 'cover':
+            cover = 'https://cdn.streamingunity.vip/images/' + im['filename']
+            break
+    xbmcplugin.setContent(HANDLE, 'episodes')
+    for ep in props['loadedSeason'].get('episodes', []):
+        n = str(ep.get('number', ''))
+        name = ep.get('name') or ('Episodio ' + n)
+        label = name
+        li = xbmcgui.ListItem(label=lbl(label))
+        plot = (ep.get('plot') or '').replace('&#39;', "'").replace('&amp;', '&')
+        info = {'title': name, 'plot': plot, 'mediatype': 'episode',
+                'tvshowtitle': show_name, 'season': numSea}
+        try:
+            info['episode'] = int(ep.get('number') or 0)
+        except (TypeError, ValueError):
+            pass
+        li.setInfo('video', info)
+        thumb = cover
+        if ep.get('images'):
+            try:
+                thumb = 'https://cdn.streamingunity.vip/images/' + ep['images'][0]['filename']
+            except Exception:
+                pass
+        li.setArt({'thumb': thumb})
+        li.setProperty('isPlayable', 'true')
+        parIn = idSea + '?episode_id=' + str(ep['id'])
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('mplay', p=parIn, t=label), li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -528,6 +704,15 @@ def main():
                       q.get('genre', [''])[0], int(q.get('page', ['1'])[0]))
         elif action == 'details':
             tmdb_details(query.get('mt', ['movie'])[0], query.get('id', [''])[0])
+        elif action == 'msearch':
+            mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0])
+        elif action == 'mseason':
+            mandra_season_view(query.get('code', [''])[0])
+        elif action == 'mepisodes':
+            mandra_episodes_view(query.get('par', [''])[0])
+        elif action == 'mplay':
+            li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0])
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0])
         elif action == 'skyplay':
