@@ -26,6 +26,46 @@ API_UA = 'Kodi/19.0 (Windows NT 10.0; Win64; x64) App_Bitness/64 Version/19.0-Ma
 
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
 HOST = 'https://www.nowtv.it'
+LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
+
+LOGOS = {
+    'tg24': 'skytg24.png',
+    'skyuno': 'skyuno.png',
+    'skyunoplus': 'skyunoplus.png',
+    'skyatlantic': 'skyatlantic.png',
+    'skyserie': 'skyserie.png',
+    'skycollection': 'skycollection.png',
+    'skyinvestigation': 'skyinvestigation.png',
+    'skyadventure': 'skyadventure.png',
+    'skycrime': 'skycrime.png',
+    'skydocumentaries': 'skydocumentaries.png',
+    'skynature': 'skynature.png',
+    'historychannel': 'history.png',
+    'comedycentral': 'comedycentral.png',
+    'skyarte': 'skyarte.png',
+    'mtv': 'mtv.png',
+    'skysportuno': 'sksportuno.png',
+    'skysport24': 'sksport24.png',
+    'skysportarena': 'sksportarena.png',
+    'skysportbasket': 'sksportbasket.png',
+    'skysportcalcio': 'sksportcalcio.png',
+    'skysportf1': 'sksportf1.png',
+    'skysportgolf': 'sksportgolf.png',
+    'skysportlegend': 'sksportlegend.png',
+    'skysportmax': 'sksportmax.png',
+    'skysportmix': 'sksportmix.png',
+    'skysportmotogp': 'sksportmotogp.png',
+    'skysporttennis': 'sksporttennis.png',
+    'skysport251': 'sksport.png',
+    'skysport252': 'sksport.png',
+    'skysport253': 'sksport.png',
+    'skysport254': 'sksport.png',
+    'skysport255': 'sksport.png',
+    'skysport256': 'sksport.png',
+    'skysport257': 'sksport.png',
+    'skysport258': 'sksport.png',
+    'skysport259': 'sksport.png',
+}
 
 
 def log(m):
@@ -42,6 +82,13 @@ def strip_color(txt):
     txt = re.sub(r'\[COLOR.*?\]', '', txt, flags=re.IGNORECASE)
     txt = re.sub(r'\[/COLOR\]', '', txt, flags=re.IGNORECASE)
     return txt.strip()
+
+
+def clean_title(txt):
+    txt = strip_color(txt)
+    txt = re.sub(r'\bFHD\b', '', txt, flags=re.IGNORECASE)
+    txt = re.sub(r'\s{2,}', ' ', txt).strip()
+    return txt
 
 
 def get_playlist():
@@ -72,7 +119,7 @@ def parse_m3u(text):
             props[key.strip()] = urllib.parse.unquote(value.strip().strip('"'))
         elif line.startswith('#EXTINF:'):
             meta = line[8:]
-            label = meta.partition(',')[2].strip()
+            label = clean_title(meta.partition(',')[2])
             current = {'label': label, 'logo': '', 'group': 'Altri', 'props': {}}
             m = re.search(r'tvg-logo="([^"]*)"', meta)
             if m:
@@ -100,15 +147,15 @@ def sky_channels():
                 cid = mr.split('@@', 1)[1]
                 if cid not in seen:
                     seen.add(cid)
-                    channels.append((strip_color(it.get('title', cid)), cid))
+                    channels.append((clean_title(it.get('title', cid)), cid))
     except Exception as e:
         log('sky A1A260 fail: ' + str(e))
     try:
         data = requests.get(API + '?numTest=A1A122', headers={'User-Agent': API_UA}, timeout=15).json()
         for it in (data.get('items', data) if isinstance(data, dict) else data):
-            title = it.get('title', '')
+            title = clean_title(it.get('title', ''))
             if 'Sky' in title and ('IT:' in title or 'IT ' in title):
-                clean = strip_color(title).replace('IT:', '').replace('IT', '').strip().replace('  ', ' ')
+                clean = title.replace('IT:', '').replace('IT', '').strip().replace('  ', ' ')
                 cid = clean.replace(' ', '').lower()
                 if cid == 'skytg24':
                     cid = 'tg24'
@@ -197,6 +244,9 @@ def group_view(group):
 def sky_view():
     for title, cid in sky_channels():
         li = xbmcgui.ListItem(label=title)
+        logo = LOGOS.get(cid, '')
+        if logo:
+            li.setArt({'thumb': LOGO_BASE + logo})
         li.setProperty('isPlayable', 'true')
         url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)

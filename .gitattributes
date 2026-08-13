@@ -1,0 +1,5 @@
+*.png binary
+*.zip binary
+*.jpg binary
+addons.xml text eol=lf
+addons.xml.md5 text eol=lf
