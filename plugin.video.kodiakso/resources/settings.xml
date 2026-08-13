@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
-    <setting id="playlist_url" type="text" label="Playlist URL (M3U, opzionale)" default="" />
+    <setting id="playlist_url" type="text" label="Playlist URL (M3U)" default="https://luishighnest.github.io/kodi/playlist.m3u" />
 </settings>

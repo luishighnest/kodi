@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-import os
 import re
 import sys
 import json
+import time
 import base64
 import urllib.parse
 import xbmcgui
@@ -15,23 +15,23 @@ HANDLE = int(sys.argv[1])
 BASE = sys.argv[0]
 NAME = ADDON.getAddonInfo('name')
 
-PLAYLIST_FILE = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'playlist.m3u')
-PLAYLIST_URL = ADDON.getSetting('playlist_url').strip()
+DEFAULT_URL = 'https://luishighnest.github.io/kodi/playlist.m3u'
+PLAYLIST_URL = ADDON.getSetting('playlist_url').strip() or DEFAULT_URL
 
 
 def get_playlist():
-    text = ''
-    if PLAYLIST_URL:
-        try:
-            r = requests.get(PLAYLIST_URL, timeout=15)
-            r.raise_for_status()
-            text = r.text
-        except Exception:
-            text = ''
-    if not text and os.path.exists(PLAYLIST_FILE):
-        with open(PLAYLIST_FILE, 'r', encoding='utf-8-sig') as f:
-            text = f.read()
-    return text
+    url = PLAYLIST_URL + ('&' if '?' in PLAYLIST_URL else '?') + '_=' + str(int(time.time()))
+    r = requests.get(url, timeout=15)
+    r.raise_for_status()
+    return r.text
+
+
+def fetch_channels():
+    try:
+        return parse_m3u(get_playlist())
+    except Exception:
+        xbmcgui.Dialog().notification(NAME, 'Impossibile scaricare la playlist', xbmcgui.NOTIFICATION_ERROR)
+        return []
 
 
 def parse_m3u(text):
@@ -82,7 +82,7 @@ def encode_payload(title, url, props):
 
 
 def group_view(group):
-    channels = parse_m3u(get_playlist())
+    channels = fetch_channels()
     for ch in channels:
         if ch['group'] != group:
             continue
@@ -97,7 +97,7 @@ def group_view(group):
 
 
 def root_view():
-    channels = parse_m3u(get_playlist())
+    channels = fetch_channels()
     groups = {}
     for ch in channels:
         groups.setdefault(ch['group'], []).append(ch)
