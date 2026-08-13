@@ -379,8 +379,13 @@ def tmdb_add_item(it, mtype):
     except (TypeError, ValueError):
         pass
     li.setInfo('video', info)
-    url = _tmdb_url('details', mt=mtype, id=str(it['id']))
-    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    if mtype == 'movie':
+        li.setProperty('isPlayable', 'true')
+        url = _tmdb_url('mplayauto', q=title)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    else:
+        url = _tmdb_url('mseasonsauto', q=title)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
 def tmdb_list(mtype, kind='', genre='', page=1):
@@ -537,7 +542,8 @@ def resolve_scws(parIn, title):
         return xbmcgui.ListItem()
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
-    li = xbmcgui.ListItem(path=urlSc, offscreen=True)
+    stream = urlSc + '|referer=' + cs + '&user-agent=Mozilla'
+    li = xbmcgui.ListItem(path=stream, offscreen=True)
     li.setContentLookup(False)
     li.setProperty('inputstream', 'inputstream.adaptive')
     li.setProperty('inputstream.adaptive.manifest_type', 'hls')
@@ -549,6 +555,46 @@ def resolve_scws(parIn, title):
     if bw and bw != '0':
         li.setProperty('inputstream.adaptive.max_bandwidth', bw)
     return li
+
+
+def mandra_auto_movie(query):
+    try:
+        data = requests.get(API + '?numTest=A1A332A&search=' + urllib.parse.quote(query),
+                            headers={'User-Agent': API_UA}, timeout=25).json()
+    except Exception as e:
+        xbmc.log('KODIAKSO mandra auto ERR: ' + str(e), xbmc.LOGERROR)
+        notify(query or 'Film', 'Errore ricerca', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    for it in data.get('items', []):
+        mr = it.get('myresolve', '') or ''
+        if mr.startswith('scws2@@'):
+            par = mr.split('@@', 1)[1]
+            title = man_title(it) or query
+            li = resolve_scws(par, title)
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
+            return
+    notify(query or 'Film', 'Nessun risultato su Mandrakodi', True)
+    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+
+
+def mandra_auto_series(query):
+    try:
+        data = requests.get(API + '?numTest=A1A332A&mode=1&search=' + urllib.parse.quote(query),
+                            headers={'User-Agent': API_UA}, timeout=25).json()
+    except Exception as e:
+        xbmc.log('KODIAKSO mandra series ERR: ' + str(e), xbmc.LOGERROR)
+        notify(query or 'Serie', 'Errore ricerca', True)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for it in data.get('items', []):
+        ext = it.get('externallink', '') or ''
+        m = re.search(r'code=([^&]+)', ext)
+        if m:
+            mandra_season_view(m.group(1))
+            return
+    notify(query or 'Serie', 'Nessuna serie su Mandrakodi', True)
+    xbmcplugin.endOfDirectory(HANDLE)
 
 
 def mandra_search_view(query, mtype=''):
@@ -629,9 +675,13 @@ def mandra_episodes_view(par):
             break
     xbmcplugin.setContent(HANDLE, 'episodes')
     for ep in props['loadedSeason'].get('episodes', []):
-        n = str(ep.get('number', ''))
-        name = ep.get('name') or ('Episodio ' + n)
-        label = name
+        n = ep.get('number', '')
+        try:
+            numep = int(n)
+            label = '%sx%02d %s' % (numSea, numep, (ep.get('name') or ('Episodio ' + str(numep))))
+        except (TypeError, ValueError):
+            label = ep.get('name') or ('Episodio ' + str(n))
+        name = ep.get('name') or label
         li = xbmcgui.ListItem(label=lbl(label))
         plot = (ep.get('plot') or '').replace('&#39;', "'").replace('&amp;', '&')
         info = {'title': name, 'plot': plot, 'mediatype': 'episode',
@@ -706,6 +756,10 @@ def main():
             tmdb_details(query.get('mt', ['movie'])[0], query.get('id', [''])[0])
         elif action == 'msearch':
             mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0])
+        elif action == 'mplayauto':
+            mandra_auto_movie(query.get('q', [''])[0])
+        elif action == 'mseasonsauto':
+            mandra_auto_series(query.get('q', [''])[0])
         elif action == 'mseason':
             mandra_season_view(query.get('code', [''])[0])
         elif action == 'mepisodes':
