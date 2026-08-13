@@ -305,7 +305,156 @@ def tv_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+TMDB_KEY = '2e0b38cfb2936cec8ab1ce48e4335ac3'
+TMDB_URL = 'https://api.themoviedb.org/3'
+TMDB_IMG = 'https://image.tmdb.org/t/p/'
+
+HOME_SECTIONS = [('Film', 'movie'), ('Serie TV', 'tv')]
+FILM_CATS = [('Popolari', 'popular'), ('In sala', 'now_playing'),
+             ('Prossimamente', 'upcoming'), ('Più votati', 'top_rated'),
+             ('Per genere', '')]
+TV_CATS = [('Popolari', 'popular'), ('In onda oggi', 'airing_today'),
+           ('In TV', 'on_the_air'), ('Più votate', 'top_rated'),
+           ('Per genere', '')]
+
+
+def tmdb_get(path, **params):
+    params['api_key'] = TMDB_KEY
+    params.setdefault('language', 'it-IT')
+    r = requests.get(TMDB_URL + path, params=params, timeout=15)
+    r.raise_for_status()
+    return r.json()
+
+
+def _tmdb_url(action, **params):
+    return BASE + '?action=' + action + '&' + urllib.parse.urlencode(params)
+
+
+def tmdb_add_item(it, mtype):
+    title = it.get('title') or it.get('name') or ''
+    date = it.get('release_date') or it.get('first_air_date') or ''
+    label = title + ('  (' + date[:4] + ')' if len(date) >= 4 else '')
+    li = xbmcgui.ListItem(label=label)
+    poster = it.get('poster_path')
+    if poster:
+        li.setArt({'thumb': TMDB_IMG + 'w342' + poster})
+    fan = it.get('backdrop_path')
+    if fan:
+        li.setArt({'fanart': TMDB_IMG + 'w780' + fan})
+    info = {'title': title, 'mediatype': 'movie' if mtype == 'movie' else 'tv',
+            'plot': it.get('overview') or ''}
+    if len(date) >= 4:
+        try:
+            info['year'] = int(date[:4])
+        except ValueError:
+            pass
+    try:
+        info['rating'] = float(it.get('vote_average') or 0)
+    except (TypeError, ValueError):
+        pass
+    li.setInfo('video', info)
+    url = _tmdb_url('details', mt=mtype, id=str(it['id']))
+    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+
+
+def tmdb_list(mtype, kind='', genre='', page=1):
+    page = int(page)
+    if genre:
+        path = '/discover/' + mtype
+        params = {'with_genres': genre, 'sort_by': 'popularity.desc', 'page': page}
+    else:
+        path = '/%s/%s' % (mtype, kind)
+        params = {'page': page}
+    j = tmdb_get(path, **params)
+    xbmcplugin.setContent(HANDLE, 'movies' if mtype == 'movie' else 'tvshows')
+    for it in j.get('results', []):
+        tmdb_add_item(it, mtype)
+    if page < (j.get('total_pages') or 1) and j.get('results'):
+        li = xbmcgui.ListItem(label='Prossima pagina  ►')
+        url = _tmdb_url('list', mt=mtype, kind=kind, genre=genre, page=str(page + 1))
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def tmdb_cats(mtype):
+    cats = FILM_CATS if mtype == 'movie' else TV_CATS
+    for label, kind in cats:
+        li = xbmcgui.ListItem(label=label)
+        url = _tmdb_url('genres', mt=mtype) if not kind else _tmdb_url('list', mt=mtype, kind=kind, page='1')
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def tmdb_genres(mtype):
+    j = tmdb_get('/genre/%s/list' % mtype)
+    for g in sorted(j.get('genres', []), key=lambda x: x['name']):
+        li = xbmcgui.ListItem(label=g['name'])
+        url = _tmdb_url('list', mt=mtype, genre=str(g['id']), page='1')
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def tmdb_details(mtype, id_):
+    j = tmdb_get('/%s/%s' % (mtype, id_), append_to_response='credits,similar')
+    title = j.get('title') or j.get('name') or ''
+    li = xbmcgui.ListItem(label=title)
+    info = {'title': title, 'plot': j.get('overview') or ''}
+    date = j.get('release_date') or j.get('first_air_date') or ''
+    if len(date) >= 4:
+        try:
+            info['year'] = int(date[:4])
+        except ValueError:
+            pass
+    try:
+        info['rating'] = float(j.get('vote_average') or 0)
+    except (TypeError, ValueError):
+        pass
+    genres = [g.get('name', '') for g in j.get('genres', [])]
+    if genres:
+        info['genre'] = genres
+    credits = j.get('credits', {})
+    info['cast'] = [c.get('name', '') for c in credits.get('cast', [])[:10]]
+    info['director'] = [c.get('name', '') for c in credits.get('crew', [])
+                        if c.get('job') == 'Director'][:5]
+    li.setInfo('video', info)
+    poster = j.get('poster_path')
+    if poster:
+        li.setArt({'thumb': TMDB_IMG + 'w500' + poster})
+    fan = j.get('backdrop_path')
+    if fan:
+        li.setArt({'fanart': TMDB_IMG + 'w1280' + fan})
+    xbmcgui.Dialog().info(li)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def tmdb_search(query='', page=1):
+    page = int(page)
+    if not query:
+        kb = xbmc.Keyboard('', 'Cerca in TMDB')
+        kb.doModal()
+        if not kb.isConfirmed() or not kb.getText().strip():
+            xbmcplugin.endOfDirectory(HANDLE)
+            return
+        query = kb.getText().strip()
+    j = tmdb_get('/search/multi', query=query, include_adult='false', page=page)
+    xbmcplugin.setContent(HANDLE, 'movies')
+    for it in j.get('results', []):
+        if it.get('media_type') in ('movie', 'tv'):
+            tmdb_add_item(it, it.get('media_type'))
+    if page < (j.get('total_pages') or 1) and j.get('results'):
+        li = xbmcgui.ListItem(label='Prossima pagina  ►')
+        url = _tmdb_url('search', q=query, page=str(page + 1))
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
 def films_view():
+    li = xbmcgui.ListItem(label='Ricerca')
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('search'), li, isFolder=True)
+    for label, mtype in HOME_SECTIONS:
+        li = xbmcgui.ListItem(label=label)
+        url = _tmdb_url('cats', mt=mtype)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -334,6 +483,18 @@ def main():
             tv_view()
         elif action == 'films':
             films_view()
+        elif action == 'search':
+            tmdb_search(query.get('q', [''])[0], int(query.get('page', ['1'])[0]))
+        elif action == 'cats':
+            tmdb_cats(query.get('mt', ['movie'])[0])
+        elif action == 'genres':
+            tmdb_genres(query.get('mt', ['movie'])[0])
+        elif action == 'list':
+            q = query
+            tmdb_list(q.get('mt', ['movie'])[0], q.get('kind', [''])[0],
+                      q.get('genre', [''])[0], int(q.get('page', ['1'])[0]))
+        elif action == 'details':
+            tmdb_details(query.get('mt', ['movie'])[0], query.get('id', [''])[0])
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0])
         elif action == 'skyplay':
