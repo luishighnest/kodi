@@ -76,11 +76,10 @@ def group_view(group):
             li.setArt({'thumb': ch['logo']})
         li.setProperty('isPlayable', 'true')
         li.setProperty('inputstream', 'inputstream.adaptive')
-        li.setProperty(MANIFEST_PROP, ch['props'].get(MANIFEST_PROP, 'mpd'))
-        if ch['props'].get(LICENSE_TYPE_PROP):
-            li.setProperty(LICENSE_TYPE_PROP, ch['props'][LICENSE_TYPE_PROP])
-        if ch['props'].get(LICENSE_PROP):
-            li.setProperty(LICENSE_PROP, ch['props'][LICENSE_PROP])
+        for k, v in ch['props'].items():
+            if k == 'inputstream' and not v:
+                continue
+            li.setProperty(k, v)
         xbmcplugin.addDirectoryItem(HANDLE, ch['url'], li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
