@@ -545,14 +545,13 @@ def resolve_scws(parIn, title):
     stream = _scws_pick_variant(urlSc, cs, title)
     if not stream:
         return xbmcgui.ListItem()
-    li = xbmcgui.ListItem(path=stream, offscreen=True)
+    li = xbmcgui.ListItem(path=stream + '|referer=' + cs + '&user-agent=Mozilla', offscreen=True)
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
-    li.setProperty('inputstream', 'inputstream.adaptive')
-    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
-    if ADDON.getSetting('buffer_enabled') == 'true':
-        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    li.setProperty('inputstream', 'inputstream.ffmpegdirect')
+    li.setProperty('inputstream.ffmpegdirect.manifest_type', 'hls')
+    li.setProperty('inputstream.ffmpegdirect.is_realtime_stream', 'true')
+    li.setProperty('inputstream.ffmpegdirect.stream_headers', hdrs)
     return li
 
 
