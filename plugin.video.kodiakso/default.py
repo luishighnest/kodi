@@ -542,15 +542,64 @@ def resolve_scws(parIn, title):
         return xbmcgui.ListItem()
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
-    stream = urlSc + '|referer=' + cs + '&user-agent=Mozilla'
+    stream = _scws_pick_variant(urlSc, cs, title)
+    if not stream:
+        return xbmcgui.ListItem()
     li = xbmcgui.ListItem(path=stream, offscreen=True)
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
-    li.setProperty('inputstream', 'inputstream.ffmpegdirect')
-    li.setProperty('inputstream.ffmpegdirect.manifest_type', 'hls')
-    li.setProperty('inputstream.ffmpegdirect.is_realtime_stream', 'true')
-    li.setProperty('inputstream.ffmpegdirect.stream_headers', hdrs)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
     return li
+
+
+def _scws_pick_variant(master, base, title):
+    try:
+        r = requests.get(master, headers={'user-agent': UA, 'referer': base,
+                                          'origin': base, 'verifypeer': 'false'}, timeout=25)
+        r.raise_for_status()
+        text = r.text
+    except Exception as e:
+        xbmc.log('KODIAKSO scws variant ERR: ' + str(e), xbmc.LOGERROR)
+        return master
+    variants = []
+    lines = text.splitlines()
+    for i, ln in enumerate(lines):
+        if ln.startswith('#EXT-X-STREAM-INF'):
+            res = re.search(r'RESOLUTION=(\d+)x(\d+)', ln)
+            bw = re.search(r'BANDWIDTH=(\d+)', ln)
+            vuri = lines[i + 1].strip() if i + 1 < len(lines) else ''
+            if vuri and not vuri.startswith('#'):
+                if res:
+                    h = int(res.group(2))
+                    name = '%dp' % h
+                elif bw:
+                    name = '%d kbps' % (int(bw.group(1)) // 1000)
+                else:
+                    name = 'Auto'
+                variants.append((name, vuri))
+    if not variants:
+        return master
+    picked = None
+    if len(variants) > 1:
+        names = [v[0] for v in variants]
+        idx = xbmcgui.Dialog().select(title or 'Qualità video', names)
+        picked = variants[idx][1] if idx >= 0 else None
+    else:
+        picked = variants[0][1]
+    if not picked:
+        return None
+    if picked.startswith(('http://', 'https://')):
+        return picked
+    sep = '&' if '?' in master else '?'
+    if picked.startswith('/'):
+        pr = urllib.parse.urlparse(master)
+        return pr.scheme + '://' + pr.netloc + picked + sep + urllib.parse.urlsplit(master).query
+    base_url = master.rsplit('/', 1)[0] + '/'
+    return base_url + picked + sep + urllib.parse.urlsplit(master).query
 
 
 def mandra_auto_movie(query):
