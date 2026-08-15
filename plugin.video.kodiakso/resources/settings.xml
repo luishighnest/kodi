@@ -25,6 +25,12 @@
         <setting id="buffer_enabled" type="bool" label="Abilita buffering rete" default="true" />
         <setting id="buffer_size" type="slider" label="Dimensione buffer (MB)" range="1,32,1" default="10" option="int" />
         <setting id="max_bandwidth" type="slider" label="Bandwidth massima (Kbps, 0 = auto)" range="0,30000,500" default="0" option="int" />
+        <setting id="scws_quality" type="select" label="Qualità film (max)" default="720p">
+            <option>720p</option>
+            <option>480p</option>
+            <option>1080p</option>
+            <option>Chiedi ogni volta</option>
+        </setting>
         <setting id="live_async" type="bool" label="Streaming live asincrono" default="true" />
         <setting id="manifest_upd" type="bool" label="Aggiornamento manifest automatico" default="true" />
     </category>
