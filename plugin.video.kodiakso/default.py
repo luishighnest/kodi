@@ -626,7 +626,8 @@ def _scws_pick_variant(master, base, title):
         m3u += '\n'.join(aud_rows) + '\n'
         m3u += sinf + '\n' + vurl + '\n'
         import os
-        tmp = xbmc.translatePath('special://temp/')
+        import xbmcvfs
+        tmp = xbmcvfs.translatePath('special://temp/')
         fp = os.path.join(tmp, 'kodiakso_%d.m3u8' % time.time())
         with open(fp, 'w') as f:
             f.write(m3u)
