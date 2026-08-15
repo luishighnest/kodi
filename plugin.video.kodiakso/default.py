@@ -542,108 +542,20 @@ def resolve_scws(parIn, title):
         return xbmcgui.ListItem()
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
-    stream = _scws_pick_variant(urlSc, cs, title)
-    if not stream:
-        return xbmcgui.ListItem()
-    li = xbmcgui.ListItem(path=stream, offscreen=True)
+    li = xbmcgui.ListItem(path=urlSc, offscreen=True)
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
-    li.setProperty('inputstream', 'inputstream.ffmpegdirect')
-    li.setProperty('inputstream.ffmpegdirect.manifest_type', 'hls')
-    li.setProperty('inputstream.ffmpegdirect.stream_headers', hdrs)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    li.setProperty('inputstream.adaptive.license_key', '|' + hdrs)
     if ADDON.getSetting('buffer_enabled') == 'true':
-        li.setProperty('inputstream.ffmpegdirect.buffer_size', ADDON.getSetting('buffer_size'))
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
     return li
-
-
-def _scws_quality_cap():
-    q = ADDON.getSetting('scws_quality').strip()
-    if q == 'Chiedi ogni volta':
-        return -1
-    if q == '480p':
-        return 480
-    if q == '1080p':
-        return 9999
-    return 720
-
-
-def _scws_abs(base, uri):
-    if uri.startswith(('http://', 'https://')):
-        return uri
-    if uri.startswith('/'):
-        pr = urllib.parse.urlparse(base)
-        return pr.scheme + '://' + pr.netloc + uri
-    return base.rsplit('/', 1)[0] + '/' + uri
-
-
-def _scws_pick_variant(master, base, title):
-    try:
-        r = requests.get(master, headers={'user-agent': UA, 'referer': base,
-                                          'origin': base, 'verifypeer': 'false'}, timeout=25)
-        r.raise_for_status()
-        text = r.text
-    except Exception as e:
-        xbmc.log('KODIAKSO scws variant ERR: ' + str(e), xbmc.LOGERROR)
-        return master
-    lines = text.splitlines()
-    audio_media = [ln for ln in lines if ln.startswith('#EXT-X-MEDIA')]
-    variants = []
-    for i, ln in enumerate(lines):
-        if ln.startswith('#EXT-X-STREAM-INF'):
-            res = re.search(r'RESOLUTION=(\d+)x(\d+)', ln)
-            bw = re.search(r'BANDWIDTH=(\d+)', ln)
-            vuri = lines[i + 1].strip() if i + 1 < len(lines) else ''
-            if vuri and not vuri.startswith('#'):
-                h = int(res.group(2)) if res else 0
-                if not h and bw:
-                    h = int(bw.group(1)) // 100000
-                variants.append((h, ln, vuri))
-    if not variants:
-        return master
-    cap = _scws_quality_cap()
-    if cap < 0:
-        names = ['%dp' % v[0] if v[0] else 'Auto' for v in variants]
-        idx = xbmcgui.Dialog().select(title or 'Qualità video', names)
-        picked = variants[idx] if idx >= 0 else None
-        if not picked:
-            return None
-        sinf, vuri = picked[1], picked[2]
-    else:
-        ok = [v for v in variants if v[0] and v[0] <= cap]
-        sinf, vuri = max(ok if ok else variants, key=lambda v: v[0])[1:3]
-    vurl = _scws_abs(master, vuri)
-    if not audio_media:
-        return vurl
-    try:
-        aud_rows = []
-        for a in audio_media:
-            grp = re.search(r'GROUP-ID="([^"]+)"', a)
-            uri = re.search(r'URI="([^"]+)"', a)
-            if grp and uri:
-                aud_rows.append(a.replace('URI="%s"' % uri.group(1),
-                                          'URI="%s"' % _scws_abs(master, uri.group(1))))
-        if not aud_rows:
-            return vurl
-        vgrp = re.search(r'AUDIO="([^"]+)"', sinf)
-        if vgrp:
-            aud_rows = [a for a in aud_rows
-                        if re.search(r'GROUP-ID="%s"' % re.escape(vgrp.group(1)), a)]
-        m3u = '#EXTM3U\n'
-        ver = re.search(r'^#EXT-X-VERSION:(\d+)$', text, re.M)
-        if ver:
-            m3u += '#EXT-X-VERSION:%s\n' % ver.group(1)
-        m3u += '\n'.join(aud_rows) + '\n'
-        m3u += sinf + '\n' + vurl + '\n'
-        import os
-        import xbmcvfs
-        tmp = xbmcvfs.translatePath('special://temp/')
-        fp = os.path.join(tmp, 'kodiakso_%d.m3u8' % time.time())
-        with open(fp, 'w') as f:
-            f.write(m3u)
-        return fp
-    except Exception as e:
-        xbmc.log('KODIAKSO scws mini-master ERR: ' + str(e), xbmc.LOGERROR)
-        return vurl
 
 
 def mandra_auto_movie(query):
