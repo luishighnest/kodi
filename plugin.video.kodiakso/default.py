@@ -545,7 +545,7 @@ def resolve_scws(parIn, title):
     stream = _scws_pick_variant(urlSc, cs, title)
     if not stream:
         return xbmcgui.ListItem()
-    li = xbmcgui.ListItem(path=stream + '|referer=' + cs + '&user-agent=Mozilla', offscreen=True)
+    li = xbmcgui.ListItem(path=stream, offscreen=True)
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
     li.setProperty('inputstream', 'inputstream.ffmpegdirect')
@@ -553,6 +553,15 @@ def resolve_scws(parIn, title):
     li.setProperty('inputstream.ffmpegdirect.is_realtime_stream', 'true')
     li.setProperty('inputstream.ffmpegdirect.stream_headers', hdrs)
     return li
+
+
+def _scws_abs(base, uri):
+    if uri.startswith(('http://', 'https://')):
+        return uri
+    if uri.startswith('/'):
+        pr = urllib.parse.urlparse(base)
+        return pr.scheme + '://' + pr.netloc + uri
+    return base.rsplit('/', 1)[0] + '/' + uri
 
 
 def _scws_pick_variant(master, base, title):
@@ -564,8 +573,9 @@ def _scws_pick_variant(master, base, title):
     except Exception as e:
         xbmc.log('KODIAKSO scws variant ERR: ' + str(e), xbmc.LOGERROR)
         return master
-    variants = []
     lines = text.splitlines()
+    audio_media = [ln for ln in lines if ln.startswith('#EXT-X-MEDIA')]
+    variants = []
     for i, ln in enumerate(lines):
         if ln.startswith('#EXT-X-STREAM-INF'):
             res = re.search(r'RESOLUTION=(\d+)x(\d+)', ln)
@@ -579,26 +589,51 @@ def _scws_pick_variant(master, base, title):
                     name = '%d kbps' % (int(bw.group(1)) // 1000)
                 else:
                     name = 'Auto'
-                variants.append((name, vuri))
+                variants.append((name, ln, vuri))
     if not variants:
         return master
     picked = None
     if len(variants) > 1:
         names = [v[0] for v in variants]
         idx = xbmcgui.Dialog().select(title or 'Qualità video', names)
-        picked = variants[idx][1] if idx >= 0 else None
+        picked = variants[idx] if idx >= 0 else None
     else:
-        picked = variants[0][1]
+        picked = variants[0]
     if not picked:
         return None
-    if picked.startswith(('http://', 'https://')):
-        return picked
-    sep = '&' if '?' in master else '?'
-    if picked.startswith('/'):
-        pr = urllib.parse.urlparse(master)
-        return pr.scheme + '://' + pr.netloc + picked + sep + urllib.parse.urlsplit(master).query
-    base_url = master.rsplit('/', 1)[0] + '/'
-    return base_url + picked + sep + urllib.parse.urlsplit(master).query
+    name, sinf, vuri = picked
+    vurl = _scws_abs(master, vuri)
+    if not audio_media:
+        return vurl
+    try:
+        aud_rows = []
+        for a in audio_media:
+            grp = re.search(r'GROUP-ID="([^"]+)"', a)
+            uri = re.search(r'URI="([^"]+)"', a)
+            if grp and uri:
+                aud_rows.append(a.replace('URI="%s"' % uri.group(1),
+                                          'URI="%s"' % _scws_abs(master, uri.group(1))))
+        if not aud_rows:
+            return vurl
+        vgrp = re.search(r'AUDIO="([^"]+)"', sinf)
+        if vgrp:
+            aud_rows = [a for a in aud_rows
+                        if re.search(r'GROUP-ID="%s"' % re.escape(vgrp.group(1)), a)]
+        m3u = '#EXTM3U\n'
+        ver = re.search(r'^#EXT-X-VERSION:(\d+)$', text, re.M)
+        if ver:
+            m3u += '#EXT-X-VERSION:%s\n' % ver.group(1)
+        m3u += '\n'.join(aud_rows) + '\n'
+        m3u += sinf + '\n' + vurl + '\n'
+        import os
+        tmp = xbmc.translatePath('special://temp/')
+        fp = os.path.join(tmp, 'kodiakso_%d.m3u8' % time.time())
+        with open(fp, 'w') as f:
+            f.write(m3u)
+        return fp
+    except Exception as e:
+        xbmc.log('KODIAKSO scws mini-master ERR: ' + str(e), xbmc.LOGERROR)
+        return vurl
 
 
 def mandra_auto_movie(query):
