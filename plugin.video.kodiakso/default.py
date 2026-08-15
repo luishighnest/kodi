@@ -550,7 +550,6 @@ def resolve_scws(parIn, title):
     li.setMimeType('application/x-mpegURL')
     li.setProperty('inputstream', 'inputstream.ffmpegdirect')
     li.setProperty('inputstream.ffmpegdirect.manifest_type', 'hls')
-    li.setProperty('inputstream.ffmpegdirect.is_realtime_stream', 'true')
     li.setProperty('inputstream.ffmpegdirect.stream_headers', hdrs)
     return li
 
