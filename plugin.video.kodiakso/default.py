@@ -307,7 +307,7 @@ def group_view(group):
 
 def gsearch_view(q=''):
     if not q:
-        kb = xbmc.Keyboard('', 'Ricerca globale (canali, Sky, film e serie)')
+        kb = xbmc.Keyboard('', 'Ricerca globale (canali ed eventi)')
         kb.doModal()
         if not kb.isConfirmed() or not kb.getText().strip():
             xbmcplugin.endOfDirectory(HANDLE)
@@ -362,17 +362,6 @@ def gsearch_view(q=''):
             li.setProperty('isPlayable', 'true')
             url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(t)
             xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
-            added += 1
-
-    try:
-        j = tmdb_get('/search/multi', query=q, include_adult='true' if TMDB_ADULT else 'false', page=1)
-        res = [it for it in j.get('results', []) if it.get('media_type') in ('movie', 'tv')]
-    except Exception:
-        res = []
-    if res:
-        header('[COLOR A9A9A9]Film e Serie (%d)[/COLOR]' % len(res))
-        for it in res:
-            tmdb_add_item(it, it['media_type'])
             added += 1
 
     if not added:
@@ -1062,7 +1051,7 @@ def films_view():
 
 
 def root_view():
-    bann = xbmcgui.ListItem(label='[B][COLOR snow]PZ8[/COLOR][/B]')
+    bann = xbmcgui.ListItem(label='[B][COLOR gold][SIZE 24]PZ8[/SIZE][/COLOR][/B]')
     bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': BANNER_LOGO, 'thumb': ''})
     bann.setInfo('video', {'title': 'PZ8', 'plot': 'Lettore IPTV - Sky, DAZN, TV, Eventi, Film e Serie TV'})
     bann.setProperty('IsPlayable', 'false')
