@@ -731,7 +731,7 @@ def _epg_now(cid, epg=None):
 
 
 def _exp_header(label, count, color):
-    li = xbmcgui.ListItem(label='[B][COLOR %s]%s (%d)[/COLOR][/B]' % (color, label, count))
+    li = xbmcgui.ListItem(label='[B][COLOR %s]%s: %d[/COLOR][/B]' % (color, label, count))
     li.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
 
@@ -740,7 +740,15 @@ def sky_cat_view(cat, back=''):
     back_button(back or (BASE + '?action=sky'))
     epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
     try:
-        for title, cid in sky_channels().get(cat, []):
+        chans = sky_channels().get(cat, [])
+        counts = {'ok': 0, 'soon': 0, 'exp': 0}
+        for title, cid in chans:
+            st = _exp_status(_sky_expiry(cid)) or 'ok'
+            counts[st] = counts.get(st, 0) + 1
+        _exp_header('Canali attivi', counts.get('ok', 0), EXP_OK_COLOR)
+        _exp_header('Canali in scadenza (scadono da qui a 1 ora)', counts.get('soon', 0), EXP_SOON_COLOR)
+        _exp_header('Canali scaduti', counts.get('exp', 0), EXP_EXP_COLOR)
+        for title, cid in chans:
             try:
                 label = '[COLOR snow]%s[/COLOR]' % title
                 exp = _sky_expiry(cid)
