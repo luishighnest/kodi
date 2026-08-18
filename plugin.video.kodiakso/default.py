@@ -645,16 +645,16 @@ def _epg_short(t, n=38):
     return t if len(t) <= n else t[:n - 1] + '\u2026'
 
 
-def epg_now_line(cid):
+def _epg_now(cid):
     if ADDON.getSetting('epg_enabled') != 'true':
-        return ''
+        return None, None
     epg = epg_load()
     chid = _epg_chid(cid, epg)
     if not chid:
-        return ''
+        return None, None
     progs = epg['progs'].get(chid, [])
     if not progs:
-        return ''
+        return None, None
     now = datetime.now()
     cur = None
     nxt = None
@@ -669,12 +669,7 @@ def epg_now_line(cid):
             if p[0] > now:
                 nxt = p
                 break
-    parts = []
-    if cur:
-        parts.append('[COLOR 6BCB77]Ora %s %s[/COLOR]' % ('%02d:%02d' % (cur[0].hour, cur[0].minute), _epg_short(cur[2])))
-    if nxt:
-        parts.append('[COLOR D0D0D0]Poi %s %s[/COLOR]' % ('%02d:%02d' % (nxt[0].hour, nxt[0].minute), _epg_short(nxt[2])))
-    return '     '.join(parts)
+    return cur, nxt
 
 
 def _exp_header(label, count, color):
@@ -699,15 +694,22 @@ def sky_cat_view(cat, back=''):
             label = title
             if exp:
                 label += '   [COLOR %s]%s[/COLOR]' % (color, exp.strftime('%d/%m/%Y %H:%M'))
-            epg = epg_now_line(cid)
-            if epg:
-                label += '   ' + epg
-            li = xbmcgui.ListItem(label=lbl(label))
+            cur, nxt = _epg_now(cid)
+            if cur:
+                label += '   [COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+            li = xbmcgui.ListItem(label=label)
             logo = LOGOS.get(cid, '')
             li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
             li.setProperty('isPlayable', 'true')
-            epg_plain = re.sub(r'\[(?:/?COLOR[^\]]*|\/?B)\]', '', epg)
-            li.setInfo('video', {'title': title, 'plot': epg_plain})
+            lines = []
+            if cur:
+                lines.append('Ora  %02d:%02d  %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 70)))
+            if nxt:
+                lines.append('Poi  %02d:%02d  %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 70)))
+            plot = ''
+            if lines:
+                plot = '[COLOR %s]%s[/COLOR]' % (EXP_OK_COLOR, '\n'.join(lines))
+            li.setInfo('video', {'title': title, 'plot': plot})
             url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
             xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
