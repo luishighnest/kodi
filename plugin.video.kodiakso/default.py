@@ -296,8 +296,11 @@ def resolve_sky(parIn, title):
     return li
 
 
-def group_view(group):
-    home_button()
+def group_view(group, deep=False):
+    if deep:
+        back_button()
+    else:
+        home_button()
     channels = fetch_channels()
     for ch in channels:
         if ch['group'] != group:
@@ -585,7 +588,7 @@ def tv_view():
     for group in sorted(groups):
         li = xbmcgui.ListItem(label=lbl(group))
         
-        url = BASE + '?group=' + urllib.parse.quote(group)
+        url = BASE + '?group=' + urllib.parse.quote(group) + '&deep=1'
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1112,7 +1115,9 @@ def main():
     query = urllib.parse.parse_qs(sys.argv[2][1:])
     if 'action' in query:
         action = query['action'][0]
-        if action == 'sky':
+        if action == 'root':
+            root_view()
+        elif action == 'sky':
             sky_view()
         elif action == 'tv':
             tv_view()
@@ -1156,7 +1161,7 @@ def main():
             li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
     elif 'group' in query:
-        group_view(query['group'][0])
+        group_view(query['group'][0], query.get('deep', [''])[0] == '1')
     else:
         root_view()
 
