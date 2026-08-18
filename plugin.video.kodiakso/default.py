@@ -45,6 +45,20 @@ _EPG_SESSION = {'data': None}
 def lbl(txt):
     return LABEL % txt
 
+
+def _top_button(label, icon, url):
+    li = xbmcgui.ListItem(label=lbl(label))
+    li.setArt({'thumb': LOGO_BASE + icon})
+    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+
+
+def home_button():
+    _top_button('Home', 'home.png', BASE + '?action=root')
+
+
+def back_button(label='Indietro'):
+    _top_button(label, 'back.png', '..')
+
 LOGOS = {
     'tg24': 'skytg24.png',
     'skyuno': 'skyuno.png',
@@ -283,6 +297,7 @@ def resolve_sky(parIn, title):
 
 
 def group_view(group):
+    home_button()
     channels = fetch_channels()
     for ch in channels:
         if ch['group'] != group:
@@ -314,6 +329,7 @@ def gsearch_view(q=''):
             return
         q = kb.getText().strip()
     ql = q.lower()
+    home_button()
     added = 0
 
     def header(txt):
@@ -371,6 +387,7 @@ def gsearch_view(q=''):
 
 
 def sky_view():
+    home_button()
     for cat in (CAT_INT, CAT_SPORT):
         li = xbmcgui.ListItem(label=lbl(cat))
         
@@ -542,6 +559,7 @@ def epg_now_line(cid):
 
 
 def sky_cat_view(cat):
+    back_button()
     for title, cid in sky_channels().get(cat, []):
         epg = epg_now_line(cid)
         label = (title + '   ' + epg) if epg else title
@@ -557,6 +575,7 @@ def sky_cat_view(cat):
 
 
 def tv_view():
+    home_button()
     channels = fetch_channels()
     groups = {}
     for ch in channels:
@@ -669,6 +688,7 @@ def tmdb_add_item(it, mtype):
 
 
 def tmdb_list(mtype, kind='', genre='', page=1, sort_by='', year=''):
+    back_button()
     page = int(page)
     if kind == 'trending_day':
         path = '/trending/%s/day' % mtype
@@ -710,6 +730,7 @@ def tmdb_list(mtype, kind='', genre='', page=1, sort_by='', year=''):
 
 
 def tmdb_allsorts(mtype):
+    back_button()
     for label, sort_by in ALL_SORTS.get(mtype, ALL_SORTS['movie']):
         li = xbmcgui.ListItem(label=lbl(label))
         
@@ -719,6 +740,7 @@ def tmdb_allsorts(mtype):
 
 
 def tmdb_decades(mtype):
+    back_button()
     for d in DECADES:
         li = xbmcgui.ListItem(label=lbl(d + 's'))
         
@@ -728,6 +750,7 @@ def tmdb_decades(mtype):
 
 
 def tmdb_cats(mtype):
+    back_button()
     cats = FILM_CATS if mtype == 'movie' else TV_CATS
     for label, kind in cats:
         li = xbmcgui.ListItem(label=lbl(label))
@@ -747,6 +770,7 @@ def tmdb_cats(mtype):
 
 
 def tmdb_genres(mtype):
+    back_button()
     j = tmdb_get('/genre/%s/list' % mtype)
     for g in sorted(j.get('genres', []), key=lambda x: x['name']):
         li = xbmcgui.ListItem(label=lbl(g['name']))
@@ -757,6 +781,7 @@ def tmdb_genres(mtype):
 
 
 def tmdb_details(mtype, id_):
+    back_button()
     j = tmdb_get('/%s/%s' % (mtype, id_), append_to_response='credits,similar')
     title = j.get('title') or j.get('name') or ''
     li = xbmcgui.ListItem(label=lbl(title))
@@ -794,6 +819,7 @@ def tmdb_details(mtype, id_):
 
 
 def tmdb_search(query='', page=1):
+    back_button()
     page = int(page)
     if not query:
         kb = xbmc.Keyboard('', 'Cerca in TMDB')
@@ -914,6 +940,7 @@ def mandra_auto_series(query):
     except Exception as e:
         xbmc.log('KODIAKSO mandra series ERR: ' + str(e), xbmc.LOGERROR)
         notify(query or 'Serie', 'Errore ricerca', True)
+        back_button()
         xbmcplugin.endOfDirectory(HANDLE)
         return
     for it in data.get('items', []):
@@ -923,10 +950,12 @@ def mandra_auto_series(query):
             mandra_season_view(m.group(1))
             return
     notify(query or 'Serie', 'Nessuna serie su Mandrakodi', True)
+    back_button()
     xbmcplugin.endOfDirectory(HANDLE)
 
 
 def mandra_search_view(query, mtype=''):
+    back_button()
     if not query:
         xbmcplugin.endOfDirectory(HANDLE)
         return
@@ -966,6 +995,7 @@ def mandra_search_view(query, mtype=''):
 
 
 def mandra_season_view(code):
+    back_button()
     data = requests.get(API + '?numTest=A1A356&mode=2&code=' + urllib.parse.quote(code),
                         headers={'User-Agent': API_UA}, timeout=25).json()
     xbmcplugin.setContent(HANDLE, 'tvshows')
@@ -986,6 +1016,7 @@ def mandra_season_view(code):
 
 
 def mandra_episodes_view(par):
+    back_button()
     idSea, numSea = par.split('---')
     cs = mandra_cs()
     url = cs + 'it/titles/' + idSea + '/season-' + numSea
@@ -1034,6 +1065,7 @@ def mandra_episodes_view(par):
 
 
 def films_view():
+    home_button()
     li = xbmcgui.ListItem(label=lbl('Ricerca'))
     
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('search'), li, isFolder=True)
@@ -1053,7 +1085,7 @@ def films_view():
 def root_view():
     bann = xbmcgui.ListItem(label='[B][COLOR gold]PZ8[/COLOR][/B]')
     bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': BANNER_LOGO, 'thumb': ''})
-    bann.setInfo('video', {'title': 'PZ8', 'plot': 'Lettore IPTV - Sky, DAZN, TV, Eventi, Film e Serie TV'})
+    bann.setInfo('video', {'title': 'PZ8', 'plot': 'SPORT | TV | VOD'})
     bann.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE, bann, isFolder=True)
 
