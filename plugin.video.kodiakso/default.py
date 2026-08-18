@@ -42,6 +42,16 @@ EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
 EPG_KEEP_HOURS = 6
 _EPG_SESSION = {'data': None}
 
+EXP_OK_COLOR = '00FF00'
+EXP_SOON_COLOR = 'FFFF00'
+EXP_EXP_COLOR = 'FF0000'
+EXP_SOON_MINS = 60
+_SKY_SESS = requests.Session()
+_SKY_SESS.headers['User-Agent'] = API_UA
+_EXP_CACHE = {}
+_EXP_CACHE_TTL = 300
+_EXP_CACHE_TTL_FAIL = 90
+
 
 def lbl(txt):
     return LABEL % txt
@@ -263,6 +273,60 @@ def sky_channels():
     return channels
 
 
+def _parse_fine(fine):
+    if not fine or 'EXPIRE' in fine:
+        return None
+    m = re.match(r'(\d{2})/(\d{2})/(\d{4}) (\d{2}):(\d{2}):(\d{2})', fine)
+    if not m:
+        return None
+    g = m.groups()
+    try:
+        return datetime(int(g[2]), int(g[1]), int(g[0]), int(g[3]), int(g[4]), int(g[5]))
+    except ValueError:
+        return None
+
+
+def _exp_status(exp):
+    if exp is None:
+        return None
+    now = datetime.now()
+    if exp < now:
+        return 'exp'
+    if exp <= now + timedelta(minutes=EXP_SOON_MINS):
+        return 'soon'
+    return 'ok'
+
+
+def _exp_color(st):
+    if st == 'ok':
+        return EXP_OK_COLOR
+    if st == 'soon':
+        return EXP_SOON_COLOR
+    if st == 'exp':
+        return EXP_EXP_COLOR
+    return ''
+
+
+def _sky_expiry(cid):
+    t = time.time()
+    hit = _EXP_CACHE.get(cid)
+    if hit:
+        ts, exp = hit
+        ttl = _EXP_CACHE_TTL if exp is not None else _EXP_CACHE_TTL_FAIL
+        if t - ts < ttl:
+            return exp
+    exp = None
+    try:
+        resp = _SKY_SESS.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(cid), timeout=20)
+        resp.raise_for_status()
+        data = json.loads(xor_decrypt(resp.json()['data']))
+        exp = _parse_fine(data.get('fine', ''))
+    except Exception as e:
+        log('sky expiry %s: %s' % (cid, e))
+    _EXP_CACHE[cid] = (time.time(), exp)
+    return exp
+
+
 def resolve_sky(parIn, title):
     try:
         resp = requests.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(parIn),
@@ -278,16 +342,11 @@ def resolve_sky(parIn, title):
     kid = data['kid']
     key = data['key']
     fine = data.get('fine', '')
-    if 'EXPIRE' not in fine:
-        try:
-            m = re.match(r'(\d{2})/(\d{2})/(\d{4}) (\d{2}):(\d{2}):(\d{2})', fine)
-            if m:
-                g = m.groups()
-                exp = datetime(int(g[2]), int(g[1]), int(g[0]), int(g[3]), int(g[4]), int(g[5])) + timedelta(hours=2)
-                if exp < datetime.now():
-                    notify(title or parIn, 'Link scaduto ' + exp.strftime('%d/%m/%Y %H:%M:%S'), True)
-        except Exception:
-            pass
+    exp = _parse_fine(fine)
+    if exp:
+        exp += timedelta(hours=2)
+        if exp < datetime.now():
+            notify(title or parIn, 'Link scaduto ' + exp.strftime('%d/%m/%Y %H:%M:%S'), True)
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + HOST + '/&Origin=' + HOST + '&verifypeer=false'
     li = xbmcgui.ListItem(path=manifest, offscreen=True)
@@ -618,19 +677,39 @@ def epg_now_line(cid):
     return '     '.join(parts)
 
 
+def _exp_header(label, count, color):
+    li = xbmcgui.ListItem(label='[B][COLOR %s]%s (%d)[/COLOR][/B]' % (color, label, count))
+    li.setProperty('IsPlayable', 'false')
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+
+
 def sky_cat_view(cat, back=''):
     back_button(back or (BASE + '?action=sky'))
+    buckets = {'ok': [], 'soon': [], 'exp': []}
     for title, cid in sky_channels().get(cat, []):
-        epg = epg_now_line(cid)
-        label = (title + '   ' + epg) if epg else title
-        li = xbmcgui.ListItem(label=lbl(label))
-        logo = LOGOS.get(cid, '')
-        li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
-        li.setProperty('isPlayable', 'true')
-        epg_plain = re.sub(r'\[(?:/?COLOR[^\]]*|\/?B)\]', '', epg)
-        li.setInfo('video', {'title': title, 'plot': epg_plain})
-        url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+        exp = _sky_expiry(cid)
+        buckets.setdefault(_exp_status(exp) or 'ok', []).append((exp, title, cid))
+    for st, hlabel in (('ok', 'ATTIVI'), ('soon', 'IN SCADENZA'), ('exp', 'SCADUTI')):
+        sel = buckets.get(st, [])
+        if not sel:
+            continue
+        color = _exp_color(st)
+        _exp_header(hlabel, len(sel), color)
+        for exp, title, cid in sel:
+            label = title
+            if exp:
+                label += '   [COLOR %s]%s[/COLOR]' % (color, exp.strftime('%d/%m/%Y %H:%M'))
+            epg = epg_now_line(cid)
+            if epg:
+                label += '   ' + epg
+            li = xbmcgui.ListItem(label=lbl(label))
+            logo = LOGOS.get(cid, '')
+            li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
+            li.setProperty('isPlayable', 'true')
+            epg_plain = re.sub(r'\[(?:/?COLOR[^\]]*|\/?B)\]', '', epg)
+            li.setInfo('video', {'title': title, 'plot': epg_plain})
+            url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
