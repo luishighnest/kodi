@@ -509,11 +509,24 @@ def gsearch_view(q=''):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def _sky_counts(cat):
+    counts = {'ok': 0, 'soon': 0, 'exp': 0}
+    for title, cid in sky_channels().get(cat, []):
+        st = _exp_status(_sky_expiry(cid)) or 'ok'
+        counts[st] = counts.get(st, 0) + 1
+    return counts
+
+
 def sky_view():
     home_button()
     for cat in (CAT_INT, CAT_SPORT):
-        li = xbmcgui.ListItem(label=lbl(cat))
-        
+        label = lbl(cat)
+        try:
+            c = _sky_counts(cat)
+            label += '  CANALI ATTIVI: %d  CANALI IN SCADENZA: %d  CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+        except Exception as e:
+            log('sky_counts %s: %s' % (cat, e))
+        li = xbmcgui.ListItem(label=label)
         url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -730,27 +743,11 @@ def _epg_now(cid, epg=None):
         return None, None
 
 
-def _exp_header(label, count, color):
-    li = xbmcgui.ListItem(label='[COLOR %s]%s: %d[/COLOR]' % (color, label, count))
-    li.setArt({'thumb': SQUARE_ICON})
-    li.setInfo('video', {'title': '%s: %d' % (label, count), 'plot': label})
-    li.setProperty('IsPlayable', 'false')
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
-
-
 def sky_cat_view(cat, back=''):
     back_button(back or (BASE + '?action=sky'))
     epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
     try:
-        chans = sky_channels().get(cat, [])
-        counts = {'ok': 0, 'soon': 0, 'exp': 0}
-        for title, cid in chans:
-            st = _exp_status(_sky_expiry(cid)) or 'ok'
-            counts[st] = counts.get(st, 0) + 1
-        _exp_header('Canali attivi', counts.get('ok', 0), EXP_OK_COLOR)
-        _exp_header('Canali in scadenza (scadono da qui a 1 ora)', counts.get('soon', 0), EXP_SOON_COLOR)
-        _exp_header('Canali scaduti', counts.get('exp', 0), EXP_EXP_COLOR)
-        for title, cid in chans:
+        for title, cid in sky_channels().get(cat, []):
             try:
                 label = '[COLOR snow]%s[/COLOR]' % title
                 exp = _sky_expiry(cid)
