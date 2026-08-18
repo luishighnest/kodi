@@ -363,6 +363,8 @@ def _sky_expiry(cid):
         resp.raise_for_status()
         data = json.loads(xor_decrypt(resp.json()['data']))
         exp = _parse_fine(data.get('fine', ''))
+        if exp:
+            exp += timedelta(hours=2)
     except Exception as e:
         xbmc.log('KODIAKSO sky expiry ERR %s: %s' % (cid, e), xbmc.LOGERROR)
         try:
