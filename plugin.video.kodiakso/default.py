@@ -726,35 +726,42 @@ def _exp_header(label, count, color):
 def sky_cat_view(cat, back=''):
     back_button(back or (BASE + '?action=sky'))
     epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
-    buckets = {'ok': [], 'soon': [], 'exp': []}
-    for title, cid in sky_channels().get(cat, []):
-        exp = _sky_expiry(cid)
-        buckets.setdefault(_exp_status(exp) or 'ok', []).append((exp, title, cid))
-    for st, hlabel in (('ok', 'ATTIVI'), ('soon', 'IN SCADENZA'), ('exp', 'SCADUTI')):
-        sel = buckets.get(st, [])
-        if not sel:
-            continue
-        color = _exp_color(st)
-        _exp_header(hlabel, len(sel), color)
-        for exp, title, cid in sel:
-            label = title
-            if exp:
-                label += '   [COLOR %s]%s[/COLOR]' % (color, exp.strftime('%d/%m/%Y %H:%M'))
-            cur, nxt = _epg_now(cid, epg)
-            if cur:
-                label += '   [COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
-            li = xbmcgui.ListItem(label=lbl(label))
-            logo = LOGOS.get(cid, '')
-            li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
-            li.setProperty('isPlayable', 'true')
-            lines = []
-            if cur:
-                lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
-            if nxt:
-                lines.append('Poi %02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
-            li.setInfo('video', {'title': title, 'plot': ' | '.join(lines)})
-            url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
-            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    try:
+        for title, cid in sky_channels().get(cat, []):
+            try:
+                label = '[COLOR snow]%s[/COLOR]' % title
+                exp = _sky_expiry(cid)
+                if exp:
+                    label += '   [COLOR %s]%s[/COLOR]' % (_exp_color(_exp_status(exp)), exp.strftime('%d/%m/%Y %H:%M'))
+                cur, nxt = _epg_now(cid, epg)
+                if cur:
+                    label += '   [COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+                li = xbmcgui.ListItem(label=label)
+                logo = LOGOS.get(cid, '')
+                li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
+                li.setProperty('isPlayable', 'true')
+                lines = []
+                if cur:
+                    lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
+                if nxt:
+                    lines.append('Poi %02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
+                li.setInfo('video', {'title': title, 'plot': ' / '.join(lines)})
+                url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
+                xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+            except Exception as e:
+                log('sky_cat item %s: %s' % (cid, e))
+                try:
+                    import traceback
+                    log('sky_cat TB: ' + traceback.format_exc())
+                except Exception:
+                    pass
+    except Exception as e:
+        log('sky_cat vista %s: %s' % (cat, e))
+        try:
+            import traceback
+            log('sky_cat TB: ' + traceback.format_exc())
+        except Exception:
+            pass
     xbmcplugin.endOfDirectory(HANDLE)
 
 
