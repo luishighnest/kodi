@@ -280,9 +280,12 @@ def resolve_sky(parIn, title):
     fine = data.get('fine', '')
     if 'EXPIRE' not in fine:
         try:
-            exp = datetime.strptime(fine, '%d/%m/%Y %H:%M:%S') + timedelta(hours=2)
-            if exp < datetime.now():
-                notify(title or parIn, 'Link scaduto ' + exp.strftime('%d/%m/%Y %H:%M:%S'), True)
+            m = re.match(r'(\d{2})/(\d{2})/(\d{4}) (\d{2}):(\d{2}):(\d{2})', fine)
+            if m:
+                g = m.groups()
+                exp = datetime(int(g[2]), int(g[1]), int(g[0]), int(g[3]), int(g[4]), int(g[5])) + timedelta(hours=2)
+                if exp < datetime.now():
+                    notify(title or parIn, 'Link scaduto ' + exp.strftime('%d/%m/%Y %H:%M:%S'), True)
         except Exception:
             pass
 
@@ -441,7 +444,9 @@ def _epg_dt(val):
     if not m:
         return None
     try:
-        return datetime.strptime(m.group(1), '%Y%m%d%H%M%S')
+        s = m.group(1)
+        return datetime(int(s[0:4]), int(s[4:6]), int(s[6:8]),
+                        int(s[8:10]), int(s[10:12]), int(s[12:14]))
     except ValueError:
         return None
 
