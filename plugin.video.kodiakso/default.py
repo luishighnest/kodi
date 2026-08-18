@@ -737,26 +737,22 @@ def sky_cat_view(cat, back=''):
         color = _exp_color(st)
         _exp_header(hlabel, len(sel), color)
         for exp, title, cid in sel:
-            parts = ['[COLOR white]%s[/COLOR]' % title]
+            label = title
             if exp:
-                parts.append('[COLOR %s]%s[/COLOR]' % (color, exp.strftime('%d/%m/%Y %H:%M')))
+                label += '   [COLOR %s]%s[/COLOR]' % (color, exp.strftime('%d/%m/%Y %H:%M'))
             cur, nxt = _epg_now(cid, epg)
             if cur:
-                parts.append('[COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2])))
-            label = '   '.join(parts)
-            li = xbmcgui.ListItem(label=label)
+                label += '   [COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+            li = xbmcgui.ListItem(label=lbl(label))
             logo = LOGOS.get(cid, '')
             li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
             li.setProperty('isPlayable', 'true')
             lines = []
             if cur:
-                lines.append('Ora  %02d:%02d  %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 70)))
+                lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
             if nxt:
-                lines.append('Poi  %02d:%02d  %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 70)))
-            plot = ''
-            if lines:
-                plot = '[COLOR %s]%s[/COLOR]' % (EXP_OK_COLOR, '\n'.join(lines))
-            li.setInfo('video', {'title': title, 'plot': plot})
+                lines.append('Poi %02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
+            li.setInfo('video', {'title': title, 'plot': ' | '.join(lines)})
             url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
             xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
