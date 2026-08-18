@@ -732,6 +732,8 @@ def _epg_now(cid, epg=None):
 
 def _exp_header(label, count, color):
     li = xbmcgui.ListItem(label='[COLOR %s]%s: %d[/COLOR]' % (color, label, count))
+    li.setArt({'thumb': SQUARE_ICON})
+    li.setInfo('video', {'title': '%s: %d' % (label, count), 'plot': label})
     li.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
 
