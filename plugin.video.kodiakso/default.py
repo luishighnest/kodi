@@ -472,6 +472,28 @@ def _epg_parse(raw):
     return {'chmap': chmap, 'progs': progs}
 
 
+def _http_get_bytes(url):
+    last = None
+    try:
+        r = requests.get(url, timeout=30, headers={'User-Agent': API_UA})
+        r.raise_for_status()
+        return r.content
+    except Exception as e:
+        last = e
+    try:
+        import xbmcvfs
+        f = xbmcvfs.File(url, 'rb')
+        try:
+            data = f.read()
+        finally:
+            f.close()
+        if data:
+            return data
+        raise IOError('xbmcvfs empty')
+    except Exception as e:
+        raise last if last is not None else e
+
+
 def epg_load():
     if _EPG_SESSION['data'] is not None:
         return _EPG_SESSION['data']
@@ -485,11 +507,11 @@ def epg_load():
                 return data
         except Exception:
             pass
+    if _EPG_SESSION.get('fail') and time.time() - _EPG_SESSION['fail'] < EPG_KEEP_HOURS * 3600:
+        return None
     try:
         url = ADDON.getSetting('epg_url').strip() or EPG_URL_DEFAULT
-        r = requests.get(url, timeout=30, headers={'User-Agent': API_UA})
-        r.raise_for_status()
-        raw = r.content
+        raw = _http_get_bytes(url)
         try:
             raw = gzip.decompress(raw)
         except Exception:
@@ -507,6 +529,12 @@ def epg_load():
         return data
     except Exception as e:
         xbmc.log('KODIAKSO epg ERR: ' + str(e), xbmc.LOGERROR)
+        try:
+            import traceback
+            xbmc.log('KODIAKSO epg TB:\n' + traceback.format_exc(), xbmc.LOGERROR)
+        except Exception:
+            pass
+        _EPG_SESSION['fail'] = time.time()
         if os.path.exists(path):
             try:
                 with open(path, 'rb') as f:
