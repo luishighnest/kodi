@@ -33,8 +33,9 @@ UA = ADDON.getSetting('sky_stream_ua').strip() or 'Mozilla/5.0 (Windows NT 10.0;
 HOST = ADDON.getSetting('sky_host').strip() or 'https://www.nowtv.it'
 LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
 SQUARE_ICON = LOGO_BASE + 'square.png'
+SEARCH_ICON = LOGO_BASE + 'search.png'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
-BANNER_ART = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png')
+BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
 
 EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
 EPG_KEEP_HOURS = 6
@@ -306,7 +307,7 @@ def group_view(group):
 
 def gsearch_view(q=''):
     if not q:
-        kb = xbmc.Keyboard('', 'Cerca ovunque (canali, Sky, film e serie)')
+        kb = xbmc.Keyboard('', 'Ricerca globale (canali, Sky, film e serie)')
         kb.doModal()
         if not kb.isConfirmed() or not kb.getText().strip():
             xbmcplugin.endOfDirectory(HANDLE)
@@ -1061,14 +1062,14 @@ def films_view():
 
 
 def root_view():
-    bann = xbmcgui.ListItem(label=lbl('[SIZE 40]PZ8[/SIZE]'))
-    bann.setArt({'thumb': BANNER_ART, 'landscape': BANNER_ART, 'fanart': BANNER_ART, 'icon': BANNER_ART})
+    bann = xbmcgui.ListItem(label='[B][COLOR snow]PZ8[/COLOR][/B]')
+    bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': BANNER_LOGO, 'thumb': ''})
     bann.setInfo('video', {'title': 'PZ8', 'plot': 'Lettore IPTV - Sky, DAZN, TV, Eventi, Film e Serie TV'})
     bann.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE, bann, isFolder=True)
 
-    li = xbmcgui.ListItem(label=lbl('Ricerca ovunque'))
-    li.setArt({'thumb': SQUARE_ICON})
+    li = xbmcgui.ListItem(label=lbl('Ricerca globale'))
+    li.setArt({'thumb': SEARCH_ICON})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('gsearch'), li, isFolder=True)
 
     home_items = [
