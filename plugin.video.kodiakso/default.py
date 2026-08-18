@@ -49,8 +49,8 @@ EXP_SOON_MINS = 60
 _SKY_SESS = requests.Session()
 _SKY_SESS.headers['User-Agent'] = API_UA
 _EXP_CACHE = {}
-_EXP_CACHE_TTL = 300
-_EXP_CACHE_TTL_FAIL = 90
+_EXP_CACHE_TTL = 180
+_EXP_CACHE_TTL_FAIL = 60
 
 
 def lbl(txt):
@@ -260,9 +260,8 @@ def sky_channels():
                 push(cid)
     except Exception as e:
         log('sky A1A122 fail: ' + str(e))
-    if not order:
-        for cid in SKY_DEFS:
-            push(cid)
+    for cid in SKY_DEFS:
+        push(cid)
     for n in range(251, 260):
         push('skysport%d' % n)
     channels = {CAT_INT: [], CAT_SPORT: []}
@@ -271,6 +270,31 @@ def sky_channels():
         cat = SKY_DEFS.get(cid, (cid, CAT_SPORT if cid.startswith('skysport') else CAT_INT))[1]
         channels[cat].append((name, cid))
     return channels
+
+
+def _exp_cache_path():
+    return os.path.join(ADDON.getAddonInfo('profile'), 'exp_cache.pkl')
+
+
+def _exp_cache_load():
+    try:
+        if os.path.exists(_exp_cache_path()):
+            with open(_exp_cache_path(), 'rb') as f:
+                return pickle.load(f)
+    except Exception:
+        pass
+    return {}
+
+
+def _exp_cache_save(c):
+    try:
+        d = os.path.dirname(_exp_cache_path())
+        if not os.path.isdir(d):
+            os.makedirs(d)
+        with open(_exp_cache_path(), 'wb') as f:
+            pickle.dump(c, f)
+    except Exception:
+        pass
 
 
 def _parse_fine(fine):
@@ -315,6 +339,16 @@ def _sky_expiry(cid):
         ttl = _EXP_CACHE_TTL if exp is not None else _EXP_CACHE_TTL_FAIL
         if t - ts < ttl:
             return exp
+    disk = _exp_cache_load()
+    if not _EXP_CACHE:
+        _EXP_CACHE.update(disk)
+    hit = disk.get(cid)
+    if hit:
+        ts, exp = hit
+        ttl = _EXP_CACHE_TTL if exp is not None else _EXP_CACHE_TTL_FAIL
+        if t - ts < ttl:
+            _EXP_CACHE[cid] = (ts, exp)
+            return exp
     exp = None
     try:
         resp = _SKY_SESS.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(cid), timeout=20)
@@ -324,6 +358,7 @@ def _sky_expiry(cid):
     except Exception as e:
         log('sky expiry %s: %s' % (cid, e))
     _EXP_CACHE[cid] = (time.time(), exp)
+    _exp_cache_save(_EXP_CACHE)
     return exp
 
 
@@ -645,31 +680,41 @@ def _epg_short(t, n=38):
     return t if len(t) <= n else t[:n - 1] + '\u2026'
 
 
-def _epg_now(cid):
-    if ADDON.getSetting('epg_enabled') != 'true':
-        return None, None
-    epg = epg_load()
-    chid = _epg_chid(cid, epg)
-    if not chid:
-        return None, None
-    progs = epg['progs'].get(chid, [])
-    if not progs:
-        return None, None
-    now = datetime.now()
-    cur = None
-    nxt = None
-    for i, p in enumerate(progs):
-        if p[0] <= now < p[1]:
-            cur = p
-            if i + 1 < len(progs):
-                nxt = progs[i + 1]
-            break
-    if cur is None:
-        for p in progs:
-            if p[0] > now:
-                nxt = p
+def _epg_now(cid, epg=None):
+    try:
+        if ADDON.getSetting('epg_enabled') != 'true':
+            return None, None
+        if epg is None:
+            epg = epg_load()
+        chid = _epg_chid(cid, epg)
+        if not chid:
+            return None, None
+        progs = epg['progs'].get(chid, [])
+        if not progs:
+            return None, None
+        now = datetime.now()
+        cur = None
+        nxt = None
+        for i, p in enumerate(progs):
+            if p[0] <= now < p[1]:
+                cur = p
+                if i + 1 < len(progs):
+                    nxt = progs[i + 1]
                 break
-    return cur, nxt
+        if cur is None:
+            for p in progs:
+                if p[0] > now:
+                    nxt = p
+                    break
+        return cur, nxt
+    except Exception as e:
+        log('epg_now %s: %s' % (cid, e))
+        try:
+            import traceback
+            log('epg_now TB: ' + traceback.format_exc())
+        except Exception:
+            pass
+        return None, None
 
 
 def _exp_header(label, count, color):
@@ -680,6 +725,7 @@ def _exp_header(label, count, color):
 
 def sky_cat_view(cat, back=''):
     back_button(back or (BASE + '?action=sky'))
+    epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
     buckets = {'ok': [], 'soon': [], 'exp': []}
     for title, cid in sky_channels().get(cat, []):
         exp = _sky_expiry(cid)
@@ -691,12 +737,13 @@ def sky_cat_view(cat, back=''):
         color = _exp_color(st)
         _exp_header(hlabel, len(sel), color)
         for exp, title, cid in sel:
-            label = title
+            parts = ['[COLOR white]%s[/COLOR]' % title]
             if exp:
-                label += '   [COLOR %s]%s[/COLOR]' % (color, exp.strftime('%d/%m/%Y %H:%M'))
-            cur, nxt = _epg_now(cid)
+                parts.append('[COLOR %s]%s[/COLOR]' % (color, exp.strftime('%d/%m/%Y %H:%M')))
+            cur, nxt = _epg_now(cid, epg)
             if cur:
-                label += '   [COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+                parts.append('[COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2])))
+            label = '   '.join(parts)
             li = xbmcgui.ListItem(label=label)
             logo = LOGOS.get(cid, '')
             li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
