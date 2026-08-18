@@ -272,8 +272,16 @@ def sky_channels():
     return channels
 
 
+def _profile_path():
+    p = ADDON.getAddonInfo('profile')
+    try:
+        return xbmc.translatePath(p)
+    except Exception:
+        return p
+
+
 def _exp_cache_path():
-    return os.path.join(ADDON.getAddonInfo('profile'), 'exp_cache.pkl')
+    return os.path.join(_profile_path(), 'exp_cache.pkl')
 
 
 def _exp_cache_load():
@@ -356,7 +364,12 @@ def _sky_expiry(cid):
         data = json.loads(xor_decrypt(resp.json()['data']))
         exp = _parse_fine(data.get('fine', ''))
     except Exception as e:
-        log('sky expiry %s: %s' % (cid, e))
+        xbmc.log('KODIAKSO sky expiry ERR %s: %s' % (cid, e), xbmc.LOGERROR)
+        try:
+            import traceback
+            xbmc.log('KODIAKSO sky expiry TB:\n' + traceback.format_exc(), xbmc.LOGERROR)
+        except Exception:
+            pass
     _EXP_CACHE[cid] = (time.time(), exp)
     _exp_cache_save(_EXP_CACHE)
     return exp
@@ -507,7 +520,7 @@ def sky_view():
 
 
 def _epg_cache_path():
-    return os.path.join(ADDON.getAddonInfo('profile'), 'epg_cache.pkl')
+    return os.path.join(_profile_path(), 'epg_cache.pkl')
 
 
 def _epg_candidates(cid):
@@ -741,11 +754,13 @@ def sky_cat_view(cat, back=''):
                 li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
                 li.setProperty('isPlayable', 'true')
                 lines = []
+                if exp:
+                    lines.append('Scadenza %s' % exp.strftime('%d/%m/%Y %H:%M'))
                 if cur:
                     lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
                 if nxt:
-                    lines.append('Poi %02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
-                li.setInfo('video', {'title': title, 'plot': ' / '.join(lines)})
+                    lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
+                li.setInfo('video', {'title': title, 'plot': ' | '.join(lines)})
                 url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             except Exception as e:
