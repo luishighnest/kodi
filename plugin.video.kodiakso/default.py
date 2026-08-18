@@ -337,12 +337,51 @@ TMDB_URL = 'https://api.themoviedb.org/3'
 TMDB_IMG = 'https://image.tmdb.org/t/p/'
 
 HOME_SECTIONS = [('Film', 'movie'), ('Serie TV', 'tv')]
-FILM_CATS = [('Popolari', 'popular'), ('In sala', 'now_playing'),
-             ('Prossimamente', 'upcoming'), ('Più votati', 'top_rated'),
-             ('Per genere', '')]
-TV_CATS = [('Popolari', 'popular'), ('In onda oggi', 'airing_today'),
-           ('In TV', 'on_the_air'), ('Più votate', 'top_rated'),
-           ('Per genere', '')]
+
+FILM_CATS = [
+    ('Popolari', 'popular'),
+    ('In sala', 'now_playing'),
+    ('Prossimamente', 'upcoming'),
+    ('Più votati', 'top_rated'),
+    ('Trending oggi', 'trending_day'),
+    ('Trending settimana', 'trending_week'),
+    ('Per genere', 'genres'),
+    ('Per decennio', 'decades'),
+    ('Tutto il catalogo', 'all'),
+    ('Ricerca', 'search'),
+]
+
+TV_CATS = [
+    ('Popolari', 'popular'),
+    ('In onda oggi', 'airing_today'),
+    ('In TV', 'on_the_air'),
+    ('Più votate', 'top_rated'),
+    ('Trending oggi', 'trending_day'),
+    ('Trending settimana', 'trending_week'),
+    ('Per genere', 'genres'),
+    ('Per decennio', 'decades'),
+    ('Tutto il catalogo', 'all'),
+    ('Ricerca', 'search'),
+]
+
+ALL_SORTS = {
+    'movie': [
+        ('Popolarità', 'popularity.desc'),
+        ('Voto medio', 'vote_average.desc'),
+        ('Uscita più recente', 'primary_release_date.desc'),
+        ('Più vecchi', 'primary_release_date.asc'),
+        ('Titolo A-Z', 'original_title.asc'),
+    ],
+    'tv': [
+        ('Popolarità', 'popularity.desc'),
+        ('Voto medio', 'vote_average.desc'),
+        ('Prima messa in onda', 'first_air_date.desc'),
+        ('Più vecchie', 'first_air_date.asc'),
+        ('Titolo A-Z', 'name.asc'),
+    ],
+}
+
+DECADES = [str(y) for y in range(2020, 1880, -10)]
 
 
 def tmdb_get(path, **params):
@@ -388,22 +427,61 @@ def tmdb_add_item(it, mtype):
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
-def tmdb_list(mtype, kind='', genre='', page=1):
+def tmdb_list(mtype, kind='', genre='', page=1, sort_by='', year=''):
     page = int(page)
-    if genre:
+    if kind == 'trending_day':
+        path = '/trending/%s/day' % mtype
+        params = {'page': page}
+    elif kind == 'trending_week':
+        path = '/trending/%s/week' % mtype
+        params = {'page': page}
+    elif genre:
         path = '/discover/' + mtype
         params = {'with_genres': genre, 'sort_by': 'popularity.desc', 'page': page}
+    elif kind == 'all':
+        path = '/discover/' + mtype
+        params = {'sort_by': sort_by or 'popularity.desc', 'page': page}
+        if sort_by == 'vote_average.desc':
+            params['vote_count.gte'] = 100
+        if year:
+            if mtype == 'movie':
+                params['primary_release_date.gte'] = '%s-01-01' % year
+                params['primary_release_date.lte'] = '%d-12-31' % (int(year) + 9)
+            else:
+                params['first_air_date.gte'] = '%s-01-01' % year
+                params['first_air_date.lte'] = '%d-12-31' % (int(year) + 9)
     else:
         path = '/%s/%s' % (mtype, kind)
         params = {'page': page}
     j = tmdb_get(path, **params)
-    xbmcplugin.setContent(HANDLE, 'movies' if mtype == 'movie' else 'tvshows')
+    if mtype == 'all':
+        xbmcplugin.setContent(HANDLE, 'movies')
+    else:
+        xbmcplugin.setContent(HANDLE, 'movies' if mtype == 'movie' else 'tvshows')
     for it in j.get('results', []):
-        tmdb_add_item(it, mtype)
+        tmdb_add_item(it, it.get('media_type') or mtype)
     if page < (j.get('total_pages') or 1) and j.get('results'):
         li = xbmcgui.ListItem(label=lbl('Prossima pagina  ►'))
         
-        url = _tmdb_url('list', mt=mtype, kind=kind, genre=genre, page=str(page + 1))
+        url = _tmdb_url('list', mt=mtype, kind=kind, genre=genre, page=str(page + 1), sort_by=sort_by, year=year)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def tmdb_allsorts(mtype):
+    for label, sort_by in ALL_SORTS.get(mtype, ALL_SORTS['movie']):
+        li = xbmcgui.ListItem(label=lbl(label))
+        
+        url = _tmdb_url('list', mt=mtype, kind='all', sort_by=sort_by, page='1')
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def tmdb_decades(mtype):
+    for d in DECADES:
+        li = xbmcgui.ListItem(label=lbl(d + 's'))
+        
+        url = _tmdb_url('list', mt=mtype, kind='all', sort_by='popularity.desc', year=d, page='1')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -413,7 +491,16 @@ def tmdb_cats(mtype):
     for label, kind in cats:
         li = xbmcgui.ListItem(label=lbl(label))
         
-        url = _tmdb_url('genres', mt=mtype) if not kind else _tmdb_url('list', mt=mtype, kind=kind, page='1')
+        if kind == 'genres':
+            url = _tmdb_url('genres', mt=mtype)
+        elif kind == 'decades':
+            url = _tmdb_url('decades', mt=mtype)
+        elif kind == 'all':
+            url = _tmdb_url('allsorts', mt=mtype)
+        elif kind == 'search':
+            url = _tmdb_url('search')
+        else:
+            url = _tmdb_url('list', mt=mtype, kind=kind, page='1')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -709,6 +796,11 @@ def films_view():
     li = xbmcgui.ListItem(label=lbl('Ricerca'))
     
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('search'), li, isFolder=True)
+    for label, window in (('Trending oggi', 'day'), ('Trending settimana', 'week')):
+        li = xbmcgui.ListItem(label=lbl(label))
+        
+        url = _tmdb_url('list', mt='all', kind='trending_' + window, page='1')
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     for label, mtype in HOME_SECTIONS:
         li = xbmcgui.ListItem(label=lbl(label))
         
@@ -752,7 +844,12 @@ def main():
         elif action == 'list':
             q = query
             tmdb_list(q.get('mt', ['movie'])[0], q.get('kind', [''])[0],
-                      q.get('genre', [''])[0], int(q.get('page', ['1'])[0]))
+                      q.get('genre', [''])[0], int(q.get('page', ['1'])[0]),
+                      q.get('sort_by', [''])[0], q.get('year', [''])[0])
+        elif action == 'allsorts':
+            tmdb_allsorts(query.get('mt', ['movie'])[0])
+        elif action == 'decades':
+            tmdb_decades(query.get('mt', ['movie'])[0])
         elif action == 'details':
             tmdb_details(query.get('mt', ['movie'])[0], query.get('id', [''])[0])
         elif action == 'msearch':
