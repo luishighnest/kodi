@@ -35,7 +35,8 @@ LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
 SQUARE_ICON = LOGO_BASE + 'square.png'
 SEARCH_ICON = LOGO_BASE + 'search.png'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
-BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
+BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png')
+ICON_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
 
 EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
 EPG_KEEP_HOURS = 6
@@ -56,8 +57,10 @@ def home_button():
     _top_button('Home', 'home.png', BASE + '?action=root')
 
 
-def back_button(label='Indietro'):
-    _top_button(label, 'back.png', '..')
+def back_button(url=''):
+    if not url:
+        url = BASE + '?action=root'
+    _top_button('Indietro', 'back.png', url)
 
 LOGOS = {
     'tg24': 'skytg24.png',
@@ -296,9 +299,9 @@ def resolve_sky(parIn, title):
     return li
 
 
-def group_view(group, deep=False):
+def group_view(group, deep=False, back=''):
     if deep:
-        back_button()
+        back_button(back or (BASE + '?action=tv'))
     else:
         home_button()
     channels = fetch_channels()
@@ -394,7 +397,7 @@ def sky_view():
     for cat in (CAT_INT, CAT_SPORT):
         li = xbmcgui.ListItem(label=lbl(cat))
         
-        url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat)
+        url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -561,8 +564,8 @@ def epg_now_line(cid):
     return '     '.join(parts)
 
 
-def sky_cat_view(cat):
-    back_button()
+def sky_cat_view(cat, back=''):
+    back_button(back or (BASE + '?action=sky'))
     for title, cid in sky_channels().get(cat, []):
         epg = epg_now_line(cid)
         label = (title + '   ' + epg) if epg else title
@@ -588,7 +591,7 @@ def tv_view():
     for group in sorted(groups):
         li = xbmcgui.ListItem(label=lbl(group))
         
-        url = BASE + '?group=' + urllib.parse.quote(group) + '&deep=1'
+        url = BASE + '?group=' + urllib.parse.quote(group) + '&deep=1&back=' + urllib.parse.quote(BASE + '?action=tv')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -659,7 +662,7 @@ def _tmdb_url(action, **params):
     return BASE + '?action=' + action + '&' + urllib.parse.urlencode(params)
 
 
-def tmdb_add_item(it, mtype):
+def tmdb_add_item(it, mtype, back=''):
     title = it.get('title') or it.get('name') or ''
     date = it.get('release_date') or it.get('first_air_date') or ''
     label = title + ('  (' + date[:4] + ')' if len(date) >= 4 else '')
@@ -683,15 +686,24 @@ def tmdb_add_item(it, mtype):
     li.setInfo('video', info)
     if mtype == 'movie':
         li.setProperty('isPlayable', 'true')
-        url = _tmdb_url('mplayauto', q=title)
+        url = _tmdb_url('mplayauto', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     else:
-        url = _tmdb_url('mseasonsauto', q=title)
+        url = _tmdb_url('mseasonsauto', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
-def tmdb_list(mtype, kind='', genre='', page=1, sort_by='', year=''):
-    back_button()
+def tmdb_list(mtype, kind='', genre='', page=1, sort_by='', year='', back=''):
+    if not back:
+        if genre:
+            back = BASE + '?action=genres&mt=' + urllib.parse.quote(mtype)
+        elif year:
+            back = BASE + '?action=decades&mt=' + urllib.parse.quote(mtype)
+        elif kind:
+            back = BASE + '?action=films' if kind.startswith('trending') else (BASE + '?action=allsorts&mt=' + urllib.parse.quote(mtype) if kind == 'all' else BASE + '?action=cats&mt=' + urllib.parse.quote(mtype))
+        else:
+            back = BASE + '?action=films'
+    back_button(back)
     page = int(page)
     if kind == 'trending_day':
         path = '/trending/%s/day' % mtype
@@ -722,69 +734,74 @@ def tmdb_list(mtype, kind='', genre='', page=1, sort_by='', year=''):
         xbmcplugin.setContent(HANDLE, 'movies')
     else:
         xbmcplugin.setContent(HANDLE, 'movies' if mtype == 'movie' else 'tvshows')
+    cur = _tmdb_url('list', mt=mtype, kind=kind, genre=genre, page=str(page), sort_by=sort_by, year=year)
     for it in j.get('results', []):
-        tmdb_add_item(it, it.get('media_type') or mtype)
+        tmdb_add_item(it, it.get('media_type') or mtype, back=cur)
     if page < (j.get('total_pages') or 1) and j.get('results'):
         li = xbmcgui.ListItem(label=lbl('Prossima pagina  ►'))
         
-        url = _tmdb_url('list', mt=mtype, kind=kind, genre=genre, page=str(page + 1), sort_by=sort_by, year=year)
+        url = _tmdb_url('list', mt=mtype, kind=kind, genre=genre, page=str(page + 1), sort_by=sort_by, year=year, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def tmdb_allsorts(mtype):
-    back_button()
+def tmdb_allsorts(mtype, back=''):
+    back_button(back or (BASE + '?action=cats&mt=' + urllib.parse.quote(mtype)))
+    allsorts_url = BASE + '?action=allsorts&mt=' + urllib.parse.quote(mtype)
     for label, sort_by in ALL_SORTS.get(mtype, ALL_SORTS['movie']):
         li = xbmcgui.ListItem(label=lbl(label))
         
-        url = _tmdb_url('list', mt=mtype, kind='all', sort_by=sort_by, page='1')
+        url = _tmdb_url('list', mt=mtype, kind='all', sort_by=sort_by, page='1', back=allsorts_url)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def tmdb_decades(mtype):
-    back_button()
+def tmdb_decades(mtype, back=''):
+    back_button(back or (BASE + '?action=cats&mt=' + urllib.parse.quote(mtype)))
+    decades_url = BASE + '?action=decades&mt=' + urllib.parse.quote(mtype)
     for d in DECADES:
         li = xbmcgui.ListItem(label=lbl(d + 's'))
         
-        url = _tmdb_url('list', mt=mtype, kind='all', sort_by='popularity.desc', year=d, page='1')
+        url = _tmdb_url('list', mt=mtype, kind='all', sort_by='popularity.desc', year=d, page='1', back=decades_url)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def tmdb_cats(mtype):
-    back_button()
+def tmdb_cats(mtype, back=''):
+    back_button(back or (BASE + '?action=films'))
     cats = FILM_CATS if mtype == 'movie' else TV_CATS
+    cats_url = BASE + '?action=cats&mt=' + urllib.parse.quote(mtype)
     for label, kind in cats:
         li = xbmcgui.ListItem(label=lbl(label))
         
         if kind == 'genres':
-            url = _tmdb_url('genres', mt=mtype)
+            url = _tmdb_url('genres', mt=mtype, back=cats_url)
         elif kind == 'decades':
-            url = _tmdb_url('decades', mt=mtype)
+            url = _tmdb_url('decades', mt=mtype, back=cats_url)
         elif kind == 'all':
-            url = _tmdb_url('allsorts', mt=mtype)
+            url = _tmdb_url('allsorts', mt=mtype, back=cats_url)
         elif kind == 'search':
-            url = _tmdb_url('search')
+            url = _tmdb_url('search', back=cats_url)
         else:
-            url = _tmdb_url('list', mt=mtype, kind=kind, page='1')
+            url = _tmdb_url('list', mt=mtype, kind=kind, page='1', back=cats_url)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def tmdb_genres(mtype):
-    back_button()
+def tmdb_genres(mtype, back=''):
+    back_button(back or (BASE + '?action=cats&mt=' + urllib.parse.quote(mtype)))
     j = tmdb_get('/genre/%s/list' % mtype)
+    genres_url = BASE + '?action=genres&mt=' + urllib.parse.quote(mtype)
     for g in sorted(j.get('genres', []), key=lambda x: x['name']):
         li = xbmcgui.ListItem(label=lbl(g['name']))
         
-        url = _tmdb_url('list', mt=mtype, genre=str(g['id']), page='1')
+        url = _tmdb_url('list', mt=mtype, genre=str(g['id']), page='1', back=genres_url)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def tmdb_details(mtype, id_):
-    back_button()
+def tmdb_details(mtype, id_, back=''):
+    back_button(back or (BASE + '?action=films'))
     j = tmdb_get('/%s/%s' % (mtype, id_), append_to_response='credits,similar')
     title = j.get('title') or j.get('name') or ''
     li = xbmcgui.ListItem(label=lbl(title))
@@ -817,12 +834,13 @@ def tmdb_details(mtype, id_):
 
     play = xbmcgui.ListItem(label=lbl('▶  Riproduci con Mandrakodi'))
     play.setArt({'thumb': SQUARE_ICON})
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('msearch', q=title, mt=mtype), play, isFolder=True)
+    details_url = BASE + '?action=details&mt=' + urllib.parse.quote(mtype) + '&id=' + urllib.parse.quote(id_)
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('msearch', q=title, mt=mtype, back=details_url), play, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def tmdb_search(query='', page=1):
-    back_button()
+def tmdb_search(query='', page=1, back=''):
+    back_button(back or (BASE + '?action=films'))
     page = int(page)
     if not query:
         kb = xbmc.Keyboard('', 'Cerca in TMDB')
@@ -833,13 +851,14 @@ def tmdb_search(query='', page=1):
         query = kb.getText().strip()
     j = tmdb_get('/search/multi', query=query, include_adult='true' if TMDB_ADULT else 'false', page=page)
     xbmcplugin.setContent(HANDLE, 'movies')
+    search_url = BASE + '?action=search&q=' + urllib.parse.quote(query) + '&page=' + str(page)
     for it in j.get('results', []):
         if it.get('media_type') in ('movie', 'tv'):
-            tmdb_add_item(it, it.get('media_type'))
+            tmdb_add_item(it, it.get('media_type'), back=search_url)
     if page < (j.get('total_pages') or 1) and j.get('results'):
         li = xbmcgui.ListItem(label=lbl('Prossima pagina  ►'))
         
-        url = _tmdb_url('search', q=query, page=str(page + 1))
+        url = _tmdb_url('search', q=query, page=str(page + 1), back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -936,35 +955,36 @@ def mandra_auto_movie(query):
     xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
 
 
-def mandra_auto_series(query):
+def mandra_auto_series(query, back=''):
     try:
         data = requests.get(API + '?numTest=A1A332A&mode=1&search=' + urllib.parse.quote(query),
                             headers={'User-Agent': API_UA}, timeout=25).json()
     except Exception as e:
         xbmc.log('KODIAKSO mandra series ERR: ' + str(e), xbmc.LOGERROR)
         notify(query or 'Serie', 'Errore ricerca', True)
-        back_button()
+        back_button(back)
         xbmcplugin.endOfDirectory(HANDLE)
         return
     for it in data.get('items', []):
         ext = it.get('externallink', '') or ''
         m = re.search(r'code=([^&]+)', ext)
         if m:
-            mandra_season_view(m.group(1))
+            mandra_season_view(m.group(1), back)
             return
     notify(query or 'Serie', 'Nessuna serie su Mandrakodi', True)
-    back_button()
+    back_button(back)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def mandra_search_view(query, mtype=''):
-    back_button()
+def mandra_search_view(query, mtype='', back=''):
+    back_button(back or (BASE + '?action=films'))
     if not query:
         xbmcplugin.endOfDirectory(HANDLE)
         return
     data = requests.get(API + '?numTest=A1A332A' + ('&mode=1' if mtype == 'tv' else '') + '&search=' + urllib.parse.quote(query),
                         headers={'User-Agent': API_UA}, timeout=25).json()
     xbmcplugin.setContent(HANDLE, 'movies' if mtype == 'movie' else 'tvshows')
+    msearch_url = BASE + '?action=msearch&q=' + urllib.parse.quote(query) + '&mt=' + urllib.parse.quote(mtype)
     added = 0
     for it in data.get('items', []):
         title = man_title(it)
@@ -988,7 +1008,7 @@ def mandra_search_view(query, mtype=''):
             m = re.search(r'code=([^&]+)', ext)
             if m:
                 li.setProperty('isPlayable', 'false')
-                url = _tmdb_url('mseason', code=m.group(1))
+                url = _tmdb_url('mseason', code=m.group(1), back=msearch_url)
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
                 added += 1
     if not added:
@@ -997,11 +1017,12 @@ def mandra_search_view(query, mtype=''):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def mandra_season_view(code):
-    back_button()
+def mandra_season_view(code, back=''):
+    back_button(back or (BASE + '?action=films'))
     data = requests.get(API + '?numTest=A1A356&mode=2&code=' + urllib.parse.quote(code),
                         headers={'User-Agent': API_UA}, timeout=25).json()
     xbmcplugin.setContent(HANDLE, 'tvshows')
+    season_url = BASE + '?action=mseason&code=' + urllib.parse.quote(code)
     for it in data.get('items', []):
         mr = it.get('myresolve', '') or ''
         if not mr.startswith('seriesc@@'):
@@ -1013,13 +1034,13 @@ def mandra_season_view(code):
         if it.get('fanart'):
             li.setArt({'fanart': it['fanart']})
         li.setInfo('video', {'title': title, 'plot': it.get('info') or ''})
-        url = _tmdb_url('mepisodes', par=par)
+        url = _tmdb_url('mepisodes', par=par, back=season_url)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def mandra_episodes_view(par):
-    back_button()
+def mandra_episodes_view(par, back=''):
+    back_button(back or (BASE + '?action=films'))
     idSea, numSea = par.split('---')
     cs = mandra_cs()
     url = cs + 'it/titles/' + idSea + '/season-' + numSea
@@ -1069,25 +1090,26 @@ def mandra_episodes_view(par):
 
 def films_view():
     home_button()
+    films_url = BASE + '?action=films'
     li = xbmcgui.ListItem(label=lbl('Ricerca'))
     
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('search'), li, isFolder=True)
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('search', back=films_url), li, isFolder=True)
     for label, window in (('Trending oggi', 'day'), ('Trending settimana', 'week')):
         li = xbmcgui.ListItem(label=lbl(label))
         
-        url = _tmdb_url('list', mt='all', kind='trending_' + window, page='1')
+        url = _tmdb_url('list', mt='all', kind='trending_' + window, page='1', back=films_url)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     for label, mtype in HOME_SECTIONS:
         li = xbmcgui.ListItem(label=lbl(label))
         
-        url = _tmdb_url('cats', mt=mtype)
+        url = _tmdb_url('cats', mt=mtype, back=films_url)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
 def root_view():
-    bann = xbmcgui.ListItem(label='[B][COLOR gold]PZ8[/COLOR][/B]')
-    bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': BANNER_LOGO, 'thumb': ''})
+    bann = xbmcgui.ListItem(label='[B][COLOR gray]PZ8[/COLOR][/B]')
+    bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': ICON_LOGO, 'thumb': ''})
     bann.setInfo('video', {'title': 'PZ8', 'plot': 'SPORT | TV | VOD'})
     bann.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE, bann, isFolder=True)
@@ -1126,42 +1148,47 @@ def main():
         elif action == 'gsearch':
             gsearch_view(query.get('q', [''])[0])
         elif action == 'search':
-            tmdb_search(query.get('q', [''])[0], int(query.get('page', ['1'])[0]))
+            tmdb_search(query.get('q', [''])[0], int(query.get('page', ['1'])[0]),
+                        query.get('back', [''])[0])
         elif action == 'cats':
-            tmdb_cats(query.get('mt', ['movie'])[0])
+            tmdb_cats(query.get('mt', ['movie'])[0], query.get('back', [''])[0])
         elif action == 'genres':
-            tmdb_genres(query.get('mt', ['movie'])[0])
+            tmdb_genres(query.get('mt', ['movie'])[0], query.get('back', [''])[0])
         elif action == 'list':
             q = query
             tmdb_list(q.get('mt', ['movie'])[0], q.get('kind', [''])[0],
                       q.get('genre', [''])[0], int(q.get('page', ['1'])[0]),
-                      q.get('sort_by', [''])[0], q.get('year', [''])[0])
+                      q.get('sort_by', [''])[0], q.get('year', [''])[0],
+                      q.get('back', [''])[0])
         elif action == 'allsorts':
-            tmdb_allsorts(query.get('mt', ['movie'])[0])
+            tmdb_allsorts(query.get('mt', ['movie'])[0], query.get('back', [''])[0])
         elif action == 'decades':
-            tmdb_decades(query.get('mt', ['movie'])[0])
+            tmdb_decades(query.get('mt', ['movie'])[0], query.get('back', [''])[0])
         elif action == 'details':
-            tmdb_details(query.get('mt', ['movie'])[0], query.get('id', [''])[0])
+            tmdb_details(query.get('mt', ['movie'])[0], query.get('id', [''])[0],
+                         query.get('back', [''])[0])
         elif action == 'msearch':
-            mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0])
+            mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0],
+                               query.get('back', [''])[0])
         elif action == 'mplayauto':
             mandra_auto_movie(query.get('q', [''])[0])
         elif action == 'mseasonsauto':
-            mandra_auto_series(query.get('q', [''])[0])
+            mandra_auto_series(query.get('q', [''])[0], query.get('back', [''])[0])
         elif action == 'mseason':
-            mandra_season_view(query.get('code', [''])[0])
+            mandra_season_view(query.get('code', [''])[0], query.get('back', [''])[0])
         elif action == 'mepisodes':
-            mandra_episodes_view(query.get('par', [''])[0])
+            mandra_episodes_view(query.get('par', [''])[0], query.get('back', [''])[0])
         elif action == 'mplay':
             li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'skycat':
-            sky_cat_view(query.get('cat', [''])[0])
+            sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'skyplay':
             li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
     elif 'group' in query:
-        group_view(query['group'][0], query.get('deep', [''])[0] == '1')
+        group_view(query['group'][0], query.get('deep', [''])[0] == '1',
+                   query.get('back', [''])[0])
     else:
         root_view()
 
