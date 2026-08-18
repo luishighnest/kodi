@@ -50,7 +50,9 @@ def lbl(txt):
 def _top_button(label, icon, url):
     li = xbmcgui.ListItem(label=lbl(label))
     li.setArt({'thumb': LOGO_BASE + icon})
-    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    li.setProperty('IsPlayable', 'false')
+    nav = BASE + '?action=nav&url=' + urllib.parse.quote(url, safe='')
+    xbmcplugin.addDirectoryItem(HANDLE, nav, li, isFolder=False)
 
 
 def home_button():
@@ -101,8 +103,8 @@ LOGOS = {
     'skysport259': 'sksport.png',
 }
 
-CAT_INT = 'Intrattenimento'
-CAT_SPORT = 'Sport'
+CAT_INT = 'SKY INTRATTENIMENTO'
+CAT_SPORT = 'SKY SPORT'
 
 SKY_DEFS = {
     'tg24': ('Sky TG 24', CAT_INT),
@@ -137,6 +139,15 @@ SKY_DEFS = {
 
 def log(m):
     xbmc.log('KODIAKSO: ' + m, xbmc.LOGINFO)
+
+
+def _sky_name(cid):
+    disp = SKY_DEFS.get(cid, ('', ''))[0]
+    if cid.startswith('skysport'):
+        m = re.match(r'^skysport(.+)$', cid)
+        rest = m.group(1) if m else ''
+        return ('SPORT ' + rest).upper()
+    return disp.upper() if disp else cid.upper()
 
 
 def xor_decrypt(b64data):
@@ -246,11 +257,7 @@ def sky_channels():
         push('skysport%d' % n)
     channels = {CAT_INT: [], CAT_SPORT: []}
     for cid in order:
-        if cid.startswith('skysport') and cid not in SKY_DEFS:
-            m = re.match(r'^skysport(\d+)$', cid)
-            name = ('Sky Sport ' + m.group(1)) if m else cid
-        else:
-            name = SKY_DEFS.get(cid, (cid, ''))[0]
+        name = _sky_name(cid)
         cat = SKY_DEFS.get(cid, (cid, CAT_SPORT if cid.startswith('skysport') else CAT_INT))[1]
         channels[cat].append((name, cid))
     return channels
@@ -408,15 +415,22 @@ def _epg_cache_path():
 
 def _epg_candidates(cid):
     cands = {cid.lower()}
-    name = SKY_DEFS.get(cid, (cid, ''))[0]
-    cands.add(name.lower())
-    m = re.match(r'^skysport(\d+)$', cid)
-    if m:
-        num = m.group(1)
-        cands.add('sky sport ' + num)
-        cands.add('sky sport ' + num + ' hd')
-        cands.add('sky sport ' + num + ' fhd')
-        cands.add('sky sport ' + num + ' ultra hd')
+    disp = SKY_DEFS.get(cid, ('', ''))[0]
+    if disp:
+        cands.add(' '.join(disp.lower().split()))
+    if cid == 'tg24':
+        cands.add('sky tg24')
+    if cid == 'mtv':
+        cands.add('mtv hd')
+        cands.add('mtv music')
+    if cid.startswith('skysport'):
+        m = re.match(r'^skysport(.+)$', cid)
+        rest = m.group(1) if m else ''
+        base = 'sky sport ' + rest
+        cands.add(base)
+        cands.add(base + ' hd')
+        cands.add(base + ' fhd')
+        cands.add(base + ' ultra hd')
     return cands
 
 
@@ -444,7 +458,7 @@ def _epg_parse(raw):
             continue
         chmap.setdefault(chid, chid)
         for dn in ch.findall('display-name'):
-            nm = (dn.text or '').strip().lower()
+            nm = ' '.join((dn.text or '').split()).lower()
             if nm:
                 chmap.setdefault(nm, chid)
     keep = set()
@@ -480,6 +494,13 @@ def _http_get_bytes(url):
         return r.content
     except Exception as e:
         last = e
+    try:
+        import urllib.request
+        req = urllib.request.Request(url, headers={'User-Agent': API_UA})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return r.read()
+    except Exception as e:
+        last = last if last is not None else e
     try:
         import xbmcvfs
         f = xbmcvfs.File(url, 'rb')
@@ -1165,7 +1186,13 @@ def main():
     query = urllib.parse.parse_qs(sys.argv[2][1:])
     if 'action' in query:
         action = query['action'][0]
-        if action == 'root':
+        if action == 'nav':
+            url = query.get('url', [''])[0]
+            if url:
+                xbmc.executebuiltin('Container.Update("%s", replace)' % url)
+                if HANDLE != -1:
+                    xbmcplugin.endOfDirectory(HANDLE)
+        elif action == 'root':
             root_view()
         elif action == 'sky':
             sky_view()
