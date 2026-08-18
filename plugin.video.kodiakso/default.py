@@ -241,7 +241,7 @@ def sky_channels():
             order.append(cid)
 
     try:
-        data = requests.get(API + '?numTest=A1A260', headers={'User-Agent': API_UA}, timeout=15).json()
+        data = _SKY_SESS.get(API + '?numTest=A1A260', timeout=15).json()
         for it in (data.get('items', data) if isinstance(data, dict) else data):
             mr = it.get('myresolve', '') or ''
             if mr.startswith('sky@@'):
@@ -249,7 +249,7 @@ def sky_channels():
     except Exception as e:
         log('sky A1A260 fail: ' + str(e))
     try:
-        data = requests.get(API + '?numTest=A1A122', headers={'User-Agent': API_UA}, timeout=15).json()
+        data = _SKY_SESS.get(API + '?numTest=A1A122', timeout=15).json()
         for it in (data.get('items', data) if isinstance(data, dict) else data):
             title = clean_title(it.get('title', ''))
             if 'Sky' in title and ('IT:' in title or 'IT ' in title):
