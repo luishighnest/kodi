@@ -4,8 +4,12 @@ import sys
 import re
 import json
 import base64
+import gzip
+import os
+import pickle
 import urllib.parse
 from datetime import datetime, timedelta
+from xml.etree import ElementTree as ET
 import xbmcgui
 import xbmcplugin
 import xbmcaddon
@@ -30,6 +34,11 @@ HOST = ADDON.getSetting('sky_host').strip() or 'https://www.nowtv.it'
 LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
 SQUARE_ICON = LOGO_BASE + 'square.png'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
+BANNER_ART = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png')
+
+EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
+EPG_KEEP_HOURS = 6
+_EPG_SESSION = {'data': None}
 
 
 def lbl(txt):
@@ -295,6 +304,82 @@ def group_view(group):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def gsearch_view(q=''):
+    if not q:
+        kb = xbmc.Keyboard('', 'Cerca ovunque (canali, Sky, film e serie)')
+        kb.doModal()
+        if not kb.isConfirmed() or not kb.getText().strip():
+            xbmcplugin.endOfDirectory(HANDLE)
+            return
+        q = kb.getText().strip()
+    ql = q.lower()
+    added = 0
+
+    def header(txt):
+        li = xbmcgui.ListItem(label=lbl(txt))
+        li.setProperty('IsPlayable', 'false')
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+
+    try:
+        chs = fetch_channels()
+    except Exception:
+        chs = []
+    matches = [c for c in chs if ql in c['label'].lower()]
+    if matches:
+        header('[COLOR A9A9A9]Canali (%d)[/COLOR]' % len(matches))
+        for c in matches:
+            li = xbmcgui.ListItem(label=lbl(c['label']), path=c['url'])
+            if c['logo']:
+                logo = c['logo']
+                if logo.startswith('/logos/'):
+                    logo = LOGO_BASE + logo[len('/logos/'):]
+                li.setArt({'thumb': logo})
+            else:
+                li.setArt({'thumb': SQUARE_ICON})
+            li.setProperty('isPlayable', 'true')
+            li.setProperty('inputstream', 'inputstream.adaptive')
+            for k, v in c['props'].items():
+                if k == 'inputstream' and not v:
+                    continue
+                li.setProperty(k, v)
+            xbmcplugin.addDirectoryItem(HANDLE, c['url'], li, isFolder=False)
+            added += 1
+
+    skyall = []
+    for cat in (CAT_INT, CAT_SPORT):
+        try:
+            skyall += sky_channels().get(cat, [])
+        except Exception:
+            pass
+    sm = [x for x in skyall if ql in x[0].lower()]
+    if sm:
+        header('[COLOR A9A9A9]Sky (%d)[/COLOR]' % len(sm))
+        for t, cid in sm:
+            li = xbmcgui.ListItem(label=lbl(t))
+            logo = LOGOS.get(cid, '')
+            li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
+            li.setProperty('isPlayable', 'true')
+            url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(t)
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+            added += 1
+
+    try:
+        j = tmdb_get('/search/multi', query=q, include_adult='true' if TMDB_ADULT else 'false', page=1)
+        res = [it for it in j.get('results', []) if it.get('media_type') in ('movie', 'tv')]
+    except Exception:
+        res = []
+    if res:
+        header('[COLOR A9A9A9]Film e Serie (%d)[/COLOR]' % len(res))
+        for it in res:
+            tmdb_add_item(it, it['media_type'])
+            added += 1
+
+    if not added:
+        li = xbmcgui.ListItem(label=lbl('Nessun risultato per "%s"' % q))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
 def sky_view():
     for cat in (CAT_INT, CAT_SPORT):
         li = xbmcgui.ListItem(label=lbl(cat))
@@ -304,12 +389,178 @@ def sky_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def _epg_cache_path():
+    return os.path.join(ADDON.getAddonInfo('profile'), 'epg_cache.pkl')
+
+
+def _epg_candidates(cid):
+    cands = {cid.lower()}
+    name = SKY_DEFS.get(cid, (cid, ''))[0]
+    cands.add(name.lower())
+    m = re.match(r'^skysport(\d+)$', cid)
+    if m:
+        num = m.group(1)
+        cands.add('sky sport ' + num)
+        cands.add('sky sport ' + num + ' hd')
+        cands.add('sky sport ' + num + ' fhd')
+        cands.add('sky sport ' + num + ' ultra hd')
+    return cands
+
+
+def _epg_dt(val):
+    if not val:
+        return None
+    m = re.match(r'(\d{14})', val)
+    if not m:
+        return None
+    try:
+        return datetime.strptime(m.group(1), '%Y%m%d%H%M%S')
+    except ValueError:
+        return None
+
+
+def _epg_parse(raw):
+    root = ET.fromstring(raw)
+    want = set()
+    for cid in list(SKY_DEFS) + ['skysport%d' % n for n in range(251, 260)]:
+        want |= _epg_candidates(cid)
+    chmap = {}
+    for ch in root.findall('channel'):
+        chid = (ch.get('id') or '').lower()
+        if not chid:
+            continue
+        chmap.setdefault(chid, chid)
+        for dn in ch.findall('display-name'):
+            nm = (dn.text or '').strip().lower()
+            if nm:
+                chmap.setdefault(nm, chid)
+    keep = set()
+    for k, v in chmap.items():
+        if k in want or v in want:
+            keep.add(v)
+    progs = {}
+    now = datetime.now() - timedelta(hours=3)
+    end = datetime.now() + timedelta(hours=30)
+    for p in root.findall('programme'):
+        chid = (p.get('channel') or '').lower()
+        if chid not in keep:
+            continue
+        s = _epg_dt(p.get('start'))
+        e = _epg_dt(p.get('stop'))
+        if not s or not e:
+            continue
+        if e < now or s > end:
+            continue
+        t = p.find('title')
+        title = ' '.join((t.text or '').split()) if t is not None else ''
+        progs.setdefault(chid, []).append((s, e, title))
+    for chid in progs:
+        progs[chid].sort(key=lambda x: x[0])
+    return {'chmap': chmap, 'progs': progs}
+
+
+def epg_load():
+    if _EPG_SESSION['data'] is not None:
+        return _EPG_SESSION['data']
+    path = _epg_cache_path()
+    if os.path.exists(path):
+        try:
+            if time.time() - os.path.getmtime(path) < EPG_KEEP_HOURS * 3600:
+                with open(path, 'rb') as f:
+                    data = pickle.load(f)
+                _EPG_SESSION['data'] = data
+                return data
+        except Exception:
+            pass
+    try:
+        url = ADDON.getSetting('epg_url').strip() or EPG_URL_DEFAULT
+        r = requests.get(url, timeout=30, headers={'User-Agent': API_UA})
+        r.raise_for_status()
+        raw = r.content
+        try:
+            raw = gzip.decompress(raw)
+        except Exception:
+            pass
+        data = _epg_parse(raw)
+        try:
+            d = os.path.dirname(path)
+            if not os.path.isdir(d):
+                os.makedirs(d)
+            with open(path, 'wb') as f:
+                pickle.dump(data, f)
+        except Exception:
+            pass
+        _EPG_SESSION['data'] = data
+        return data
+    except Exception as e:
+        xbmc.log('KODIAKSO epg ERR: ' + str(e), xbmc.LOGERROR)
+        if os.path.exists(path):
+            try:
+                with open(path, 'rb') as f:
+                    data = pickle.load(f)
+                _EPG_SESSION['data'] = data
+                return data
+            except Exception:
+                pass
+        return None
+
+
+def _epg_chid(cid, epg):
+    if not epg:
+        return None
+    for c in _epg_candidates(cid):
+        if c in epg['chmap']:
+            return epg['chmap'][c]
+    return None
+
+
+def _epg_short(t, n=38):
+    t = ' '.join(t.split())
+    return t if len(t) <= n else t[:n - 1] + '\u2026'
+
+
+def epg_now_line(cid):
+    if ADDON.getSetting('epg_enabled') != 'true':
+        return ''
+    epg = epg_load()
+    chid = _epg_chid(cid, epg)
+    if not chid:
+        return ''
+    progs = epg['progs'].get(chid, [])
+    if not progs:
+        return ''
+    now = datetime.now()
+    cur = None
+    nxt = None
+    for i, p in enumerate(progs):
+        if p[0] <= now < p[1]:
+            cur = p
+            if i + 1 < len(progs):
+                nxt = progs[i + 1]
+            break
+    if cur is None:
+        for p in progs:
+            if p[0] > now:
+                nxt = p
+                break
+    parts = []
+    if cur:
+        parts.append('[COLOR 6BCB77]Ora %s %s[/COLOR]' % ('%02d:%02d' % (cur[0].hour, cur[0].minute), _epg_short(cur[2])))
+    if nxt:
+        parts.append('[COLOR D0D0D0]Poi %s %s[/COLOR]' % ('%02d:%02d' % (nxt[0].hour, nxt[0].minute), _epg_short(nxt[2])))
+    return '     '.join(parts)
+
+
 def sky_cat_view(cat):
     for title, cid in sky_channels().get(cat, []):
-        li = xbmcgui.ListItem(label=lbl(title))
+        epg = epg_now_line(cid)
+        label = (title + '   ' + epg) if epg else title
+        li = xbmcgui.ListItem(label=lbl(label))
         logo = LOGOS.get(cid, '')
         li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
         li.setProperty('isPlayable', 'true')
+        epg_plain = re.sub(r'\[(?:/?COLOR[^\]]*|\/?B)\]', '', epg)
+        li.setInfo('video', {'title': title, 'plot': epg_plain})
         url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -810,6 +1061,16 @@ def films_view():
 
 
 def root_view():
+    bann = xbmcgui.ListItem(label=lbl('[SIZE 40]PZ8[/SIZE]'))
+    bann.setArt({'thumb': BANNER_ART, 'landscape': BANNER_ART, 'fanart': BANNER_ART, 'icon': BANNER_ART})
+    bann.setInfo('video', {'title': 'PZ8', 'plot': 'Lettore IPTV - Sky, DAZN, TV, Eventi, Film e Serie TV'})
+    bann.setProperty('IsPlayable', 'false')
+    xbmcplugin.addDirectoryItem(HANDLE, BASE, bann, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Ricerca ovunque'))
+    li.setArt({'thumb': SQUARE_ICON})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('gsearch'), li, isFolder=True)
+
     home_items = [
         ('SKY', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
@@ -835,6 +1096,8 @@ def main():
             tv_view()
         elif action == 'films':
             films_view()
+        elif action == 'gsearch':
+            gsearch_view(query.get('q', [''])[0])
         elif action == 'search':
             tmdb_search(query.get('q', [''])[0], int(query.get('page', ['1'])[0]))
         elif action == 'cats':

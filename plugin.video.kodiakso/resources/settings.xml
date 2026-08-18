@@ -21,6 +21,10 @@
         </setting>
         <setting id="tmdb_adult" type="bool" label="Consenti contenuti adulti" default="false" />
     </category>
+    <category label="EPG (Guida TV Sky)">
+        <setting id="epg_enabled" type="bool" label="Guida EPG canali Sky" default="true" />
+        <setting id="epg_url" type="text" label="URL XMLTV (.xml o .gz)" default="https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz" />
+    </category>
     <category label="Lettore">
         <setting id="buffer_enabled" type="bool" label="Abilita buffering rete" default="true" />
         <setting id="buffer_size" type="slider" label="Dimensione buffer (MB)" range="1,32,1" default="10" option="int" />
