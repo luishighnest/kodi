@@ -1051,7 +1051,7 @@ def films_view():
 
 
 def root_view():
-    bann = xbmcgui.ListItem(label='[B][COLOR gold][SIZE 24]PZ8[/SIZE][/COLOR][/B]')
+    bann = xbmcgui.ListItem(label='[B][COLOR gold]PZ8[/COLOR][/B]')
     bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': BANNER_LOGO, 'thumb': ''})
     bann.setInfo('video', {'title': 'PZ8', 'plot': 'Lettore IPTV - Sky, DAZN, TV, Eventi, Film e Serie TV'})
     bann.setProperty('IsPlayable', 'false')
