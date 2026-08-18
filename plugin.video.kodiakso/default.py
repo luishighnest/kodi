@@ -731,7 +731,7 @@ def _epg_now(cid, epg=None):
 
 
 def _exp_header(label, count, color):
-    li = xbmcgui.ListItem(label='[B][COLOR %s]%s: %d[/COLOR][/B]' % (color, label, count))
+    li = xbmcgui.ListItem(label='[COLOR %s]%s: %d[/COLOR]' % (color, label, count))
     li.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
 
