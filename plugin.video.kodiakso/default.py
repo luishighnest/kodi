@@ -523,7 +523,7 @@ def sky_view():
         label = lbl(cat)
         try:
             c = _sky_counts(cat)
-            label += '  CANALI ATTIVI: %d  CANALI IN SCADENZA: %d  CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+            label += ' | CANALI ATTIVI: %d • CANALI IN SCADENZA: %d • CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
         except Exception as e:
             log('sky_counts %s: %s' % (cat, e))
         li = xbmcgui.ListItem(label=label)
