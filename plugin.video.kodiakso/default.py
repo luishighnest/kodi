@@ -72,7 +72,7 @@ def home_button():
 def back_button(url=''):
     if not url:
         url = BASE + '?action=root'
-    _top_button('Indietro', 'back.png', url)
+    _top_button('Indietro', 'back.png?v=2', url)
 
 LOGOS = {
     'tg24': 'skytg24.png',
@@ -1325,7 +1325,7 @@ def root_view():
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
-        home_items.append(('FILM & SERIE TV', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
+        home_items.append(('VOD', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
     for label, icon, url in home_items:
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': icon or SQUARE_ICON})
