@@ -9,6 +9,7 @@ import os
 import pickle
 import hashlib
 import hmac
+import html
 import urllib.parse
 from datetime import datetime, timedelta
 from xml.etree import ElementTree as ET
@@ -59,6 +60,9 @@ _EXP_CACHE_TTL_FAIL = 60
 
 
 def lbl(txt):
+    if not isinstance(txt, str):
+        txt = str(txt)
+    txt = html.unescape(txt)
     return LABEL % txt
 
 
@@ -172,6 +176,9 @@ def xor_decrypt(b64data):
 
 
 def strip_color(txt):
+    if not isinstance(txt, str):
+        txt = str(txt)
+    txt = html.unescape(txt)
     txt = re.sub(r'\[COLOR.*?\]', '', txt, flags=re.IGNORECASE)
     txt = re.sub(r'\[/COLOR\]', '', txt, flags=re.IGNORECASE)
     return txt.strip()
@@ -923,7 +930,7 @@ def _tmdb_url(action, **params):
 
 
 def tmdb_add_item(it, mtype, back=''):
-    title = it.get('title') or it.get('name') or ''
+    title = html.unescape(it.get('title') or it.get('name') or '')
     date = it.get('release_date') or it.get('first_air_date') or ''
     label = title + ('  (' + date[:4] + ')' if len(date) >= 4 else '')
     li = xbmcgui.ListItem(label=lbl(label))
@@ -1063,7 +1070,7 @@ def tmdb_genres(mtype, back=''):
 def tmdb_details(mtype, id_, back=''):
     back_button(back or (BASE + '?action=films'))
     j = tmdb_get('/%s/%s' % (mtype, id_), append_to_response='credits,similar')
-    title = j.get('title') or j.get('name') or ''
+    title = html.unescape(j.get('title') or j.get('name') or '')
     li = xbmcgui.ListItem(label=lbl(title))
     info = {'title': title, 'plot': j.get('overview') or ''}
     date = j.get('release_date') or j.get('first_air_date') or ''
@@ -1140,7 +1147,7 @@ def man_title(it):
     return t.strip()
 
 
-def resolve_scws(parIn, title):
+def resolve_scws(parIn, title, sub='', season=0, episode=0):
     cs = SC_DEFAULT
     try:
         cs = mandra_cs()
@@ -1178,7 +1185,20 @@ def resolve_scws(parIn, title):
         return xbmcgui.ListItem()
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
-    li = xbmcgui.ListItem(path=urlSc, offscreen=True)
+    li = xbmcgui.ListItem(path=urlSc, label='[COLOR snow]%s[/COLOR]' % (title or ''), offscreen=True)
+    if sub:
+        li.setLabel2('[COLOR blue]%s[/COLOR]' % sub)
+    info = {'title': title or '', 'mediatype': 'episode' if sub else 'movie'}
+    if sub:
+        try:
+            info['season'] = int(season)
+        except (TypeError, ValueError):
+            pass
+        try:
+            info['episode'] = int(episode)
+        except (TypeError, ValueError):
+            pass
+    li.setInfo('video', info)
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
     li.setProperty('inputstream', 'inputstream.adaptive')
@@ -1311,7 +1331,7 @@ def mandra_episodes_view(par, back=''):
         xbmcplugin.endOfDirectory(HANDLE)
         return
     props = json.loads(m.group(1).replace('&quot;', '"'))['props']
-    show_name = props['title']['name']
+    show_name = html.unescape(props['title']['name'])
     cover = SQUARE_ICON
     for im in props['title'].get('images', []):
         if im.get('type') == 'cover':
@@ -1325,9 +1345,9 @@ def mandra_episodes_view(par, back=''):
             label = '%sx%02d %s' % (numSea, numep, (ep.get('name') or ('Episodio ' + str(numep))))
         except (TypeError, ValueError):
             label = ep.get('name') or ('Episodio ' + str(n))
-        name = ep.get('name') or label
+        name = html.unescape(ep.get('name') or label)
         li = xbmcgui.ListItem(label=lbl(label))
-        plot = (ep.get('plot') or '').replace('&#39;', "'").replace('&amp;', '&')
+        plot = html.unescape(ep.get('plot') or '')
         info = {'title': name, 'plot': plot, 'mediatype': 'episode',
                 'tvshowtitle': show_name, 'season': numSea}
         try:
@@ -1344,7 +1364,8 @@ def mandra_episodes_view(par, back=''):
         li.setArt({'thumb': thumb})
         li.setProperty('isPlayable', 'true')
         parIn = idSea + '?episode_id=' + str(ep['id'])
-        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('mplay', p=parIn, t=label), li, isFolder=False)
+        url = _tmdb_url('mplay', p=parIn, t=show_name, sub='S:%s E:%s' % (numSea, numep), s=numSea, e=numep)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -1897,7 +1918,9 @@ def main():
         elif action == 'mepisodes':
             mandra_episodes_view(query.get('par', [''])[0], query.get('back', [''])[0])
         elif action == 'mplay':
-            li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0])
+            li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0],
+                              query.get('sub', [''])[0], query.get('s', [''])[0],
+                              query.get('e', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
