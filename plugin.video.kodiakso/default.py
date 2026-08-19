@@ -1807,7 +1807,6 @@ def resolve_sportzx(eid, idx):
 def empty_item():
     li = xbmcgui.ListItem(label=' ')
     li.setArt({'thumb': EMPTY_LOGO, 'icon': EMPTY_LOGO})
-    li.setIconImage(EMPTY_LOGO)
     xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
 
 
