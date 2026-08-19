@@ -1147,7 +1147,15 @@ def man_title(it):
     return t.strip()
 
 
-def resolve_scws(parIn, title, sub='', season=0, episode=0):
+def resolve_scws(parIn, title, eptitle='', season=0, episode=0):
+    try:
+        s = int(season) or None
+    except (TypeError, ValueError):
+        s = None
+    try:
+        e = int(episode) or None
+    except (TypeError, ValueError):
+        e = None
     cs = SC_DEFAULT
     try:
         cs = mandra_cs()
@@ -1186,19 +1194,9 @@ def resolve_scws(parIn, title, sub='', season=0, episode=0):
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
     li = xbmcgui.ListItem(path=urlSc, label='[COLOR snow]%s[/COLOR]' % (title or ''), offscreen=True)
-    if sub:
-        li.setLabel2('[COLOR blue]%s[/COLOR]' % sub)
-    info = {'title': title or '', 'mediatype': 'episode' if sub else 'movie'}
-    if sub:
-        try:
-            info['season'] = int(season)
-        except (TypeError, ValueError):
-            pass
-        try:
-            info['episode'] = int(episode)
-        except (TypeError, ValueError):
-            pass
-    li.setInfo('video', info)
+    if s and e:
+        li.setLabel2('S%dE%d: %s' % (s, e, eptitle or ''))
+    li.setInfo('video', {'title': title or ''})
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
     li.setProperty('inputstream', 'inputstream.adaptive')
@@ -1364,7 +1362,7 @@ def mandra_episodes_view(par, back=''):
         li.setArt({'thumb': thumb})
         li.setProperty('isPlayable', 'true')
         parIn = idSea + '?episode_id=' + str(ep['id'])
-        url = _tmdb_url('mplay', p=parIn, t=show_name, sub='S:%s E:%s' % (numSea, numep), s=numSea, e=numep)
+        url = _tmdb_url('mplay', p=parIn, t=show_name, ept=name, s=numSea, e=numep)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1919,7 +1917,7 @@ def main():
             mandra_episodes_view(query.get('par', [''])[0], query.get('back', [''])[0])
         elif action == 'mplay':
             li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0],
-                              query.get('sub', [''])[0], query.get('s', [''])[0],
+                              query.get('ept', [''])[0], query.get('s', [''])[0],
                               query.get('e', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'skycat':
