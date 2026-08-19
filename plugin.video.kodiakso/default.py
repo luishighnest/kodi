@@ -39,6 +39,7 @@ SEARCH_ICON = LOGO_BASE + 'search.png'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
 BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png')
 ICON_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
+EMPTY_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'empty.png')
 
 EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
 EPG_KEEP_HOURS = 6
@@ -1804,7 +1805,9 @@ def resolve_sportzx(eid, idx):
 
 
 def empty_item():
-    li = xbmcgui.ListItem(label='________________________________________________________')
+    li = xbmcgui.ListItem(label=' ')
+    li.setArt({'thumb': EMPTY_LOGO, 'icon': EMPTY_LOGO})
+    li.setIconImage(EMPTY_LOGO)
     xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
 
 
