@@ -507,6 +507,51 @@ def gsearch_view(q=''):
             xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             added += 1
 
+    try:
+        evs = _szx_load('events', 'events.json')
+    except Exception:
+        evs = []
+    em = [e for e in evs if ql in (e.get('title') or '').lower()]
+    if em:
+        header('[COLOR A9A9A9]Sportzx (%d)[/COLOR]' % len(em))
+        for e in em:
+            title = e.get('title') or ''
+            li = xbmcgui.ListItem(label=lbl(title))
+            li.setProperty('isPlayable', 'false')
+            url = _tmdb_url('szx_event', id=str(e.get('id', '')))
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+            added += 1
+
+    dc = []
+    dm = []
+    try:
+        cats = _daddy_fetch()
+    except Exception:
+        cats = []
+    for idx, c in enumerate(cats):
+        cname = strip_color(c.get('name') or '')
+        if cname and ql in cname.lower():
+            dc.append((cname, idx))
+        for it in c.get('items') or []:
+            t = strip_color(it.get('title') or '')
+            mr = it.get('myresolve') or ''
+            code = mr.split('@@', 1)[1] if '@@' in mr else ''
+            if t and code and ql in t.lower():
+                dm.append((t, code))
+    if dc:
+        header('[COLOR A9A9A9]Daddy - Categorie (%d)[/COLOR]' % len(dc))
+        for cname, idx in dc:
+            li = xbmcgui.ListItem(label=lbl(cname))
+            xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy_cat', i=str(idx)), li, isFolder=True)
+            added += 1
+    if dm:
+        header('[COLOR A9A9A9]Daddy - Eventi (%d)[/COLOR]' % len(dm))
+        for t, code in dm:
+            li = xbmcgui.ListItem(label=lbl(t))
+            li.setProperty('isPlayable', 'true')
+            xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy_play', c=code), li, isFolder=False)
+            added += 1
+
     if not added:
         li = xbmcgui.ListItem(label=lbl('Nessun risultato per "%s"' % q))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
@@ -1758,16 +1803,23 @@ def resolve_sportzx(eid, idx):
     return li
 
 
+def empty_item():
+    li = xbmcgui.ListItem(label='  ')
+    xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
+
+
 def root_view():
-    bann = xbmcgui.ListItem(label='[B][COLOR gray]PZ8[/COLOR][/B]')
+    bann = xbmcgui.ListItem(label='[B][COLOR snow]PZ8[/COLOR][/B]')
     bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': ICON_LOGO, 'thumb': ''})
-    bann.setInfo('video', {'title': 'PZ8', 'plot': 'SPORT | TV | VOD'})
+    bann.setInfo('video', {'title': 'PZ8', 'plot': 'SPORT \u2219 TV \u2219 VOD'})
     bann.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE, bann, isFolder=True)
 
     li = xbmcgui.ListItem(label=lbl('Ricerca globale'))
     li.setArt({'thumb': SEARCH_ICON})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('gsearch'), li, isFolder=True)
+
+    empty_item()
 
     home_items = [
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
@@ -1778,6 +1830,8 @@ def root_view():
     if ADDON.getSetting('home_tmdb') != 'false':
         home_items.append(('VOD', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
     for label, icon, url in home_items:
+        if label == 'VOD':
+            empty_item()
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': icon or SQUARE_ICON})
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
