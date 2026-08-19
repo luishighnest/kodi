@@ -1323,6 +1323,7 @@ SZX_DIGEST = bytes.fromhex('1676ec7db4771b0d826d70369b579684b182d2c0133be041bdd5
 SZX_SALT = b'sportzx/v2/prk'
 SZX_UA = 'Dalvik/2.1.0 (Linux; Android 13)'
 _SZX = {'events': None, 'cats': None, 'channels': {}}
+_DDY = {'data': None}
 
 _SZX_SBOX = [
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -1490,7 +1491,114 @@ def events_view():
     li = xbmcgui.ListItem(label=lbl('Eventi 2 (Sportzx)'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sportzx'), li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Eventi 3 (Daddy)'))
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy'), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+def _daddy_fetch():
+    if _DDY['data'] is None:
+        try:
+            r = requests.get('https://test34344.herokuapp.com/filter.php',
+                             params={'numTest': 'A1A114'},
+                             headers={'User-Agent': API_UA}, timeout=25)
+            r.raise_for_status()
+            _DDY['data'] = r.json().get('channels', [])
+        except Exception as e:
+            log('daddy fetch: %s' % e)
+            _DDY['data'] = []
+    return _DDY['data']
+
+
+def daddy_view():
+    back_button(BASE + '?action=events')
+    cats = _daddy_fetch()
+    if not cats:
+        li = xbmcgui.ListItem(label=lbl('Nessuna categoria'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for idx, c in enumerate(cats):
+        title = strip_color(c.get('name') or '')
+        if not title:
+            continue
+        li = xbmcgui.ListItem(label=lbl(title))
+        thumb = c.get('thumbnail') or ''
+        if isinstance(thumb, str) and thumb.startswith('http'):
+            li.setArt({'thumb': thumb})
+        n = len(c.get('items') or [])
+        li.setInfo('video', {'title': title, 'plot': ('%d eventi' % n) if n else 'Nessun evento'})
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy_cat', i=str(idx)), li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def daddy_cat_view(i):
+    back_button(BASE + '?action=ddy')
+    cats = _daddy_fetch()
+    try:
+        cat = cats[int(i)]
+    except Exception:
+        cat = None
+    items = (cat or {}).get('items') or []
+    if not items:
+        li = xbmcgui.ListItem(label=lbl('Nessun canale'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=ddy', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for it in items:
+        title = strip_color(it.get('title') or '')
+        mr = it.get('myresolve') or ''
+        code = mr.split('@@', 1)[1] if '@@' in mr else ''
+        if not title or not code:
+            continue
+        li = xbmcgui.ListItem(label=lbl(title))
+        li.setInfo('video', {'title': title, 'plot': it.get('info') or ''})
+        li.setProperty('isPlayable', 'true')
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy_play', c=code), li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def resolve_daddy(code):
+    try:
+        hdrs0 = {'user-agent': 'Mozilla/5.0', 'accept': '*/*', 'Referer': 'https://dlhd.st/'}
+        page1 = requests.get('https://dlhd.st/stream/stream-%s.php' % code,
+                             headers=hdrs0, timeout=25).text
+        m = re.search(r'<iframe src="(.*?)"', page1)
+        if not m:
+            raise ValueError('iframe non trovato')
+        dadUrl = m.group(1)
+        page2 = requests.get(dadUrl, headers=hdrs0, timeout=25).text
+        m2 = re.search(r"window\.atob\('(.*?)'\)", page2)
+        if not m2:
+            raise ValueError('token non trovato')
+        link = base64.b64decode(m2.group(1)).decode('utf-8', 'replace')
+        arr = dadUrl.split('/')
+        refe = arr[0] + '//' + arr[2] + '/'
+        origin = arr[0] + '//' + arr[2]
+        hdrs = 'Referer=%s&Origin=%s&User-Agent=%s' % (refe, origin, UA)
+    except Exception as e:
+        log('daddy resolve %s: %s' % (code, e))
+        notify('Eventi 3', 'Errore risoluzione link', True)
+        return xbmcgui.ListItem()
+    li = xbmcgui.ListItem(path=link, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    is_mpd = '.mpd' in link.lower()
+    li.setProperty('inputstream.adaptive.manifest_type', 'mpd' if is_mpd else 'hls')
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    if not is_mpd:
+        li.setProperty('inputstream.adaptive.license_key', '|' + hdrs)
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    if ADDON.getSetting('manifest_upd') == 'true':
+        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    return li
 
 
 def sportzx_view():
@@ -1739,6 +1847,13 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'sportzx':
             sportzx_view()
+        elif action == 'ddy':
+            daddy_view()
+        elif action == 'ddy_cat':
+            daddy_cat_view(query.get('i', ['0'])[0])
+        elif action == 'ddy_play':
+            li = resolve_daddy(query.get('c', [''])[0])
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'szx_events':
             sportzx_events_view()
         elif action == 'szx_event':
