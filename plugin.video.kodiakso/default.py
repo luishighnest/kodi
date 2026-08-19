@@ -1482,13 +1482,22 @@ def _szx_load(key, name, eid=''):
     return val
 
 
-def sportzx_view():
+def events_view():
     home_button()
+    li = xbmcgui.ListItem(label=lbl('Eventi 1'))
+    li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('Eventi'), li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Eventi 2 (Sportzx)'))
+    li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sportzx'), li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sportzx_view():
+    back_button(BASE + '?action=events')
     li = xbmcgui.ListItem(label=lbl('Eventi live'))
-    li.setArt({'thumb': SQUARE_ICON})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('szx_events'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('SportzX TV'))
-    li.setArt({'thumb': SQUARE_ICON})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('szx_cats'), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1512,11 +1521,6 @@ def sportzx_events_view():
         if len(ds) == 3:
             label += '   [COLOR %s]%s%s%s[/COLOR]' % (EXP_OK_COLOR, ds[2], ds[1], ds[0])
         li = xbmcgui.ListItem(label=label)
-        thumb = SQUARE_ICON
-        banner = info.get('eventBanner', '') or ''
-        if isinstance(banner, str) and banner.startswith('http'):
-            thumb = banner
-        li.setArt({'thumb': thumb})
         plot = title
         if info.get('teamA') or info.get('teamB'):
             plot = '%s vs %s' % (info.get('teamA', ''), info.get('teamB', ''))
@@ -1542,7 +1546,6 @@ def sportzx_event_view(eid):
     for idx, ch in enumerate(chs):
         title = (ch.get('title') or ('Canale %d' % (idx + 1))).strip()
         li = xbmcgui.ListItem(label=lbl(title))
-        li.setArt({'thumb': SQUARE_ICON})
         li.setInfo('video', {'title': title})
         li.setProperty('isPlayable', 'true')
         url = _tmdb_url('szx_play', id=eid, i=str(idx))
@@ -1559,9 +1562,7 @@ def sportzx_cat_view():
         link = c.get('catLink') or ''
         if not isinstance(link, str) or not link.startswith('http'):
             continue
-        img = c.get('image') or ''
         li = xbmcgui.ListItem(label=lbl(title))
-        li.setArt({'thumb': img if isinstance(img, str) and img.startswith('http') else SQUARE_ICON})
         xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('szx_catplay', link=link), li, isFolder=True)
         added += 1
     if not added:
@@ -1584,8 +1585,6 @@ def sportzx_catplay_view(link=''):
         return
     for ch in parse_m3u(text):
         li = xbmcgui.ListItem(label=lbl(ch['label']), path=ch['url'])
-        logo = ch['logo']
-        li.setArt({'thumb': logo if logo.startswith('http') else SQUARE_ICON})
         li.setProperty('isPlayable', 'true')
         li.setProperty('inputstream', 'inputstream.adaptive')
         for k, v in ch['props'].items():
@@ -1663,10 +1662,9 @@ def root_view():
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('gsearch'), li, isFolder=True)
 
     home_items = [
-        ('SPORTZX', SQUARE_ICON, BASE + '?action=sportzx'),
+        ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
         ('SKY', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
-        ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?group=' + urllib.parse.quote('Eventi')),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
@@ -1696,6 +1694,8 @@ def main():
             tv_view()
         elif action == 'films':
             films_view()
+        elif action == 'events':
+            events_view()
         elif action == 'gsearch':
             gsearch_view(query.get('q', [''])[0])
         elif action == 'search':
