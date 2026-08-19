@@ -36,6 +36,8 @@ HOST = ADDON.getSetting('sky_host').strip() or 'https://www.nowtv.it'
 LOGO_BASE = 'https://luishighnest.github.io/kodi/logos/'
 SQUARE_ICON = LOGO_BASE + 'square.png'
 SEARCH_ICON = LOGO_BASE + 'search.png'
+HOME_ICON = LOGO_BASE + 'home.png'
+BACK_ICON = LOGO_BASE + 'back.png?v=3'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
 BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png')
 ICON_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
@@ -62,20 +64,20 @@ def lbl(txt):
 
 def _top_button(label, icon, url):
     li = xbmcgui.ListItem(label=lbl(label))
-    li.setArt({'thumb': LOGO_BASE + icon})
+    li.setArt({'thumb': icon})
     li.setProperty('IsPlayable', 'false')
     nav = BASE + '?action=nav&url=' + urllib.parse.quote(url, safe='')
     xbmcplugin.addDirectoryItem(HANDLE, nav, li, isFolder=False)
 
 
 def home_button():
-    _top_button('Home', 'home.png', BASE + '?action=root')
+    _top_button('Home', HOME_ICON, BASE + '?action=root')
 
 
 def back_button(url=''):
     if not url:
         url = BASE + '?action=root'
-    _top_button('Indietro', 'back.png?v=2', url)
+    _top_button('Indietro', BACK_ICON, url)
 
 LOGOS = {
     'tg24': 'skytg24.png',
@@ -457,6 +459,7 @@ def gsearch_view(q=''):
             return
         q = kb.getText().strip()
     ql = q.lower()
+    search_back = BASE + '?action=gsearch&q=' + urllib.parse.quote(q)
     home_button()
     added = 0
 
@@ -519,7 +522,7 @@ def gsearch_view(q=''):
             title = e.get('title') or ''
             li = xbmcgui.ListItem(label=lbl(title))
             li.setProperty('isPlayable', 'false')
-            url = _tmdb_url('szx_event', id=str(e.get('id', '')))
+            url = _tmdb_url('szx_event', id=str(e.get('id', '')), back=search_back)
             xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
             added += 1
 
@@ -1657,7 +1660,7 @@ def sportzx_view():
 
 
 def sportzx_events_view():
-    home_button()
+    back_button(BASE + '?action=sportzx')
     evs = _szx_load('events', 'events.json')
     if not evs:
         li = xbmcgui.ListItem(label=lbl('Nessun evento live'))
@@ -1689,8 +1692,8 @@ def sportzx_events_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def sportzx_event_view(eid):
-    back_button(BASE + '?action=szx_events')
+def sportzx_event_view(eid, back=''):
+    back_button(back or (BASE + '?action=szx_events'))
     chs = _szx_channels(eid)
     if not chs:
         li = xbmcgui.ListItem(label=lbl('Nessun canale disponibile'))
@@ -1913,7 +1916,7 @@ def main():
         elif action == 'szx_events':
             sportzx_events_view()
         elif action == 'szx_event':
-            sportzx_event_view(query.get('id', [''])[0])
+            sportzx_event_view(query.get('id', [''])[0], query.get('back', [''])[0])
         elif action == 'szx_cats':
             sportzx_cat_view()
         elif action == 'szx_catplay':
