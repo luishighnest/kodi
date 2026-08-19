@@ -1804,7 +1804,7 @@ def resolve_sportzx(eid, idx):
 
 
 def empty_item():
-    li = xbmcgui.ListItem(label='  ')
+    li = xbmcgui.ListItem(label='________________________________________________________')
     xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
 
 
