@@ -463,6 +463,11 @@ def resolve_sky(parIn, title):
     bw = ADDON.getSetting('max_bandwidth').strip()
     if bw and bw != '0':
         li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    pname = title
+    if parIn.startswith('skysport') and not pname.upper().startswith('SKY'):
+        pname = 'SKY ' + pname
+    li.setLabel(pname)
+    li.setInfo('video', {'title': pname})
     return li
 
 
@@ -1985,9 +1990,9 @@ def root_view():
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
-        home_items.append(('VOD', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
+        home_items.append(('VOD 1', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
     for label, icon, url in home_items:
-        if label == 'VOD':
+        if label == 'VOD 1':
             empty_item()
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': icon or SQUARE_ICON})
