@@ -354,6 +354,19 @@ def _exp_color(st):
     return ''
 
 
+def _sky_label(title, exp):
+    if not exp:
+        return '[COLOR snow]%s[/COLOR]' % title
+    st = _exp_status(exp) or 'ok'
+    if st == 'soon':
+        col = EXP_SOON_COLOR
+    elif st == 'exp':
+        col = 'FF6B6B'
+    else:
+        col = 'A9A9A9'
+    return '[COLOR snow]%s[/COLOR] [COLOR %s]| SCADENZA %s[/COLOR]' % (title, col, exp.strftime('%d/%m/%Y %H:%M'))
+
+
 def _sky_expiry(cid):
     t = time.time()
     hit = _EXP_CACHE.get(cid)
@@ -515,7 +528,11 @@ def gsearch_view(q=''):
     if sm:
         header('[COLOR A9A9A9]Sky (%d)[/COLOR]' % len(sm))
         for t, cid in sm:
-            li = xbmcgui.ListItem(label=lbl(t))
+            try:
+                label = _sky_label(t, _sky_expiry(cid))
+            except Exception:
+                label = lbl(t)
+            li = xbmcgui.ListItem(label=label)
             logo = LOGOS.get(cid, '')
             li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
             li.setProperty('isPlayable', 'true')
@@ -816,10 +833,8 @@ def sky_cat_view(cat, back=''):
     try:
         for title, cid in sky_channels().get(cat, []):
             try:
-                label = '[COLOR snow]%s[/COLOR]' % title
                 exp = _sky_expiry(cid)
-                if exp:
-                    label += '   [COLOR %s]%s[/COLOR]' % (_exp_color(_exp_status(exp)), exp.strftime('%d/%m/%Y %H:%M'))
+                label = _sky_label(title, exp)
                 cur, nxt = _epg_now(cid, epg)
                 if cur:
                     label += '   [COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
