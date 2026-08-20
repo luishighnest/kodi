@@ -363,15 +363,9 @@ def _exp_col(exp):
     return '00FF00'
 
 
-def _sky_epg_short(cur):
-    name = ' '.join(str(cur[2]).split()[:2])
-    if len(name) > 11:
-        name = name[:11].rstrip() + '\u2026'
+def _sky_epg_label(cur):
+    name = ' '.join(str(cur[2]).split())
     return '%02d:%02d %s' % (cur[0].hour, cur[0].minute, name)
-
-
-def _sky_epg_full(cur):
-    return '%02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 30))
 
 
 def _sky_parts(title, exp, prog=''):
@@ -868,7 +862,7 @@ def sky_cat_view(cat, back=''):
                 cur, nxt = _epg_now(cid, epg)
                 prog = ''
                 if cur:
-                    prog = _sky_epg_short(cur)
+                    prog = _sky_epg_label(cur)
                 label, l2, tname = _sky_parts(title, exp, prog)
                 li = xbmcgui.ListItem(label=label)
                 if l2:
