@@ -363,7 +363,7 @@ def _sky_label(title, exp):
     elif st == 'exp':
         col = 'FF6B6B'
     else:
-        col = 'A9A9A9'
+        col = '90EE90'
     return '[COLOR snow]%s[/COLOR] [COLOR %s]| SCADENZA %s[/COLOR]' % (title, col, exp.strftime('%d/%m/%Y %H:%M'))
 
 
