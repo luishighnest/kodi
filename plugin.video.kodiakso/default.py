@@ -458,6 +458,7 @@ def group_view(group, deep=False, back=''):
 
 
 def gsearch_view(q=''):
+    did_kbd = False
     if not q:
         kb = xbmc.Keyboard('', 'Ricerca globale (canali ed eventi)')
         kb.doModal()
@@ -465,9 +466,7 @@ def gsearch_view(q=''):
             xbmcplugin.endOfDirectory(HANDLE)
             return
         q = kb.getText().strip()
-        xbmc.executebuiltin('Container.Update("%s")' % _tmdb_url('gsearch', q=q))
-        xbmcplugin.endOfDirectory(HANDLE)
-        return
+        did_kbd = True
     ql = q.lower()
     search_back = BASE + '?action=gsearch&q=' + urllib.parse.quote(q)
     home_button()
@@ -570,6 +569,8 @@ def gsearch_view(q=''):
         li = xbmcgui.ListItem(label=lbl('Nessun risultato per "%s"' % q))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
+    if did_kbd:
+        xbmc.executebuiltin('Container.Update("%s", replace)' % _tmdb_url('gsearch', q=q))
 
 
 def _sky_counts(cat):
@@ -1112,6 +1113,7 @@ def tmdb_details(mtype, id_, back=''):
 def tmdb_search(query='', page=1, back=''):
     back_button(back or (BASE + '?action=films'))
     page = int(page)
+    did_kbd = False
     if not query:
         kb = xbmc.Keyboard('', 'Cerca in TMDB')
         kb.doModal()
@@ -1119,9 +1121,7 @@ def tmdb_search(query='', page=1, back=''):
             xbmcplugin.endOfDirectory(HANDLE)
             return
         query = kb.getText().strip()
-        xbmc.executebuiltin('Container.Update("%s")' % _tmdb_url('search', q=query, page='1'))
-        xbmcplugin.endOfDirectory(HANDLE)
-        return
+        did_kbd = True
     j = tmdb_get('/search/multi', query=query, include_adult='true' if TMDB_ADULT else 'false', page=page)
     xbmcplugin.setContent(HANDLE, 'movies')
     search_url = BASE + '?action=search&q=' + urllib.parse.quote(query) + '&page=' + str(page)
@@ -1134,6 +1134,8 @@ def tmdb_search(query='', page=1, back=''):
         url = _tmdb_url('search', q=query, page=str(page + 1), back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
+    if did_kbd:
+        xbmc.executebuiltin('Container.Update("%s", replace)' % _tmdb_url('search', q=query, page='1'))
 
 
 CS_URL_FILE = 'https://raw.githubusercontent.com/mandrakodi/mandrakodi.github.io/main/data/cs_url.txt'
