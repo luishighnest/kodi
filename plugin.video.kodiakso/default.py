@@ -903,7 +903,7 @@ _SKY_COLS = 5
 _SKY_ROWS = 5
 
 
-class SkyWin(xbmcgui.WindowXML):
+class SkyWin(xbmcgui.WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         super(SkyWin, self).__init__(*args)
         self.items = []
@@ -1021,11 +1021,27 @@ def sky_win_open(cat):
             items.append({'cid': cid, 'title': title, 'exp': exp, 'line': line, 'foot': foot})
         except Exception:
             pass
-    w = SkyWin('skywin.xml', ADDON.getAddonInfo('path'), 'Default', '720p')
-    w.items = items
-    w.header = cat
-    w.doModal()
-    del w
+    if not items:
+        sky_cat_view(cat, BASE + '?action=sky')
+        return
+    try:
+        xbmcplugin.endOfDirectory(HANDLE)
+    except Exception:
+        pass
+    try:
+        w = SkyWin('skywin.xml', ADDON.getAddonInfo('path'), 'Default', '720p')
+        w.items = items
+        w.header = cat
+        w.doModal()
+        del w
+    except Exception as e:
+        log('skywin ERR: ' + str(e))
+        try:
+            import traceback
+            log('skywin TB: ' + traceback.format_exc())
+        except Exception:
+            pass
+        sky_cat_view(cat, BASE + '?action=sky')
 
 
 def tv_view():
