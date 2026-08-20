@@ -900,6 +900,10 @@ def sky_cat_view(cat, back=''):
             pass
     xbmcplugin.setContent(HANDLE, 'videos')
     xbmcplugin.endOfDirectory(HANDLE)
+    try:
+        xbmc.executebuiltin('Container.SetViewMode(50)')
+    except Exception as e:
+        log('sky setview: ' + str(e))
 
 
 def tv_view():
