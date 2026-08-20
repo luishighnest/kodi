@@ -48,7 +48,6 @@ ICON_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
 EMPTY_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'empty.png')
 _VOD_SRC = ''
 VIXSRC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36'
-VIXSRC_MIRRORS = ['https://vixsrc.to', 'https://ciola.xyz', 'https://elk-stream-embed.club']
 
 EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
 EPG_KEEP_HOURS = 6
@@ -1007,61 +1006,64 @@ def v2_get(url, base):
     return ''
 
 
-def v2_extract(html):
-    if not html:
-        return None
-    tok = re.search(r"['\"]?token['\"]?\s*:\s*['\"]([^'\"]+)", html)
-    if not tok:
-        tok = re.search(r"\btoken\b\s*:\s*['\"]([^'\"]+)", html)
-    exp = re.search(r"['\"]?expires['\"]?\s*:\s*['\"]([^'\"]+)", html)
-    if not exp:
-        exp = re.search(r"expires\s*:\s*(\d+)", html)
-    pl = re.search(r"\burl\b\s*:\s*['\"]([^'\"]+)", html)
-    if not (tok and exp and pl):
-        return None
-    return tok.group(1), exp.group(1), pl.group(1)
-
-
 def resolve_v2(id_, mtype='movie', season='0', episode='0', title=''):
+    base = 'https://videm.xyz'
     season = str(season or '0')
     episode = str(episode or '0')
-    for base in VIXSRC_MIRRORS:
-        if mtype == 'tv':
-            api = base + '/api/tv/%s/%s/%s' % (id_, season, episode)
-            page = base + '/tv/%s/%s/%s/?lang=it' % (id_, season, episode)
-        else:
-            api = base + '/api/movie/%s' % id_
-            page = base + '/movie/%s/?lang=it' % id_
-        found = None
-        html = v2_get(api, base)
-        if html:
-            j = None
-            try:
-                j = json.loads(html)
-            except Exception:
-                pass
-            if isinstance(j, dict) and j.get('src'):
-                found = v2_extract(v2_get(base + j['src'], base))
-        if not found:
-            found = v2_extract(v2_get(page, base))
-        if not found:
-            continue
-        token, expires, pl = found
-        try:
-            if float(expires) * 1000 - 60000 < time.time() * 1000:
-                continue
-        except ValueError:
-            continue
-        headers = urllib.parse.urlencode({'User-Agent': VIXSRC_UA, 'Referer': api, 'Origin': base})
-        master = pl + ('&' if '?' in pl else '?') + 'token=%s&expires=%s&h=1' % (token, expires) + '|' + headers
-        li = xbmcgui.ListItem(label=lbl(title or 'VixSrc'))
-        li.setPath(master)
-        li.setInfo('video', {'title': title, 'mediatype': 'movie' if mtype == 'movie' else 'episode'})
+    if mtype == 'tv':
+        embed = base + '/embed/tv/%s/%s/%s' % (id_, season, episode)
+    else:
+        embed = base + '/embed/movie/%s' % id_
+    html = v2_get(embed, base)
+    m = re.search(r'var Q\s*=\s*(\{.*?\});', html, re.S)
+    if not m:
+        return None
+    try:
+        q = json.loads(m.group(1))
+    except Exception:
+        return None
+    qid = urllib.parse.quote(str(q.get('id', id_)))
+    qs = 'type=%s&id=%s&s=%s&e=%s' % (q.get('type', mtype), qid,
+                                      q.get('s') or season, q.get('e') or episode)
+    qt = urllib.parse.quote(str(q.get('t', '')))
+    src = v2_get(base + '/api.php?a=sources&' + qs + '&t=' + qt, embed)
+    try:
+        j = json.loads(src)
+    except Exception:
+        j = None
+    servers = [s for s in (j or {}).get('servers', []) if s.get('rm')] or (j or {}).get('servers', [])
+    pick = None
+    for s in servers:
+        if 'ita' in (s.get('name') or '').lower():
+            pick = s
+            break
+    if pick is None and servers:
+        pick = servers[0]
+    if not pick:
+        return None
+    play = v2_get(base + '/api.php?a=play&ref=' + urllib.parse.quote(str(pick.get('ref', ''))) + '&t=' + qt, embed)
+    try:
+        pj = json.loads(play)
+    except Exception:
+        pj = None
+    purl = pj.get('url') if isinstance(pj, dict) else None
+    ptype = pj.get('type', 'hls') if isinstance(pj, dict) else 'hls'
+    if not purl:
+        return None
+    if purl.startswith('/'):
+        purl = base + purl
+    li = xbmcgui.ListItem(label=lbl(title or pick.get('name') or 'VidAPI'))
+    li.setPath(purl)
+    li.setInfo('video', {'title': title, 'mediatype': 'movie' if mtype == 'movie' else 'episode'})
+    if ptype == 'hls' or purl.endswith('.m3u8'):
+        headers = urllib.parse.urlencode({'User-Agent': VIXSRC_UA, 'Referer': embed, 'Origin': base})
         li.setProperty('inputstream', 'inputstream.adaptive')
         li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        li.setProperty('isPlayable', 'true')
-        return li
-    return None
+        li.setProperty('inputstream.adaptive.stream_headers', headers)
+        li.setProperty('inputstream.adaptive.manifest_headers', headers)
+        li.setProperty('inputstream.adaptive.license_key', '|' + headers)
+    li.setProperty('isPlayable', 'true')
+    return li
 
 
 def v2_seasons_view(id_, back=''):
