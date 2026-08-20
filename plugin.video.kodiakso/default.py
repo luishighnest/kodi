@@ -363,6 +363,13 @@ def _exp_col(exp):
     return '00FF00'
 
 
+def _sky_epg_short(cur):
+    name = ' '.join(str(cur[2]).split()[:2])
+    if len(name) > 11:
+        name = name[:11].rstrip() + '\u2026'
+    return '%02d:%02d %s' % (cur[0].hour, cur[0].minute, name)
+
+
 def _sky_epg_full(cur):
     return '%02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 30))
 
@@ -371,13 +378,13 @@ def _sky_parts(title, exp, prog=''):
     label = '[COLOR snow]%s[/COLOR]' % title
     l2 = ''
     if prog:
-        l2 = '[COLOR 00FF00]%s[/COLOR]' % prog
+        label += ' [COLOR 888888]\u2022[/COLOR] [COLOR 00FF00]%s[/COLOR]' % prog
     if exp:
         ts = exp.strftime('%d/%m %H:%M')
         t = exp.strftime('%d/%m/%Y %H:%M')
         col = _exp_col(exp)
         label += ' [COLOR 888888]\u2022[/COLOR] [COLOR %s]%s[/COLOR]' % (col, ts)
-        l2 = ((l2 + '    ') if l2 else '') + '[COLOR %s]SCADENZA %s[/COLOR]' % (col, t)
+        l2 = '[COLOR %s]SCADENZA %s[/COLOR]' % (col, t)
     tname = title
     if exp:
         tname += ' | SCADENZA %s' % exp.strftime('%d/%m/%Y %H:%M')
@@ -859,13 +866,15 @@ def sky_cat_view(cat, back=''):
                 cur, nxt = _epg_now(cid, epg)
                 prog = ''
                 if cur:
-                    prog = _sky_epg_full(cur)
+                    prog = _sky_epg_short(cur)
                 label, l2, tname = _sky_parts(title, exp, prog)
                 li = xbmcgui.ListItem(label=label)
                 if l2:
                     li.setLabel2(l2)
                 logo = LOGOS.get(cid, '')
-                li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
+                li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON,
+                           'icon': (LOGO_BASE + logo) if logo else SQUARE_ICON,
+                           'poster': (LOGO_BASE + logo) if logo else SQUARE_ICON})
                 li.setProperty('isPlayable', 'true')
                 lines = []
                 if exp:
