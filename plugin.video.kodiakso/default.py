@@ -354,31 +354,30 @@ def _exp_color(st):
     return ''
 
 
-def _sky_parts(title, exp):
-    if not exp:
-        return title, '', title
-    t = exp.strftime('%d/%m/%Y %H:%M')
-    full = '%s | SCADENZA %s' % (title, t)
-    return full, 'SCADENZA %s' % t, full
-
-
-def _sky_label(title, exp):
-    if not exp:
-        return '[COLOR snow]%s[/COLOR]' % title
+def _exp_col(exp):
     st = _exp_status(exp) or 'ok'
     if st == 'soon':
-        col = EXP_SOON_COLOR
-    elif st == 'exp':
-        col = 'FF6B6B'
-    else:
-        col = '90EE90'
-    return '[COLOR snow]%s[/COLOR] [COLOR %s]| SCADENZA %s[/COLOR]' % (title, col, exp.strftime('%d/%m/%Y %H:%M'))
+        return EXP_SOON_COLOR
+    if st == 'exp':
+        return 'FF6B6B'
+    return '00FF00'
 
 
-def _sky_disp(title, exp):
-    if not exp:
-        return title
-    return '%s | SCADENZA %s' % (title, exp.strftime('%d/%m/%Y %H:%M'))
+def _sky_parts(title, exp, prog=''):
+    label = '[COLOR snow]%s[/COLOR]' % title
+    l2 = ''
+    if prog:
+        label += '  [COLOR 888888]\u2502[/COLOR]  [COLOR 00FF00]%s[/COLOR]' % prog
+        l2 = '[COLOR 00FF00]%s[/COLOR]' % prog
+    if exp:
+        t = exp.strftime('%d/%m/%Y %H:%M')
+        col = _exp_col(exp)
+        label += '  [COLOR 888888]\u2502[/COLOR]  [COLOR A9A9A9]SCADENZA[/COLOR] [COLOR %s]%s[/COLOR]' % (col, t)
+        l2 = ((l2 + '   ') if l2 else '') + '[COLOR %s]SCADENZA %s[/COLOR]' % (col, t)
+    tname = title
+    if exp:
+        tname += ' | SCADENZA %s' % exp.strftime('%d/%m/%Y %H:%M')
+    return label, l2, tname
 
 
 def _sky_expiry(cid):
@@ -853,11 +852,11 @@ def sky_cat_view(cat, back=''):
         for title, cid in sky_channels().get(cat, []):
             try:
                 exp = _sky_expiry(cid)
-                label, l2, tname = _sky_parts(title, exp)
                 cur, nxt = _epg_now(cid, epg)
+                prog = ''
                 if cur:
                     prog = '%02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2]))
-                    label += '   ' + prog
+                label, l2, tname = _sky_parts(title, exp, prog)
                 li = xbmcgui.ListItem(label=label)
                 if l2:
                     li.setLabel2(l2)
