@@ -636,7 +636,7 @@ def sky_view():
         except Exception as e:
             log('sky_counts %s: %s' % (cat, e))
         li = xbmcgui.ListItem(label=label)
-        url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
+        url = BASE + '?action=skywin&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -897,6 +897,135 @@ def sky_cat_view(cat, back=''):
         except Exception:
             pass
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+_SKY_COLS = 5
+_SKY_ROWS = 5
+
+
+class SkyWin(xbmcgui.WindowXML):
+    def __init__(self, *args, **kwargs):
+        super(SkyWin, self).__init__(*args)
+        self.items = []
+        self.idx = 0
+        self.header = ''
+
+    def onInit(self):
+        try:
+            self.getControl(5001).setLabel(self.header)
+            self.getControl(5002).setLabel('Seleziona un canale e premi OK per guardarlo  |  Indietro per uscire')
+        except Exception:
+            pass
+        for i in range(_SKY_COLS * _SKY_ROWS):
+            try:
+                self.getControl(2000 + i).setVisible(False)
+            except Exception:
+                pass
+        for i, item in enumerate(self.items[:_SKY_COLS * _SKY_ROWS]):
+            try:
+                btn = self.getControl(2000 + i)
+                btn.setLabel(item['line'])
+                btn.setVisible(True)
+                logo = LOGOS.get(item['cid'], '')
+                url = (LOGO_BASE + logo) if logo else ''
+                self.getControl(3000 + i).setImage(url)
+            except Exception:
+                pass
+        if self.items:
+            self._focus(0)
+        else:
+            self.close()
+
+    def _focus(self, i):
+        if not 0 <= i < len(self.items):
+            return
+        self.idx = i
+        try:
+            self.setFocus(self.getControl(2000 + self.idx))
+        except Exception:
+            pass
+        it = self.items[self.idx]
+        try:
+            self.getControl(5000).setLabel(it['foot'])
+        except Exception:
+            pass
+
+    def onAction(self, action):
+        try:
+            aid = action.getId()
+            if aid in (10, 92, 110):
+                self.close()
+            elif aid == 1:
+                self._move(-1, 0)
+            elif aid == 2:
+                self._move(1, 0)
+            elif aid == 3:
+                self._move(0, -1)
+            elif aid == 4:
+                self._move(0, 1)
+            elif aid in (7, 70, 100):
+                self._play()
+        except Exception:
+            pass
+
+    def _move(self, dx, dy):
+        if not self.items:
+            return
+        r, c = divmod(self.idx, _SKY_COLS)
+        nr = max(0, min(r + dy, _SKY_ROWS - 1))
+        nc = max(0, min(c + dx, _SKY_COLS - 1))
+        ni = nr * _SKY_COLS + nc
+        if ni >= len(self.items):
+            ni = len(self.items) - 1
+        self._focus(ni)
+
+    def _play(self):
+        if not self.items:
+            return
+        it = self.items[self.idx]
+        try:
+            li = resolve_sky(it['cid'], it['title'])
+            self.close()
+            xbmc.Player().play(li.getPath(), li)
+        except Exception:
+            pass
+
+
+def _sky_win_line(title, exp, prog):
+    line = title
+    if prog:
+        line += ' \u2022 %s' % prog
+    if exp:
+        tf = exp.strftime('%d/%m/%Y %H:%M')
+        t = exp.strftime('%d/%m %H:%M')
+        line += ' \u2022 [COLOR %s]%s[/COLOR]' % (_exp_col(exp), t)
+        foot = '%s | %s' % (title, ('%s | ' % prog) if prog else '')
+        foot += '[COLOR %s]SCADENZA %s[/COLOR]' % (_exp_col(exp), tf)
+    else:
+        foot = title
+        if prog:
+            foot += ' | ' + prog
+        foot += ' | (nessuna scadenza)'
+    return line, foot
+
+
+def sky_win_open(cat):
+    epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
+    items = []
+    for title, cid in sky_channels().get(cat, []):
+        try:
+            exp = _sky_expiry(cid)
+            cur, _nxt = _epg_now(cid, epg)
+            prog = _sky_epg_label(cur) if cur else ''
+            line, foot = _sky_win_line(title, exp, prog)
+            items.append({'cid': cid, 'title': title, 'exp': exp, 'line': line, 'foot': foot})
+        except Exception:
+            pass
+    w = SkyWin('skywin.xml', ADDON.getAddonInfo('path'), 'Default', '720p')
+    w.items = items
+    w.header = cat
+    w.doModal()
+    del w
 
 
 def tv_view():
@@ -2060,6 +2189,8 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
+        elif action == 'skywin':
+            sky_win_open(query.get('cat', [''])[0])
         elif action == 'skyplay':
             li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
