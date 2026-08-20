@@ -363,10 +363,12 @@ def _sky_parts(title, exp):
     elif st == 'exp':
         col = 'FF6B6B'
     else:
-        col = '90EE90'
+        col = 'F5F5F5'
     t = exp.strftime('%d/%m/%Y %H:%M')
+    full = '%s | SCADENZA %s' % (title, t)
+    label = '[COLOR %s]%s[/COLOR]' % (col, full)
     seg = '[COLOR %s]| SCADENZA %s[/COLOR]' % (col, t)
-    return '[COLOR snow]%s[/COLOR] %s' % (title, seg), seg, '%s | SCADENZA %s' % (title, t)
+    return label, seg, full
 
 
 def _sky_label(title, exp):
