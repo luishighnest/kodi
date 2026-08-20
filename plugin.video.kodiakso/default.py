@@ -380,15 +380,13 @@ def _sky_parts(title, exp, prog=''):
     t = ''
     if prog:
         full += ' \u2022 %s' % prog
-        l2 = prog
+        l2 = '[COLOR 00FF00]%s[/COLOR]' % prog
     if exp:
         t = exp.strftime('%d/%m %H:%M')
         tf = exp.strftime('%d/%m/%Y %H:%M')
         full += ' \u2022 %s' % t
-        l2 = ((l2 + '    ') if l2 else '') + 'SCADENZA %s' % tf
-    col = _exp_col(exp) if exp else '00FF00'
-    label = '[COLOR %s]%s[/COLOR]' % (col, full)
-    l2 = ('[COLOR %s]%s[/COLOR]' % (col, l2)) if l2 else ''
+        l2 = ((l2 + '    ') if l2 else '') + '[COLOR %s]SCADENZA %s[/COLOR]' % (_exp_col(exp), tf)
+    label = full
     tname = title
     if exp:
         tname += ' | SCADENZA %s' % tf
