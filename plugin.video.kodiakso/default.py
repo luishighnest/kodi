@@ -375,17 +375,23 @@ def _sky_epg_full(cur):
 
 
 def _sky_parts(title, exp, prog=''):
-    label = '[COLOR snow]%s[/COLOR]' % title
+    full = title
     l2 = ''
+    t = ''
     if prog:
-        l2 = '[COLOR 00FF00]%s[/COLOR]' % prog
+        full += ' \u2022 %s' % prog
+        l2 = prog
     if exp:
-        t = exp.strftime('%d/%m/%Y %H:%M')
-        col = _exp_col(exp)
-        l2 = ((l2 + '    ') if l2 else '') + '[COLOR %s]SCADENZA %s[/COLOR]' % (col, t)
+        t = exp.strftime('%d/%m %H:%M')
+        tf = exp.strftime('%d/%m/%Y %H:%M')
+        full += ' \u2022 %s' % t
+        l2 = ((l2 + '    ') if l2 else '') + 'SCADENZA %s' % tf
+    col = _exp_col(exp) if exp else '00FF00'
+    label = '[COLOR %s]%s[/COLOR]' % (col, full)
+    l2 = ('[COLOR %s]%s[/COLOR]' % (col, l2)) if l2 else ''
     tname = title
     if exp:
-        tname += ' | SCADENZA %s' % exp.strftime('%d/%m/%Y %H:%M')
+        tname += ' | SCADENZA %s' % tf
     return label, l2, tname
 
 
@@ -898,12 +904,7 @@ def sky_cat_view(cat, back=''):
             log('sky_cat TB: ' + traceback.format_exc())
         except Exception:
             pass
-    xbmcplugin.setContent(HANDLE, 'videos')
     xbmcplugin.endOfDirectory(HANDLE)
-    try:
-        xbmc.executebuiltin('Container.SetViewMode(50)')
-    except Exception as e:
-        log('sky setview: ' + str(e))
 
 
 def tv_view():
