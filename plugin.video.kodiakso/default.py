@@ -47,6 +47,8 @@ BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png'
 ICON_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
 EMPTY_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'empty.png')
 _VOD_SRC = ''
+VIXSRC_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36'
+VIXSRC_MIRRORS = ['https://vixsrc.to', 'https://ciola.xyz', 'https://elk-stream-embed.club']
 
 EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
 EPG_KEEP_HOURS = 6
@@ -989,6 +991,127 @@ def _tmdb_url(action, **params):
     return BASE + '?action=' + action + '&' + urllib.parse.urlencode(params)
 
 
+def v2_get(url, base):
+    try:
+        r = requests.get(url, timeout=15, headers={
+            'User-Agent': VIXSRC_UA,
+            'Accept': 'text/html,application/xhtml+xml,application/json,*/*',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': base + '/',
+            'Origin': base,
+        })
+        if r.status_code == 200 and r.text:
+            return r.text
+    except Exception:
+        pass
+    return ''
+
+
+def v2_extract(html):
+    if not html:
+        return None
+    tok = re.search(r"['\"]?token['\"]?\s*:\s*['\"]([^'\"]+)", html)
+    if not tok:
+        tok = re.search(r"\btoken\b\s*:\s*['\"]([^'\"]+)", html)
+    exp = re.search(r"['\"]?expires['\"]?\s*:\s*['\"]([^'\"]+)", html)
+    if not exp:
+        exp = re.search(r"expires\s*:\s*(\d+)", html)
+    pl = re.search(r"\burl\b\s*:\s*['\"]([^'\"]+)", html)
+    if not (tok and exp and pl):
+        return None
+    return tok.group(1), exp.group(1), pl.group(1)
+
+
+def resolve_v2(id_, mtype='movie', season='0', episode='0', title=''):
+    season = str(season or '0')
+    episode = str(episode or '0')
+    for base in VIXSRC_MIRRORS:
+        if mtype == 'tv':
+            api = base + '/api/tv/%s/%s/%s' % (id_, season, episode)
+            page = base + '/tv/%s/%s/%s/?lang=it' % (id_, season, episode)
+        else:
+            api = base + '/api/movie/%s' % id_
+            page = base + '/movie/%s/?lang=it' % id_
+        found = None
+        html = v2_get(api, base)
+        if html:
+            j = None
+            try:
+                j = json.loads(html)
+            except Exception:
+                pass
+            if isinstance(j, dict) and j.get('src'):
+                found = v2_extract(v2_get(base + j['src'], base))
+        if not found:
+            found = v2_extract(v2_get(page, base))
+        if not found:
+            continue
+        token, expires, pl = found
+        try:
+            if float(expires) * 1000 - 60000 < time.time() * 1000:
+                continue
+        except ValueError:
+            continue
+        headers = urllib.parse.urlencode({'User-Agent': VIXSRC_UA, 'Referer': api, 'Origin': base})
+        master = pl + ('&' if '?' in pl else '?') + 'token=%s&expires=%s&h=1' % (token, expires) + '|' + headers
+        li = xbmcgui.ListItem(label=lbl(title or 'VixSrc'))
+        li.setPath(master)
+        li.setInfo('video', {'title': title, 'mediatype': 'movie' if mtype == 'movie' else 'episode'})
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        li.setProperty('isPlayable', 'true')
+        return li
+    return None
+
+
+def v2_seasons_view(id_, back=''):
+    back_button(back or (BASE + '?action=films'))
+    try:
+        j = tmdb_get('/tv/%s' % id_)
+    except Exception:
+        j = {}
+    tname = html.unescape(j.get('name') or 'Sconosciuto')
+    poster = j.get('poster_path')
+    for s in j.get('seasons', []):
+        n = s.get('season_number') or 0
+        if n <= 0:
+            continue
+        label = 'Stagione %d' % n
+        if s.get('air_date'):
+            label += '  (%s)' % str(s['air_date'])[:4]
+        if s.get('episode_count'):
+            label += '  - %d ep.' % s['episode_count']
+        li = xbmcgui.ListItem(label=lbl(label))
+        if poster:
+            li.setArt({'thumb': TMDB_IMG + 'w342' + poster})
+        li.setInfo('video', {'title': '%s - Stagione %d' % (tname, n), 'mediatype': 'season'})
+        url = _tmdb_url('v2episodes', id=id_, s=str(n))
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def v2_episodes_view(id_, s, back=''):
+    back_button(back or (BASE + '?action=films'))
+    try:
+        j = tmdb_get('/tv/%s/season/%s' % (id_, s))
+    except Exception:
+        j = {}
+    tname = html.unescape(j.get('name') or 'Sconosciuto')
+    for ep in j.get('episodes', []):
+        n = ep.get('episode_number') or 0
+        ename = html.unescape(ep.get('name') or '')
+        label = ('Ep. %02d  %s' % (n, ename)) if ename else ('Episodio %02d' % n)
+        li = xbmcgui.ListItem(label=lbl(label))
+        still = ep.get('still_path')
+        if still:
+            li.setArt({'thumb': TMDB_IMG + 'w342' + still})
+        etitle = '%s S%sE%s' % (tname, s, n)
+        li.setInfo('video', {'title': etitle, 'plot': ep.get('overview') or '', 'mediatype': 'episode'})
+        url = _tmdb_url('v2play', id=id_, mtype='tv', s=s, e=str(n), t=etitle)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
 def tmdb_add_item(it, mtype, back=''):
     title = html.unescape(it.get('title') or it.get('name') or '')
     date = it.get('release_date') or it.get('first_air_date') or ''
@@ -1013,10 +1136,16 @@ def tmdb_add_item(it, mtype, back=''):
     li.setInfo('video', info)
     if mtype == 'movie':
         li.setProperty('isPlayable', 'true')
-        url = _tmdb_url('mplayauto', q=title, back=back)
+        if _VOD_SRC == '2':
+            url = _tmdb_url('v2play', id=it.get('id'), mtype='movie')
+        else:
+            url = _tmdb_url('mplayauto', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     else:
-        url = _tmdb_url('mseasonsauto', q=title, back=back)
+        if _VOD_SRC == '2':
+            url = _tmdb_url('v2seasons', id=it.get('id'))
+        else:
+            url = _tmdb_url('mseasonsauto', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
@@ -1159,10 +1288,17 @@ def tmdb_details(mtype, id_, back=''):
         li.setArt({'fanart': TMDB_IMG + 'w1280' + fan})
     xbmcgui.Dialog().info(li)
 
-    play = xbmcgui.ListItem(label=lbl('▶  Riproduci con Mandrakodi'))
+    play = xbmcgui.ListItem(label=lbl('▶  Riproduci con VixSrc' if _VOD_SRC == '2' else '▶  Riproduci con Mandrakodi'))
     play.setArt({'thumb': SQUARE_ICON})
     details_url = BASE + '?action=details&mt=' + urllib.parse.quote(mtype) + '&id=' + urllib.parse.quote(id_)
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('msearch', q=title, mt=mtype, back=details_url), play, isFolder=True)
+    if _VOD_SRC == '2':
+        if mtype == 'movie':
+            url = _tmdb_url('v2play', id=id_, mtype='movie')
+        else:
+            url = _tmdb_url('v2seasons', id=id_)
+    else:
+        url = _tmdb_url('msearch', q=title, mt=mtype, back=details_url)
+    xbmcplugin.addDirectoryItem(HANDLE, url, play, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -2077,6 +2213,20 @@ def main():
                                   query.get('ept', [''])[0], query.get('s', [''])[0],
                                   query.get('e', [''])[0])
                 xbmcplugin.setResolvedUrl(HANDLE, True, li)
+        elif action == 'v2seasons':
+            v2_seasons_view(query.get('id', [''])[0], query.get('back', [''])[0])
+        elif action == 'v2episodes':
+            v2_episodes_view(query.get('id', [''])[0], query.get('s', [''])[0],
+                             query.get('back', [''])[0])
+        elif action == 'v2play':
+            li = resolve_v2(query.get('id', [''])[0], query.get('mtype', ['movie'])[0],
+                            query.get('s', ['0'])[0], query.get('e', ['0'])[0],
+                            query.get('t', [''])[0])
+            if li:
+                xbmcplugin.setResolvedUrl(HANDLE, True, li)
+            else:
+                notify(NAME, 'Nessun flusso VixSrc disponibile', True)
+                xbmcplugin.endOfDirectory(HANDLE)
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'skyplay':
