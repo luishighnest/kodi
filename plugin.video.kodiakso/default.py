@@ -46,6 +46,7 @@ LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
 BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png')
 ICON_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
 EMPTY_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'empty.png')
+_VOD_SRC = ''
 
 EPG_URL_DEFAULT = 'https://epgshare01.online/epgshare01/epg_ripper_IT1.xml.gz'
 EPG_KEEP_HOURS = 6
@@ -983,6 +984,8 @@ def tmdb_get(path, **params):
 
 
 def _tmdb_url(action, **params):
+    if _VOD_SRC:
+        params.setdefault('src', _VOD_SRC)
     return BASE + '?action=' + action + '&' + urllib.parse.urlencode(params)
 
 
@@ -1991,6 +1994,7 @@ def root_view():
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
         home_items.append(('VOD 1', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
+        home_items.append(('VOD 2', LOGO_BASE + 'netflix.png', BASE + '?action=films&src=2'))
     for label, icon, url in home_items:
         if label == 'VOD 1':
             empty_item()
@@ -2004,7 +2008,9 @@ def root_view():
 
 
 def main():
+    global _VOD_SRC
     query = urllib.parse.parse_qs(sys.argv[2][1:])
+    _VOD_SRC = query.get('src', [''])[0]
     if 'action' in query:
         action = query['action'][0]
         if action == 'nav':
@@ -2051,7 +2057,11 @@ def main():
             mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0],
                                query.get('back', [''])[0])
         elif action == 'mplayauto':
-            mandra_auto_movie(query.get('q', [''])[0])
+            if _VOD_SRC == '2':
+                notify(NAME, 'VOD 2: riproduzione non ancora disponibile')
+                xbmcplugin.endOfDirectory(HANDLE)
+            else:
+                mandra_auto_movie(query.get('q', [''])[0])
         elif action == 'mseasonsauto':
             mandra_auto_series(query.get('q', [''])[0], query.get('back', [''])[0])
         elif action == 'mseason':
@@ -2059,10 +2069,14 @@ def main():
         elif action == 'mepisodes':
             mandra_episodes_view(query.get('par', [''])[0], query.get('back', [''])[0])
         elif action == 'mplay':
-            li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0],
-                              query.get('ept', [''])[0], query.get('s', [''])[0],
-                              query.get('e', [''])[0])
-            xbmcplugin.setResolvedUrl(HANDLE, True, li)
+            if _VOD_SRC == '2':
+                notify(NAME, 'VOD 2: riproduzione non ancora disponibile')
+                xbmcplugin.endOfDirectory(HANDLE)
+            else:
+                li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0],
+                                  query.get('ept', [''])[0], query.get('s', [''])[0],
+                                  query.get('e', [''])[0])
+                xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'skyplay':
