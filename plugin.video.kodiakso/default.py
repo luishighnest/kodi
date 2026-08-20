@@ -356,19 +356,10 @@ def _exp_color(st):
 
 def _sky_parts(title, exp):
     if not exp:
-        return '[COLOR snow]%s[/COLOR]' % title, '', title
-    st = _exp_status(exp) or 'ok'
-    if st == 'soon':
-        col = EXP_SOON_COLOR
-    elif st == 'exp':
-        col = 'FF6B6B'
-    else:
-        col = 'F5F5F5'
+        return title, '', title
     t = exp.strftime('%d/%m/%Y %H:%M')
     full = '%s | SCADENZA %s' % (title, t)
-    label = '[COLOR %s]%s[/COLOR]' % (col, full)
-    seg = '[COLOR %s]| SCADENZA %s[/COLOR]' % (col, t)
-    return label, seg, full
+    return full, 'SCADENZA %s' % t, full
 
 
 def _sky_label(title, exp):
@@ -556,7 +547,7 @@ def gsearch_view(q=''):
                 label, l2, tname = _sky_parts(t, exp)
             except Exception:
                 exp = None
-                label, l2, tname = lbl(t), '', t
+                label, l2, tname = t, '', t
             li = xbmcgui.ListItem(label=label)
             if l2:
                 li.setLabel2(l2)
@@ -865,10 +856,8 @@ def sky_cat_view(cat, back=''):
                 label, l2, tname = _sky_parts(title, exp)
                 cur, nxt = _epg_now(cid, epg)
                 if cur:
-                    prog = '[COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+                    prog = '%02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2]))
                     label += '   ' + prog
-                    if l2:
-                        l2 += '   ' + prog
                 li = xbmcgui.ListItem(label=label)
                 if l2:
                     li.setLabel2(l2)
