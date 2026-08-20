@@ -354,6 +354,21 @@ def _exp_color(st):
     return ''
 
 
+def _sky_parts(title, exp):
+    if not exp:
+        return '[COLOR snow]%s[/COLOR]' % title, '', title
+    st = _exp_status(exp) or 'ok'
+    if st == 'soon':
+        col = EXP_SOON_COLOR
+    elif st == 'exp':
+        col = 'FF6B6B'
+    else:
+        col = '90EE90'
+    t = exp.strftime('%d/%m/%Y %H:%M')
+    seg = '[COLOR %s]| SCADENZA %s[/COLOR]' % (col, t)
+    return '[COLOR snow]%s[/COLOR] %s' % (title, seg), seg, '%s | SCADENZA %s' % (title, t)
+
+
 def _sky_label(title, exp):
     if not exp:
         return '[COLOR snow]%s[/COLOR]' % title
@@ -536,13 +551,13 @@ def gsearch_view(q=''):
         for t, cid in sm:
             try:
                 exp = _sky_expiry(cid)
-                label = _sky_label(t, exp)
-                tname = _sky_disp(t, exp)
+                label, l2, tname = _sky_parts(t, exp)
             except Exception:
                 exp = None
-                label = lbl(t)
-                tname = t
+                label, l2, tname = lbl(t), '', t
             li = xbmcgui.ListItem(label=label)
+            if l2:
+                li.setLabel2(l2)
             logo = LOGOS.get(cid, '')
             li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
             li.setProperty('isPlayable', 'true')
@@ -845,11 +860,16 @@ def sky_cat_view(cat, back=''):
         for title, cid in sky_channels().get(cat, []):
             try:
                 exp = _sky_expiry(cid)
-                label = _sky_label(title, exp)
+                label, l2, tname = _sky_parts(title, exp)
                 cur, nxt = _epg_now(cid, epg)
                 if cur:
-                    label += '   [COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+                    prog = '[COLOR %s]%02d:%02d %s[/COLOR]' % (EXP_OK_COLOR, cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+                    label += '   ' + prog
+                    if l2:
+                        l2 += '   ' + prog
                 li = xbmcgui.ListItem(label=label)
+                if l2:
+                    li.setLabel2(l2)
                 logo = LOGOS.get(cid, '')
                 li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
                 li.setProperty('isPlayable', 'true')
@@ -860,7 +880,7 @@ def sky_cat_view(cat, back=''):
                     lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
                 if nxt:
                     lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
-                li.setInfo('video', {'title': _sky_disp(title, exp), 'plot': ' | '.join(lines)})
+                li.setInfo('video', {'title': tname, 'plot': ' | '.join(lines)})
                 url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             except Exception as e:
