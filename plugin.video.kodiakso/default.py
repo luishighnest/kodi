@@ -378,7 +378,7 @@ def _sky_parts(title, exp, prog=''):
     if exp:
         t = exp.strftime('%d/%m %H:%M')
         tf = exp.strftime('%d/%m/%Y %H:%M')
-        full += ' \u2022 %s' % t
+        full += ' \u2022 [COLOR %s]%s[/COLOR]' % (_exp_col(exp), t)
         l2 = ((l2 + '    ') if l2 else '') + '[COLOR %s]SCADENZA %s[/COLOR]' % (_exp_col(exp), tf)
     label = full
     tname = title
