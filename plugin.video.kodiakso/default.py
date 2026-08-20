@@ -465,6 +465,9 @@ def gsearch_view(q=''):
             xbmcplugin.endOfDirectory(HANDLE)
             return
         q = kb.getText().strip()
+        xbmc.executebuiltin('Container.Update("%s")' % _tmdb_url('gsearch', q=q))
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
     ql = q.lower()
     search_back = BASE + '?action=gsearch&q=' + urllib.parse.quote(q)
     home_button()
@@ -1116,6 +1119,9 @@ def tmdb_search(query='', page=1, back=''):
             xbmcplugin.endOfDirectory(HANDLE)
             return
         query = kb.getText().strip()
+        xbmc.executebuiltin('Container.Update("%s")' % _tmdb_url('search', q=query, page='1'))
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
     j = tmdb_get('/search/multi', query=query, include_adult='true' if TMDB_ADULT else 'false', page=page)
     xbmcplugin.setContent(HANDLE, 'movies')
     search_url = BASE + '?action=search&q=' + urllib.parse.quote(query) + '&page=' + str(page)
@@ -1391,7 +1397,10 @@ SZX_DIGEST = bytes.fromhex('1676ec7db4771b0d826d70369b579684b182d2c0133be041bdd5
 SZX_SALT = b'sportzx/v2/prk'
 SZX_UA = 'Dalvik/2.1.0 (Linux; Android 13)'
 _SZX = {'events': None, 'cats': None, 'channels': {}}
-_DDY = {'data': None}
+_SZX_TS = {}
+_SZX_TTL = {'events': 600, 'cats': 1800, 'channels': 1200}
+_DDY = {'data': None, 'ts': 0}
+_DDY_TTL = 1800
 
 _SZX_SBOX = [
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
@@ -1529,17 +1538,23 @@ def _szx_decrypt(data):
 
 
 def _szx_fetch(name):
-    try:
-        r = requests.get(SZX_BASE + name, timeout=20,
-                         headers={'User-Agent': SZX_UA})
-        r.raise_for_status()
-        return r.json().get('data', '')
-    except Exception:
-        return ''
+    last = None
+    for attempt in range(2):
+        try:
+            r = requests.get(SZX_BASE + name, timeout=20,
+                             headers={'User-Agent': SZX_UA})
+            r.raise_for_status()
+            return r.json().get('data', '')
+        except Exception as e:
+            last = e
+            time.sleep(1)
+    log('szx fetch %s: %s' % (name, last))
+    return ''
 
 
 def _szx_load(key, name, eid=''):
-    if key in _SZX and _SZX[key] is not None:
+    now = time.time()
+    if _SZX.get(key) is not None and (now - _SZX_TS.get(key, 0)) < _SZX_TTL.get(key, 600):
         return _SZX[key]
     raw = _szx_fetch(name)
     d = _szx_decrypt(raw) if raw else None
@@ -1548,6 +1563,7 @@ def _szx_load(key, name, eid=''):
     except Exception:
         val = []
     _SZX[key] = val
+    _SZX_TS[key] = now
     return val
 
 
@@ -1565,16 +1581,24 @@ def events_view():
 
 
 def _daddy_fetch():
-    if _DDY['data'] is None:
-        try:
-            r = requests.get('https://test34344.herokuapp.com/filter.php',
-                             params={'numTest': 'A1A114'},
-                             headers={'User-Agent': API_UA}, timeout=25)
-            r.raise_for_status()
-            _DDY['data'] = r.json().get('channels', [])
-        except Exception as e:
-            log('daddy fetch: %s' % e)
+    if _DDY['data'] is None or (time.time() - _DDY['ts']) >= _DDY_TTL:
+        last = None
+        for attempt in range(2):
+            try:
+                r = requests.get('https://test34344.herokuapp.com/filter.php',
+                                 params={'numTest': 'A1A114'},
+                                 headers={'User-Agent': API_UA}, timeout=25)
+                r.raise_for_status()
+                _DDY['data'] = r.json().get('channels', [])
+                _DDY['ts'] = time.time()
+                break
+            except Exception as e:
+                last = e
+                time.sleep(1)
+        if _DDY['data'] is None:
+            log('daddy fetch: %s' % last)
             _DDY['data'] = []
+            _DDY['ts'] = time.time()
     return _DDY['data']
 
 
