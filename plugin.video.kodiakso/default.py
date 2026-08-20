@@ -5,6 +5,8 @@ import re
 import json
 import base64
 import gzip
+import io
+import zipfile
 import os
 import pickle
 import hashlib
@@ -25,6 +27,7 @@ BASE = sys.argv[0]
 NAME = ADDON.getAddonInfo('name')
 
 DEFAULT_URL = 'https://luishighnest.github.io/kodi/playlist.m3u'
+REPO_BASE = 'https://luishighnest.github.io/kodi'
 PLAYLIST_URL = ADDON.getSetting('playlist_url').strip() or DEFAULT_URL
 PLAYLIST_TS = ADDON.getSetting('playlist_timestamp') == 'true'
 
@@ -1197,7 +1200,7 @@ def resolve_scws(parIn, title, eptitle='', season=0, episode=0):
             urlSc += '&b=1'
     except Exception as e:
         xbmc.log('KODIAKSO scws resolve ERR: ' + str(e), xbmc.LOGERROR)
-        notify(title or parIn, 'Errore risoluzione link', True)
+        notify(title or parIn, 'Impossibile riprodurre il contenuto', True)
         return xbmcgui.ListItem()
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
@@ -1237,7 +1240,7 @@ def mandra_auto_movie(query):
             li = resolve_scws(par, title)
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
             return
-    notify(query or 'Film', 'Nessun risultato su Mandrakodi', True)
+    notify(query or 'Film', 'Impossibile riprodurre il contenuto', True)
     xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
 
 
@@ -1257,7 +1260,7 @@ def mandra_auto_series(query, back=''):
         if m:
             mandra_season_view(m.group(1), back)
             return
-    notify(query or 'Serie', 'Nessuna serie su Mandrakodi', True)
+    notify(query or 'Serie', 'Impossibile riprodurre il contenuto', True)
     back_button(back)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1298,7 +1301,7 @@ def mandra_search_view(query, mtype='', back=''):
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
                 added += 1
     if not added:
-        li = xbmcgui.ListItem(label=lbl('Nessun risultato su Mandrakodi'))
+        li = xbmcgui.ListItem(label=lbl('Nessun risultato'))
         xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('msearch', q=query), li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1858,6 +1861,65 @@ def empty_item():
     xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
 
 
+def _ver_tuple(s):
+    return tuple(int(x) for x in re.findall(r'\d+', s) or ['0'])
+
+
+def check_update():
+    try:
+        r = requests.get(REPO_BASE + '/addons.xml', timeout=15)
+        r.raise_for_status()
+        m = re.search(r'<addon id="plugin\.video\.kodiakso" name="PZ8" version="([^"]+)"', r.text)
+        if not m:
+            m = re.search(r'<addon id="plugin\.video\.kodiakso" version="([^"]+)"', r.text)
+        if not m:
+            raise Exception('versione non trovata')
+        new = m.group(1)
+        cur = ADDON.getAddonInfo('version')
+        if _ver_tuple(new) <= _ver_tuple(cur):
+            notify(NAME, 'Aggiornato: sei gia alla v' + cur)
+            return
+        z = requests.get(REPO_BASE + '/zips/plugin.video.kodiakso/plugin.video.kodiakso-' + new + '.zip',
+                         timeout=120)
+        z.raise_for_status()
+        data = zipfile.ZipFile(io.BytesIO(z.content))
+        dest = ADDON.getAddonInfo('path')
+        count = 0
+        for name in data.namelist():
+            rel = name[len('plugin.video.kodiakso/'):] if name.startswith('plugin.video.kodiakso/') else name
+            if not rel or not name.startswith('plugin.video.kodiakso/') or rel.endswith('/'):
+                continue
+            target = os.path.normpath(os.path.join(dest, rel.replace('/', os.sep)))
+            if not target.startswith(os.path.normpath(dest)):
+                continue
+            d = os.path.dirname(target)
+            if not os.path.isdir(d):
+                try:
+                    os.makedirs(d)
+                except Exception:
+                    continue
+            tmp = target + '.tmp'
+            try:
+                with open(tmp, 'wb') as f:
+                    f.write(data.read(name))
+                os.replace(tmp, target)
+                count += 1
+            except Exception as e:
+                xbmc.log('KODIAKSO update file ERR (' + rel + '): ' + str(e), xbmc.LOGERROR)
+        xbmc.executebuiltin('UpdateLocalAddons')
+        notify(NAME, 'Aggiornato alla v' + new + ' (file aggiornati: ' + str(count) + ')')
+    except Exception as e:
+        xbmc.log('KODIAKSO update ERR: ' + str(e), xbmc.LOGERROR)
+        notify(NAME, 'Impossibile controllare gli aggiornamenti', True)
+
+
+def update_view():
+    back_button(BASE + '?action=root')
+    check_update()
+    xbmc.executebuiltin('Container.Update("%s?action=root", replace)' % BASE)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
 def root_view():
     bann = xbmcgui.ListItem(label='[B][COLOR snow]PZ8[/COLOR][/B]')
     bann.setArt({'banner': BANNER_LOGO, 'clearlogo': BANNER_LOGO, 'icon': ICON_LOGO, 'thumb': ''})
@@ -1885,6 +1947,9 @@ def root_view():
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': icon or SQUARE_ICON})
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Aggiorna PZ8'))
+    li.setArt({'thumb': ICON_LOGO})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('update'), li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -1910,6 +1975,8 @@ def main():
             events_view()
         elif action == 'gsearch':
             gsearch_view(query.get('q', [''])[0])
+        elif action == 'update':
+            update_view()
         elif action == 'search':
             tmdb_search(query.get('q', [''])[0], int(query.get('page', ['1'])[0]),
                         query.get('back', [''])[0])
