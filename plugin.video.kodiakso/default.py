@@ -363,17 +363,25 @@ def _exp_col(exp):
     return '00FF00'
 
 
+def _sky_tile_prog(cur):
+    name = ' '.join(str(cur[2]).split()[:3])
+    if len(name) > 12:
+        name = name[:12].rstrip() + '\u2026'
+    return '%02d:%02d %s' % (cur[0].hour, cur[0].minute, name)
+
+
 def _sky_parts(title, exp, prog=''):
     label = '[COLOR snow]%s[/COLOR]' % title
     l2 = ''
     if prog:
-        label += '  [COLOR 888888]\u2502[/COLOR]  [COLOR 00FF00]%s[/COLOR]' % prog
+        label += ' [COLOR 888888]\u2022[/COLOR] [COLOR 00FF00]%s[/COLOR]' % prog
         l2 = '[COLOR 00FF00]%s[/COLOR]' % prog
     if exp:
         t = exp.strftime('%d/%m/%Y %H:%M')
+        ts = exp.strftime('%d/%m %H:%M')
         col = _exp_col(exp)
-        label += '  [COLOR 888888]\u2502[/COLOR]  [COLOR A9A9A9]SCADENZA[/COLOR] [COLOR %s]%s[/COLOR]' % (col, t)
-        l2 = ((l2 + '   ') if l2 else '') + '[COLOR %s]SCADENZA %s[/COLOR]' % (col, t)
+        label += ' [COLOR 888888]\u2022[/COLOR] [COLOR %s]%s[/COLOR]' % (col, ts)
+        l2 = ((l2 + '    ') if l2 else '') + '[COLOR %s]SCADENZA %s[/COLOR]' % (col, t)
     tname = title
     if exp:
         tname += ' | SCADENZA %s' % exp.strftime('%d/%m/%Y %H:%M')
@@ -855,7 +863,7 @@ def sky_cat_view(cat, back=''):
                 cur, nxt = _epg_now(cid, epg)
                 prog = ''
                 if cur:
-                    prog = '%02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2]))
+                    prog = _sky_tile_prog(cur)
                 label, l2, tname = _sky_parts(title, exp, prog)
                 li = xbmcgui.ListItem(label=label)
                 if l2:
