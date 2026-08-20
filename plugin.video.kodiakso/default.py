@@ -367,6 +367,12 @@ def _sky_label(title, exp):
     return '[COLOR snow]%s[/COLOR] [COLOR %s]| SCADENZA %s[/COLOR]' % (title, col, exp.strftime('%d/%m/%Y %H:%M'))
 
 
+def _sky_disp(title, exp):
+    if not exp:
+        return title
+    return '%s | SCADENZA %s' % (title, exp.strftime('%d/%m/%Y %H:%M'))
+
+
 def _sky_expiry(cid):
     t = time.time()
     hit = _EXP_CACHE.get(cid)
@@ -529,13 +535,18 @@ def gsearch_view(q=''):
         header('[COLOR A9A9A9]Sky (%d)[/COLOR]' % len(sm))
         for t, cid in sm:
             try:
-                label = _sky_label(t, _sky_expiry(cid))
+                exp = _sky_expiry(cid)
+                label = _sky_label(t, exp)
+                tname = _sky_disp(t, exp)
             except Exception:
+                exp = None
                 label = lbl(t)
+                tname = t
             li = xbmcgui.ListItem(label=label)
             logo = LOGOS.get(cid, '')
             li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON})
             li.setProperty('isPlayable', 'true')
+            li.setInfo('video', {'title': tname})
             url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(t)
             xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             added += 1
@@ -849,7 +860,7 @@ def sky_cat_view(cat, back=''):
                     lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
                 if nxt:
                     lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
-                li.setInfo('video', {'title': title, 'plot': ' | '.join(lines)})
+                li.setInfo('video', {'title': _sky_disp(title, exp), 'plot': ' | '.join(lines)})
                 url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             except Exception as e:
