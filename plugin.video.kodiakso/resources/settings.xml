@@ -39,5 +39,7 @@
     <category label="SportzX (Eventi 2)">
         <setting id="szx_base" type="text" label="Base URL SportzX (vuoto = automatico da Firebase)" default="" />
         <setting id="szx_password" type="text" label="Password decrittazione SportzX" default="oAR80SGuX3EEjUGFRwLFKBTiris=" />
+        <setting id="szx_key" type="text" label="Chiave AES raw (hex/base64) - ignora la password" default="" />
+        <setting id="szx_iv" type="text" label="IV AES raw (hex/base64) - ignora la password" default="" />
     </category>
 </settings>

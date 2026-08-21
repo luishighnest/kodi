@@ -1826,7 +1826,65 @@ def szx_base():
     return _SZX_API_URL or SZX_BASE
 
 
+def _szx_raw_key_iv():
+    k = ADDON.getSetting('szx_key').strip()
+    v = ADDON.getSetting('szx_iv').strip()
+    if not k or not v:
+        return None, None
+
+    def _dec(s):
+        s = s.strip()
+        try:
+            return bytes.fromhex(s)
+        except Exception:
+            pass
+        try:
+            return base64.b64decode(s + '=' * (-len(s) % 4))
+        except Exception:
+            pass
+        return None
+
+    kb, vb = _dec(k), _dec(v)
+    if kb and vb:
+        return kb, vb
+    return None, None
+
+
+def _szx_aes_cbc_try(blob, key, iv):
+    cands = [
+        (blob[1:], iv),
+        (blob[17:], blob[1:17]),
+        (blob[17:-32], blob[1:17]),
+    ]
+    for ct, use_iv in cands:
+        if len(ct) == 0 or len(ct) % 16 != 0:
+            continue
+        try:
+            pt = _szx_aes_cbc_decrypt(key, use_iv, ct)
+            pad = pt[-1] if pt else 0
+            if 1 <= pad <= 16:
+                pt = pt[:-pad]
+            if pt:
+                return pt
+        except Exception:
+            continue
+    return None
+
+
 def _szx_decrypt(data):
+    try:
+        b = data.strip()
+        b += '=' * (-len(b) % 4)
+        blob = base64.urlsafe_b64decode(b)
+    except Exception:
+        return None
+    if not blob or blob[0] not in (2, 3):
+        return None
+    rk, rv = _szx_raw_key_iv()
+    if rk and rv:
+        d = _szx_aes_cbc_try(blob, rk, rv)
+        if d:
+            return d
     pw = ADDON.getSetting('szx_password').strip() or SZX_APP_PASSWORD
     d = _szx_new_decrypt(data, pw)
     if d:
