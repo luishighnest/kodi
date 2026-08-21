@@ -8,9 +8,11 @@
 https://dcs-fs-live-dazn-cdn.dazn.com/dash/dazn-linear-206/stream.mpd?p=web&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODczODgyNzUsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODczMDE4NzV9.Z7wksH25H--mH6drZ3MtaOpnvtL7AbiE4HtuvJriJF0
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|7f9f6e3c78b2486f9fe13e06bdb768d2:b341c1136a3738f3a6ea197d31fab35c
 #EXTINF:-1 tvg-logo="/logos/rai1.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai 1
 https://wp8-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09101/stb-dash-fhd-avc/SV09101.mpd?ck=N2Y5ZjZlM2M3OGIyNDg2ZjlmZTEzZTA2YmRiNzY4ZDI6YjM0MWMxMTM2YTM3MzhmM2E2ZWExOTdkMzFmYWIzNWM=
+
 
 
 
@@ -66,9 +68,11 @@ https://wp4-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09103/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|f339a37813f742708d143656dd5f5323:17a9a13e3fbfe1d9cad739c21c89d3fc,77bc9ce3b0cc3ce7b01f6656b25544a7:26f89b9a32e2658af840743b81654c2d
 #EXTINF:-1 tvg-logo="/logos/rai3.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai 3
 https://wp5-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09104/stb-dash-fhd-avc/SV09104.mpd?ck=ZjMzOWEzNzgxM2Y3NDI3MDhkMTQzNjU2ZGQ1ZjUzMjM6MTdhOWExM2UzZmJmZTFkOWNhZDczOWMyMWM4OWQzZmMsNzdiYzljZTNiMGNjM2NlN2IwMWY2NjU2YjI1NTQ0YTc6MjZmODliOWEzMmUyNjU4YWY4NDA3NDNiODE2NTRjMmQ=
+
 
 
 
@@ -124,9 +128,11 @@ https://wp7-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09242/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|e19ef61b14c54485ae2c6ac4f12ea10c:2bc5e476d296401ee66bd8a647267c44
 #EXTINF:-1 tvg-logo="/logos/canale5.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Canale 5
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(canale5)/manifest.mpd?ck=ZTE5ZWY2MWIxNGM1NDQ4NWFlMmM2YWM0ZjEyZWExMGM6MmJjNWU0NzZkMjk2NDAxZWU2NmJkOGE2NDcyNjdjNDQ=
+
 
 
 
@@ -182,9 +188,11 @@ https://live03p-col.msf.cdn.mediaset.net/live/ch-i1/i1-dash-widevine.isml/manife
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|98d29e2e749c43e8bd343b025f6f0bfd:dc40f0c0208df9830b068169ce426e47
 #EXTINF:-1 tvg-logo="/logos/la7.png" tvg-provider="DAZN" group-title="Digitale Terrestre", LA7
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(la7)/manifest.mpd?ck=OThkMjllMmU3NDljNDNlOGJkMzQzYjAyNWY2ZjBiZmQ6ZGM0MGYwYzAyMDhkZjk4MzBiMDY4MTY5Y2U0MjZlNDc=
+
 
 
 
@@ -240,9 +248,11 @@ https://wp5-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09318/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|e0e63271f18f3a8b84b0a5d5bbf4c685:40fe6c26be09e5678fb729a9ab69b336
 #EXTINF:-1 tvg-logo="/logos/nove.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Nove
 https://wp8-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09472/stb-dash-fhd-avc/SV09472.mpd?ck=ZTBlNjMyNzFmMThmM2E4Yjg0YjBhNWQ1YmJmNGM2ODU6NDBmZTZjMjZiZTA5ZTU2NzhmYjcyOWE5YWI2OWIzMzY=
+
 
 
 
@@ -298,9 +308,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(venti)/manifest.mpd?ck=
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|75122447c4fe4f96aa60ef9f16206c94:6ce31ba35b09f37fd00bad50b8af2597,afa0ef0e81713de687ce66725fa4e768:cdc23c86c7f2dddce3ee879ca37a0a84
 #EXTINF:-1 tvg-logo="/logos/rai4.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai 4
 https://wp6-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09105/stb-dash-fhd-avc/SV09105.mpd?ck=NzUxMjI0NDdjNGZlNGY5NmFhNjBlZjlmMTYyMDZjOTQ6NmNlMzFiYTM1YjA5ZjM3ZmQwMGJhZDUwYjhhZjI1OTcsYWZhMGVmMGU4MTcxM2RlNjg3Y2U2NjcyNWZhNGU3Njg6Y2RjMjNjODZjN2YyZGRkY2UzZWU4NzljYTM3YTBhODQ=
+
 
 
 
@@ -356,9 +368,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(iris)/manifest.mpd?ck=M
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|1d07c25658bd4f28b850dae3bc6436ca:3ca78870e5626b248ca232f7d571c54a,aa143d6062a63e00a5ca1bc696a915f7:0c4cccf23f6f1e8b523f2a8c5dcc0eca
 #EXTINF:-1 tvg-logo="/logos/rai5.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai 5
 https://wp13-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV00470/stb-dash-sd-avc/SV00470.mpd?ck=MWQwN2MyNTY1OGJkNGYyOGI4NTBkYWUzYmM2NDM2Y2E6M2NhNzg4NzBlNTYyNmIyNDhjYTIzMmY3ZDU3MWM1NGEsYWExNDNkNjA2MmE2M2UwMGE1Y2ExYmM2OTZhOTE1Zjc6MGM0Y2NjZjIzZjZmMWU4YjUyM2YyYThjNWRjYzBlY2E=
+
 
 
 
@@ -414,9 +428,11 @@ https://wp8-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09108/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|87c8b40be5464126b779d2ba5ef469ec:b92817627367057b07f59602c765b381,b92ebe471d213a22b7da3dcf9db79630:3176fea58e4746da46652aacaddbbb56
 #EXTINF:-1 tvg-logo="/logos/raipremium.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai Premium
 https://wp12-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV00484/stb-dash-sd-avc/SV00484.mpd?ck=ODdjOGI0MGJlNTQ2NDEyNmI3NzlkMmJhNWVmNDY5ZWM6YjkyODE3NjI3MzY3MDU3YjA3ZjU5NjAyYzc2NWIzODEsYjkyZWJlNDcxZDIxM2EyMmI3ZGEzZGNmOWRiNzk2MzA6MzE3NmZlYTU4ZTQ3NDZkYTQ2NjUyYWFjYWRkYmJiNTY=
+
 
 
 
@@ -472,9 +488,11 @@ https://wp13-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV06547/s
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|225b1008bc354eda8df4ac60470e70c7:54f6a3ba748cf8a470d1effafe620cfe
 #EXTINF:-1 tvg-logo="/logos/la7d.png" tvg-provider="DAZN" group-title="Digitale Terrestre", LA7d HD
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(la7dhd)/manifest.mpd?ck=MjI1YjEwMDhiYzM1NGVkYThkZjRhYzYwNDcwZTcwYzc6NTRmNmEzYmE3NDhjZjhhNDcwZDFlZmZhZmU2MjBjZmU=
+
 
 
 
@@ -530,9 +548,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(la5)/manifest.mpd?ck=Mj
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|75453fa7322f4b8b81b285529b726e63:ca79bd265be6ac7315555aa1bbea6afe,60eb8ddba7113915914b865662fecbdb:8aca6eddd0a280f39ddc75372be2afd9
 #EXTINF:-1 tvg-logo="/logos/realtime.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Real Time
 https://wp3-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09319/stb-dash-fhd-avc/SV09319.mpd?ck=NzU0NTNmYTczMjJmNGI4YjgxYjI4NTUyOWI3MjZlNjM6Y2E3OWJkMjY1YmU2YWM3MzE1NTU1YWExYmJlYTZhZmUsNjBlYjhkZGJhNzExMzkxNTkxNGI4NjU2NjJmZWNiZGI6OGFjYTZlZGRkMGEyODBmMzlkZGM3NTM3MmJlMmFmZDk=
+
 
 
 
@@ -588,9 +608,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(italia2)/manifest.mpd?c
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|970c63f530b04c4391a0375b5554aee2:395c18dc71842768e93da4a27ef1b79b,2772376ddfe430959fa86911954594e5:843c8c51f1b720ba5527f438fbadf081
 #EXTINF:-1 tvg-logo="/logos/mediasetextra.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Mediaset Extra
 https://wp4-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09722/stb-dash-fhd-avc/SV09722.mpd?ck=OTcwYzYzZjUzMGIwNGM0MzkxYTAzNzViNTU1NGFlZTI6Mzk1YzE4ZGM3MTg0Mjc2OGU5M2RhNGEyN2VmMWI3OWIsMjc3MjM3NmRkZmU0MzA5NTlmYTg2OTExOTU0NTk0ZTU6ODQzYzhjNTFmMWI3MjBiYTU1MjdmNDM4ZmJhZGYwODE=
+
 
 
 
@@ -646,9 +668,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(focus)/manifest.mpd?ck=
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|97cbb06a1ff34f2d918af98a31ad8d91:38914e9b063e6d8ec17975c528854e2f
 #EXTINF:-1 tvg-logo="/logos/giallo.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Giallo
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(giallo)/manifest.mpd?ck=OTdjYmIwNmExZmYzNGYyZDkxOGFmOThhMzFhZDhkOTE6Mzg5MTRlOWIwNjNlNmQ4ZWMxNzk3NWM1Mjg4NTRlMmY=
+
 
 
 
@@ -704,9 +728,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(topcrime)/manifest.mpd?
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|dd863fc1178e3683bdfe675b23510400:560f3a909a9d14617ef4d50e646d68ca
 #EXTINF:-1 tvg-logo="/logos/k2.png" tvg-provider="DAZN" group-title="Digitale Terrestre", K2
 https://wp12-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV00480/stb-dash-sd-avc/SV00480.mpd?ck=ZGQ4NjNmYzExNzhlMzY4M2JkZmU2NzViMjM1MTA0MDA6NTYwZjNhOTA5YTlkMTQ2MTdlZjRkNTBlNjQ2ZDY4Y2E=
+
 
 
 
@@ -762,9 +788,11 @@ https://wp7-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09111/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|f001ecc9f7aa3b91aa8b263b6cf6fe2d:eb3d95d8194851e23cd007813de079c7
 #EXTINF:-1 tvg-logo="/logos/raiyoyo.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai Yoyo
 https://wp13-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV00472/stb-dash-sd-avc/SV00472.mpd?ck=ZjAwMWVjYzlmN2FhM2I5MWFhOGIyNjNiNmNmNmZlMmQ6ZWIzZDk1ZDgxOTQ4NTFlMjNjZDAwNzgxM2RlMDc5Yzc=
+
 
 
 
@@ -820,9 +848,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(frisbee)/manifest.mpd?c
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|d484bd586e7530e5a099dbdbcdbf5ec3:d8d365d6020e1d8567c33edac734652d
 #EXTINF:-1 tvg-logo="/logos/super.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Super!
 https://wp12-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV00486/stb-dash-sd-avc/SV00486.mpd?ck=ZDQ4NGJkNTg2ZTc1MzBlNWEwOTlkYmRiY2RiZjVlYzM6ZDhkMzY1ZDYwMjBlMWQ4NTY3YzMzZWRhYzczNDY1MmQ=
+
 
 
 
@@ -878,9 +908,11 @@ https://wp9-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09109/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|ffb0bec10ecf40a6aa133716f9adbf5f:2b7b29ab68a729f256b2c9239999c463
 #EXTINF:-1 tvg-logo="/logos/tgcom24.png" tvg-provider="DAZN" group-title="Digitale Terrestre", TGCOM24
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(tgcom24)/manifest.mpd?ck=ZmZiMGJlYzEwZWNmNDBhNmFhMTMzNzE2ZjlhZGJmNWY6MmI3YjI5YWI2OGE3MjlmMjU2YjJjOTIzOTk5OWM0NjM=
+
 
 
 
@@ -936,9 +968,11 @@ https://wp7-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09723/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|af702561762647968da463221b1b5797:badb94a89805cbc6c961dea0a570bdaa,be12d2f30e0535a0abaee324c91c4fe4:300dc1cb739636e264b3406ec44b7acf
 #EXTINF:-1 tvg-logo="/logos/raistoria.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Rai Storia
 https://wp1-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09112/stb-dash-fhd-avc/SV09112.mpd?ck=YWY3MDI1NjE3NjI2NDc5NjhkYTQ2MzIyMWIxYjU3OTc6YmFkYjk0YTg5ODA1Y2JjNmM5NjFkZWEwYTU3MGJkYWEsYmUxMmQyZjMwZTA1MzVhMGFiYWVlMzI0YzkxYzRmZTQ6MzAwZGMxY2I3Mzk2MzZlMjY0YjM0MDZlYzQ0YjdhY2Y=
+
 
 
 
@@ -994,9 +1028,11 @@ https://wp10-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV06534/s
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|2a63ed98962f4d7b9963ba6e79e40c05:a72c94f6a0d1d6545e74dc0a12366ce5,852b6570149e3e25b4a373903125f953:fbc4852aa9804c7087a4ea69e7e745ca
 #EXTINF:-1 tvg-logo="/logos/hgtv.png" tvg-provider="DAZN" group-title="Digitale Terrestre", HGTV
 https://wp2-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV06317/stb-dash-fhd-avc/SV06317.mpd?ck=MmE2M2VkOTg5NjJmNGQ3Yjk5NjNiYTZlNzllNDBjMDU6YTcyYzk0ZjZhMGQxZDY1NDVlNzRkYzBhMTIzNjZjZTUsODUyYjY1NzAxNDllM2UyNWI0YTM3MzkwMzEyNWY5NTM6ZmJjNDg1MmFhOTgwNGM3MDg3YTRlYTY5ZTdlNzQ1Y2E=
+
 
 
 
@@ -1052,9 +1088,11 @@ https://wp11-s-anp33343334-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09106/s
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|3ec0e67411d8416980c5bdf7fbfd57bf:317c58c342ccb7765283fa88e6014f69,25eb4193331533dcae5b4999753226d9:9a3eb8e7db55a953bcea59febc1c9e82
 #EXTINF:-1 tvg-logo="/logos/sportitalia.png" tvg-provider="DAZN" group-title="Digitale Terrestre", Sportitalia
 https://wp5-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09724/stb-dash-fhd-avc/SV09724.mpd?ck=M2VjMGU2NzQxMWQ4NDE2OTgwYzViZGY3ZmJmZDU3YmY6MzE3YzU4YzM0MmNjYjc3NjUyODNmYTg4ZTYwMTRmNjksMjVlYjQxOTMzMzE1MzNkY2FlNWI0OTk5NzUzMjI2ZDk6OWEzZWI4ZTdkYjU1YTk1M2JjZWE1OWZlYmMxYzllODI=
+
 
 
 
@@ -1110,9 +1148,11 @@ https://wp3-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09246/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|09af5f6eb89041ca8f5d164165142e86:1989cc9c9ce5b2b52cb93edaaefe8420,d268d810d8a73bd8b7d54a6a087581d2:1aaf297543168c625e05aa9e27344471
 #EXTINF:-1 tvg-logo="/logos/rsila1.png" tvg-provider="DAZN" group-title="Digitale Terrestre", RSI La1
 https://wp3-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09042/stb-dash-fhd-avc/SV09042.mpd?ck=MDlhZjVmNmViODkwNDFjYThmNWQxNjQxNjUxNDJlODY6MTk4OWNjOWM5Y2U1YjJiNTJjYjkzZWRhYWVmZTg0MjAsZDI2OGQ4MTBkOGE3M2JkOGI3ZDU0YTZhMDg3NTgxZDI6MWFhZjI5NzU0MzE2OGM2MjVlMDVhYTllMjczNDQ0NzE=
+
 
 
 
@@ -1169,9 +1209,11 @@ https://wp2-s-anp31323132-live-ch-prod.prod.cdn.dmdsdp.com/live/disk1/SV09043/st
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|163303a883824977b05d7357da82f487:40d5e1198d23aaad9079bdc881f2ca5a
 #EXTINF:-1 tvg-logo="/logos/eurosport.png" tvg-provider="DAZN" group-title="Eurosport", Eurosport 1
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport1)/manifest.mpd?ck=eyIxNjMzMDNhODgzODI0OTc3YjA1ZDczNTdkYTgyZjQ4NyI6IjQwZDVlMTE5OGQyM2FhYWQ5MDc5YmRjODgxZjJjYTVhIn0%3D
+
 
 
 
@@ -1227,9 +1269,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport2)/manifest.mp
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|1f0db319a1e3492ca02d1dbcfef176ac:ef3bc3b15caf33064d1e8f9d0b46b4b1
 #EXTINF:-1 tvg-logo="/logos/eurosport.png" tvg-provider="DAZN" group-title="Eurosport", Eurosport 3
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport3)/manifest.mpd?ck=eyIxZjBkYjMxOWExZTM0OTJjYTAyZDFkYmNmZWYxNzZhYyI6ImVmM2JjM2IxNWNhZjMzMDY0ZDFlOGY5ZDBiNDZiNGIxIn0%3D
+
 
 
 
@@ -1285,9 +1329,11 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport4)/manifest.mp
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|da9e85e0a6f4459f9344cdb544c22a4e:6af3a1f0911da1e5f6a196872ab5fbfe
 #EXTINF:-1 tvg-logo="/logos/eurosport.png" tvg-provider="DAZN" group-title="Eurosport", Eurosport 5
 https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport5)/manifest.mpd?ck=eyJkYTllODVlMGE2ZjQ0NTlmOTM0NGNkYjU0NGMyMmE0ZSI6IjZhZjNhMWYwOTExZGExZTVmNmExOTY4NzJhYjVmYmZlIn0%3D
+
 
 
 
@@ -1344,8 +1390,10 @@ https://timlivetu0.cb.ticdn.it/Content/DASH/Live/channel(eurosport6)/manifest.mp
 
 
 
+
 #EXTINF:-1 tvg-logo="/logos/supertennis.png" tvg-provider="DAZN" group-title="SuperTennis", SuperTennis 1
 https://421b2081187a40368f24e4fb496bfc26.msvdn.net/channel1/manifest.mpd
+
 
 
 
@@ -1400,6 +1448,7 @@ https://421b2081187a40368f24e4fb496bfc26.msvdn.net/channel2/manifest.mpd
 
 
 
+
 #EXTINF:-1 tvg-logo="/logos/supertennis.png" tvg-provider="DAZN" group-title="SuperTennis", SuperTennis 3
 https://421b2081187a40368f24e4fb496bfc26.msvdn.net/channel3/manifest.mpd
 
@@ -1428,8 +1477,10 @@ https://421b2081187a40368f24e4fb496bfc26.msvdn.net/channel3/manifest.mpd
 
 
 
+
 #EXTINF:-1 tvg-logo="/logos/supertennis.png" tvg-provider="DAZN" group-title="SuperTennis", Supertennis 4
 https://421b2081187a40368f24e4fb496bfc26.msvdn.net/channel4/manifest.mpd
+
 
 
 
@@ -1486,9 +1537,11 @@ https://dca-ac-live.cdn.indazn.com/s7kcpxd1oj8p1v7uu7akm80au/tv/stream.mpd?chann
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|8b3c4d56fe565d3b807fca8d34ea5d71:82fc9fc05fedb8b33d07ecfde006d92f
 #EXTINF:-1 tvg-logo="https://image.discovery.indazn.com/eu/v2/eu/image?id=6zzrpd2elxk1qu0oewsnh71e_image-header_pIt_1783615688000&quality=80&width=800&height=450" tvg-provider="DAZN" tvg-time="20:30" tvg-comp="NFL Game Pass" tvg-subtitle="Relive all the highs and lows of each NFL team's 2025 Season." group-title="Vod Dazn", 2025 Dolphins
 https://dca-ac-live.cdn.indazn.com/2divb751xa3d1cl42xp5ubl6v/tv/stream.mpd?channel=7438&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMmRpdmI3NTF4YTNkMWNsNDJ4cDV1Ymw2diJdLCJleGMiOltdLCJoZWFkZXJzIjpbXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sImludHNpZyI6IlNqN2FGOEJyemIySWNPMjhrTEpyV0FwNDctX3ZKZGRqdE45bDlXMFN2d00iLCJpYXQiOjE3ODQ3NTUzMDgsImV4cCI6MTc4NDg0MTcwOH0.bCnqgNI7F-vKB_PTdPtpTMNpu6_BbFvXjIt_o3uhvLk&ck=eyI4YjNjNGQ1NmZlNTY1ZDNiODA3ZmNhOGQzNGVhNWQ3MSI6ICI4MmZjOWZjMDVmZWRiOGIzM2QwN2VjZmRlMDA2ZDkyZiJ9&headers=eyJ1c2VyLWFnZW50IjogIk1vemlsbGEvNS4wIChMaW51eDsgQW5kcm9pZCAxMjsgQW5kcm9pZCBUVikgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEyMS4wLjAuMCBTYWZhcmkvNTM3LjM2IiwgInJlZmVyZXIiOiAiaHR0cHM6Ly93d3cuZGF6bi5jb20vIiwgIm9yaWdpbiI6ICJodHRwczovL3d3dy5kYXpuLmNvbSIsICJkYXpuLXRva2VuIjogImV5SmhiR2NpT2lKSVV6STFOaUlzSW5SNWNDSTZJa3BYVkNJc0ltdHBaQ0k2SW5WMWFXUmZNU0o5LmV5SndZWFJvY3lJNld5SXZNbVJwZG1JM05URjRZVE5rTVdOc05ESjRjRFYxWW13MmRpSmRMQ0psZUdNaU9sdGRMQ0pvWldGa1pYSnpJanBiWFN3aVkyOGlPblJ5ZFdVc0ltbHdJanBtWVd4elpTd2lZWE51SWpwYklqRXpNek0xSWwwc0ltbHVkSE5wWnlJNklsTnFOMkZHT0VKeWVtSXlTV05QTWpoclRFcHlWMEZ3TkRjdFgzWktaR1JxZEU0NWJEbFhNRk4yZDAwaUxDSnBZWFFpT2pFM09EUTNOVFV6TURnc0ltVjRjQ0k2TVRjNE5EZzBNVGN3T0gwLmJDbnFnTkk3Ri12S0JfUFRkUHRwVE1OcHU2X0JiRnZYakl0X28zdWh2TGsifQ%3D%3D
+
 
 
 
@@ -1544,8 +1597,10 @@ https://dca-ac-live.cdn.indazn.com/vvglrzfiruag11o6orf5p2p1b/tv/stream.mpd?chann
 
 
 
+
 #EXTINF:-1 tvg-logo="https://image.discovery.indazn.com/eu/v2/eu/image?id=cbbh3n5i0rw88jocqid9vzk5p_image-header_pIt_1784746308000&quality=80&width=800&height=450" tvg-provider="DAZN" tvg-time="18:00" tvg-comp="Amichevoli" tvg-subtitle="Arezzo" group-title="Vod Dazn", Napoli - Arezzo
 https://dcn-ac-vod.cdn.indazn.com/SFP/video/7bkhfol8j19b10ti4o5tgi71s/1/tv/dash/stream.mpd&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvU0ZQL3ZpZGVvLzdia2hmb2w4ajE5YjEwdGk0bzV0Z2k3MXMiXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJpbnRzaWciOiJTajdhRjhCcnpiMkljTzI4a0xKcldBcDQ3LV92SmRkanROOWw5VzBTdndNIiwiaWF0IjoxNzg0NzU1MzE4LCJleHAiOjE3ODQ4NDE3MTh9.eC3QWULhAbfwEwflPjGqJLR6-Y0mLLHes_NtWGgGxoc&headers=eyJ1c2VyLWFnZW50IjogIk1vemlsbGEvNS4wIChMaW51eDsgQW5kcm9pZCAxMjsgQW5kcm9pZCBUVikgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzEyMS4wLjAuMCBTYWZhcmkvNTM3LjM2IiwgInJlZmVyZXIiOiAiaHR0cHM6Ly93d3cuZGF6bi5jb20vIiwgIm9yaWdpbiI6ICJodHRwczovL3d3dy5kYXpuLmNvbSIsICJkYXpuLXRva2VuIjogImV5SmhiR2NpT2lKSVV6STFOaUlzSW5SNWNDSTZJa3BYVkNJc0ltdHBaQ0k2SW5WMWFXUmZNU0o5LmV5SndZWFJvY3lJNld5SXZVMFpRTDNacFpHVnZMemRpYTJobWIydzRhakU1WWpFd2RHazBielYwWjJrM01YTWlYU3dpWlhoaklqcGJYU3dpYUdWaFpHVnljeUk2VzEwc0ltTnZJanAwY25WbExDSnBjQ0k2Wm1Gc2MyVXNJbUZ6YmlJNld5SXhNek16TlNKZExDSnBiblJ6YVdjaU9pSlRhamRoUmpoQ2NucGlNa2xqVHpJNGEweEtjbGRCY0RRM0xWOTJTbVJrYW5ST09XdzVWekJUZG5kTklpd2lhV0YwSWpveE56ZzBOelUxTXpFNExDSmxlSEFpT2pFM09EUTROREUzTVRoOS5lQzNRV1VMaEFiZndFd2ZsUGpHcUpMUjYtWTBtTExIZXNfTnRXR2dHeG9jIn0%3D
+
 
 
 
@@ -1580,8 +1635,15 @@ https://dca-deit-livedazn.daznedge.net/1xer1naoaa74u19dc0k0ebkm7l/web/stream.mpd
 
 
 
+
 #KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|069d8ffab1d85db69e4aa7231b5c289a:666a40e4d2e91042f50c1c8e798aeb18
 #KODIPROP:inputstream.adaptive.manifest_headers=User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20HeadlessChrome%2F151.0.0.0%20Safari%2F537.36%20Edg%2F151.0.0.0&Referer=https%3A%2F%2Fwww.dazn.com%2F&Origin=https%3A%2F%2Fwww.dazn.com&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNGJ4Znl5cDMxbnI3MWJxem52bjNmNncxbCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJyU0c5WmdzekVmMy1HYnFBYmNWdlJWMk5pajJGak93U0ozTVlyY05QMmdFIiwiaWF0IjoxNzg3MjU3MTU2LCJleHAiOjE3ODczNDM1NTZ9.rGJFReHokFch8BZDomH_DIS6h--paRun4BneWyXc0Gw
 #KODIPROP:inputstream.adaptive.stream_headers=User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20HeadlessChrome%2F151.0.0.0%20Safari%2F537.36%20Edg%2F151.0.0.0&Referer=https%3A%2F%2Fwww.dazn.com%2F&Origin=https%3A%2F%2Fwww.dazn.com&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNGJ4Znl5cDMxbnI3MWJxem52bjNmNncxbCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJyU0c5WmdzekVmMy1HYnFBYmNWdlJWMk5pajJGak93U0ozTVlyY05QMmdFIiwiaWF0IjoxNzg3MjU3MTU2LCJleHAiOjE3ODczNDM1NTZ9.rGJFReHokFch8BZDomH_DIS6h--paRun4BneWyXc0Gw
 #EXTINF:-1 tvg-logo="https://image.discovery.indazn.com/eu/v2/eu/image?id=12s1jmhwy2lmp1mtx1iuaveqyu_image-header_pIt_1787137626000&quality=80&width=800&height=450" tvg-provider="DAZN" group-title="Eventi", LIV Golf Indianapolis - Day 1
 https://dca-ac-live.cdn.indazn.com/4bxfyyp31nr71bqznvn3f6w1l/web/stream.mpd?channel=5061&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNGJ4Znl5cDMxbnI3MWJxem52bjNmNncxbCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJyU0c5WmdzekVmMy1HYnFBYmNWdlJWMk5pajJGak93U0ozTVlyY05QMmdFIiwiaWF0IjoxNzg3MjU3MTU2LCJleHAiOjE3ODczNDM1NTZ9.rGJFReHokFch8BZDomH_DIS6h--paRun4BneWyXc0Gw
+
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|aaed3250392c5246939ef8e99c16dc43:1adeaaec7174bf0c5a76d8c169fc6707
+#KODIPROP:inputstream.adaptive.manifest_headers=User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20HeadlessChrome%2F151.0.0.0%20Safari%2F537.36%20Edg%2F151.0.0.0&Referer=https%3A%2F%2Fwww.dazn.com%2F&Origin=https%3A%2F%2Fwww.dazn.com&dazn-token=tend%3A1787422200~proto%3Adash~geo%3AIT~asn%3A30722_198471~path%3A1_1_2e48475647e2eefd76d0cd022f1270c4e3dfdec5855b9bd357ba419e2c215f12~ua%3A946a2be79aba51bac7fe2e3ef60b90e7~id%3Ab408d624b843~tk3%3A2fa9d282f8650cf0c2259cbe6a4e11cf67c6e692c831b0c95f4984e90e8e59c5
+#KODIPROP:inputstream.adaptive.stream_headers=User-Agent=Mozilla%2F5.0%20%28Windows%20NT%2010.0%3B%20Win64%3B%20x64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20HeadlessChrome%2F151.0.0.0%20Safari%2F537.36%20Edg%2F151.0.0.0&Referer=https%3A%2F%2Fwww.dazn.com%2F&Origin=https%3A%2F%2Fwww.dazn.com&dazn-token=tend%3A1787422200~proto%3Adash~geo%3AIT~asn%3A30722_198471~path%3A1_1_2e48475647e2eefd76d0cd022f1270c4e3dfdec5855b9bd357ba419e2c215f12~ua%3A946a2be79aba51bac7fe2e3ef60b90e7~id%3Ab408d624b843~tk3%3A2fa9d282f8650cf0c2259cbe6a4e11cf67c6e692c831b0c95f4984e90e8e59c5
+#EXTINF:-1 tvg-logo="https://image.discovery.indazn.com/eu/v2/eu/image?id=4dpska92cv1iwkc9mtx84dul9_image-header_pIt_1775731273000&quality=80&width=800&height=450" tvg-provider="DAZN" group-title="Eventi", Union Berlin vs. Bayern München
+https://dca-de-livedazn.daznedge.net/ia7t70c67r0n100lfus408y1b/web/stream.mpd?channel=5073&outlet=dazn-italy&plang=it&dazn-token=tend%3A1787422200~proto%3Adash~geo%3AIT~asn%3A30722_198471~path%3A1_1_2e48475647e2eefd76d0cd022f1270c4e3dfdec5855b9bd357ba419e2c215f12~ua%3A946a2be79aba51bac7fe2e3ef60b90e7~id%3Ab408d624b843~tk3%3A2fa9d282f8650cf0c2259cbe6a4e11cf67c6e692c831b0c95f4984e90e8e59c5
