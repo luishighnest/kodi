@@ -60,6 +60,7 @@ EXP_SOON_MINS = 60
 _SKY_SESS = requests.Session()
 _SKY_SESS.headers['User-Agent'] = API_UA
 _EXP_CACHE = {}
+_EXP_CACHE_DIRTY = False
 _EXP_CACHE_TTL = 180
 _EXP_CACHE_TTL_FAIL = 60
 
@@ -423,7 +424,8 @@ def _sky_expiry(cid):
         except Exception:
             pass
     _EXP_CACHE[cid] = (time.time(), exp)
-    _exp_cache_save(_EXP_CACHE)
+    global _EXP_CACHE_DIRTY
+    _EXP_CACHE_DIRTY = True
     return exp
 
 
