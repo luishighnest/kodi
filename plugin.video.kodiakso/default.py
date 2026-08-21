@@ -1070,7 +1070,7 @@ def resolve_v2(id_, mtype='movie', season='0', episode='0', title=''):
     return li
 
 
-def v2_seasons_view(id_, back=''):
+def tmdb_seasons_view(id_, q, back=''):
     back_button(back or (BASE + '?action=films'))
     try:
         j = tmdb_get('/tv/%s' % id_)
@@ -1091,12 +1091,12 @@ def v2_seasons_view(id_, back=''):
         if poster:
             li.setArt({'thumb': TMDB_IMG + 'w342' + poster})
         li.setInfo('video', {'title': '%s - Stagione %d' % (tname, n), 'mediatype': 'season'})
-        url = _tmdb_url('v2episodes', id=id_, s=str(n))
+        url = _tmdb_url('tmdbe', id=id_, s=str(n), q=q)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def v2_episodes_view(id_, s, back=''):
+def tmdb_episodes_view(id_, s, q, back=''):
     back_button(back or (BASE + '?action=films'))
     try:
         j = tmdb_get('/tv/%s/season/%s' % (id_, s))
@@ -1111,9 +1111,9 @@ def v2_episodes_view(id_, s, back=''):
         still = ep.get('still_path')
         if still:
             li.setArt({'thumb': TMDB_IMG + 'w342' + still})
-        etitle = '%s S%sE%s' % (tname, s, n)
+        etitle = '%s S%02dE%02d' % (tname, int(s), int(n))
         li.setInfo('video', {'title': etitle, 'plot': ep.get('overview') or '', 'mediatype': 'episode'})
-        url = _tmdb_url('v2play', id=id_, mtype='tv', s=s, e=str(n), t=etitle)
+        url = _tmdb_url('tmdbplay', id=id_, mtype='tv', s=s, e=str(n), t=etitle, q=q)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1142,16 +1142,10 @@ def tmdb_add_item(it, mtype, back=''):
     li.setInfo('video', info)
     if mtype == 'movie':
         li.setProperty('isPlayable', 'true')
-        if _VOD_SRC == '2':
-            url = _tmdb_url('v2play', id=it.get('id'), mtype='movie')
-        else:
-            url = _tmdb_url('mplayauto', q=title, back=back)
+        url = _tmdb_url('tmdbplay', id=it.get('id'), mtype='movie', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     else:
-        if _VOD_SRC == '2':
-            url = _tmdb_url('v2seasons', id=it.get('id'))
-        else:
-            url = _tmdb_url('mseasonsauto', q=title, back=back)
+        url = _tmdb_url('tmdbs', id=it.get('id'), q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
@@ -1417,6 +1411,27 @@ def resolve_scws(parIn, title, eptitle='', season=0, episode=0):
         li.setProperty('inputstream.adaptive.max_bandwidth', bw)
     return li
 
+
+def mandra_auto_episode(title, season, episode):
+    try:
+        data = requests.get(API + '?numTest=A1A332A&mode=1&search=' + urllib.parse.quote(title),
+                            headers={'User-Agent': API_UA}, timeout=25).json()
+    except Exception as e:
+        xbmc.log('KODIAKSO mandra auto ep ERR: ' + str(e), xbmc.LOGERROR)
+        notify(title, 'Errore ricerca', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    for it in data.get('items', []):
+        ext = it.get('externallink', '') or ''
+        m = re.search(r'code=([^&]+)', ext)
+        if m:
+            code = m.group(1)
+            parIn = '%s---%s---%s' % (code, season, episode)
+            li = resolve_scws(parIn, '%s S%02dE%02d' % (title, int(season), int(episode)))
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
+            return
+    notify(title, 'Episodio non trovato su server', True)
+    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
 
 def mandra_auto_movie(query):
     try:
@@ -2488,36 +2503,26 @@ def main():
         elif action == 'msearch':
             mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0],
                                query.get('back', [''])[0])
-        elif action == 'mplayauto':
+        elif action == 'tmdbs':
+            tmdb_seasons_view(query.get('id', [''])[0], query.get('q', [''])[0], query.get('back', [''])[0])
+        elif action == 'tmdbe':
+            tmdb_episodes_view(query.get('id', [''])[0], query.get('s', [''])[0], query.get('q', [''])[0], query.get('back', [''])[0])
+        elif action == 'tmdbplay':
             if _VOD_SRC == '2':
-                notify(NAME, 'VOD 2: riproduzione non ancora disponibile')
-                xbmcplugin.endOfDirectory(HANDLE)
+                resolve_v2(query.get('id', [''])[0], query.get('mtype', ['movie'])[0],
+                           query.get('s', [''])[0], query.get('e', [''])[0], query.get('t', [''])[0])
             else:
-                mandra_auto_movie(query.get('q', [''])[0])
-        elif action == 'mseasonsauto':
-            mandra_auto_series(query.get('q', [''])[0], query.get('back', [''])[0])
+                if query.get('mtype', [''])[0] == 'tv':
+                    mandra_auto_episode(query.get('q', [''])[0], query.get('s', [''])[0], query.get('e', [''])[0])
+                else:
+                    mandra_auto_movie(query.get('q', [''])[0])
+        elif action == 'mplay':
+            li = resolve_scws(query.get('par', [''])[0], query.get('t', [''])[0])
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
+        elif action == 'msearch':
+            mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0], query.get('back', [''])[0])
         elif action == 'mseason':
             mandra_season_view(query.get('code', [''])[0], query.get('back', [''])[0])
-        elif action == 'mepisodes':
-            mandra_episodes_view(query.get('par', [''])[0], query.get('back', [''])[0])
-        elif action == 'mplay':
-            if _VOD_SRC == '2':
-                notify(NAME, 'VOD 2: riproduzione non ancora disponibile')
-                xbmcplugin.endOfDirectory(HANDLE)
-            else:
-                li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0],
-                                  query.get('ept', [''])[0], query.get('s', [''])[0],
-                                  query.get('e', [''])[0])
-                xbmcplugin.setResolvedUrl(HANDLE, True, li)
-        elif action == 'v2seasons':
-            v2_seasons_view(query.get('id', [''])[0], query.get('back', [''])[0])
-        elif action == 'v2episodes':
-            v2_episodes_view(query.get('id', [''])[0], query.get('s', [''])[0],
-                             query.get('back', [''])[0])
-        elif action == 'v2play':
-            li = resolve_v2(query.get('id', [''])[0], query.get('mtype', ['movie'])[0],
-                            query.get('s', ['0'])[0], query.get('e', ['0'])[0],
-                            query.get('t', [''])[0])
             if li:
                 xbmcplugin.setResolvedUrl(HANDLE, True, li)
             else:
