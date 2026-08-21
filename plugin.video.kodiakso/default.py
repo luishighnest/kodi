@@ -682,7 +682,7 @@ def _epg_dt(val):
     try:
         s = m.group(1)
         return datetime(int(s[0:4]), int(s[4:6]), int(s[6:8]),
-                        int(s[8:10]), int(s[10:12]), int(s[12:14]))
+                        int(s[8:10]), int(s[10:12]), int(s[12:14])) + timedelta(hours=2)
     except ValueError:
         return None
 
