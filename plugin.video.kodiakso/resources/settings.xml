@@ -42,4 +42,8 @@
         <setting id="szx_key" type="text" label="Chiave AES raw (hex/base64) - ignora la password" default="" />
         <setting id="szx_iv" type="text" label="IV AES raw (hex/base64) - ignora la password" default="" />
     </category>
+    <category label="Avvio Automatico">
+        <setting type="lsep" label="Apri PZ8 automaticamente all'avvio di Kodi"/>
+        <setting id="autostart_hint" type="text" label="Installa il file service.kodiakso.autostart-1.0.1.zip da zips/plugin.video.kodiakso/ (repo) e abilitalo. Vedi voce in Home." default="" enable="false" />
+    </category>
 </settings>

@@ -2327,7 +2327,99 @@ def root_view():
     li = xbmcgui.ListItem(label=lbl('Aggiorna PZ8   v' + ADDON.getAddonInfo('version')))
     li.setArt({'thumb': ICON_LOGO})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('update'), li, isFolder=False)
+
+    # --- Avvio Automatico (service.kodiakso.autostart) ---
+    svc_id = 'service.kodiakso.autostart'
+    has_svc = xbmc.getCondVisibility('System.HasAddon(%s)' % svc_id)
+    if has_svc:
+        try:
+            svc_addon = xbmcaddon.Addon(svc_id)
+            enabled = svc_addon.getSettingBool('enabled') if hasattr(svc_addon, 'getSettingBool') else svc_addon.getSetting('enabled') == 'true'
+            delay = svc_addon.getSettingInt('delay') if hasattr(svc_addon, 'getSettingInt') else int(svc_addon.getSetting('delay') or '0')
+        except Exception:
+            enabled, delay = True, 2
+        status = 'ON (%ds)' % delay if enabled else 'OFF'
+        col = '00FF00' if enabled else 'FF0000'
+        li = xbmcgui.ListItem(label=lbl('Avvio Automatico  [COLOR %s]%s[/COLOR]' % (col, status)))
+        li.setArt({'thumb': ICON_LOGO})
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('autostart'), li, isFolder=True)
+    else:
+        li = xbmcgui.ListItem(label=lbl('Avvio Automatico  [COLOR FF0000]non installato[/COLOR]'))
+        li.setArt({'thumb': ICON_LOGO})
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('autostart'), li, isFolder=True)
+
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+def autostart_view():
+    svc_id = 'service.kodiakso.autostart'
+    has_svc = xbmc.getCondVisibility('System.HasAddon(%s)' % svc_id)
+    home_button()
+    if not has_svc:
+        li = xbmcgui.ListItem(label=lbl('[COLOR FF0000]Service non installato[/COLOR]'))
+        li.setInfo('video', {'title': 'PZ8 Autostart non installato', 'plot': 'Installa il file service.kodiakso.autostart-1.0.1.zip da https://luishighnest.github.io/kodi/zips/plugin.video.kodiakso/ oppure da zips/service.kodiakso.autostart-1.0.1.zip. Dopo l\'installazione abilitalo qui.'})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+        # bottone installazione guidata
+        li2 = xbmcgui.ListItem(label=lbl('Installa PZ8 Autostart dal repository'))
+        li2.setArt({'thumb': ICON_LOGO})
+        # prova installazione da repo se disponibile
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=autostart_install', li2, isFolder=False)
+        li3 = xbmcgui.ListItem(label=lbl('Apri Impostazioni Repository (installa da zip)'))
+        li3.setArt({'thumb': ICON_LOGO})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=autostart_openrepo', li3, isFolder=False)
+    else:
+        try:
+            svc_addon = xbmcaddon.Addon(svc_id)
+            enabled = svc_addon.getSettingBool('enabled') if hasattr(svc_addon, 'getSettingBool') else svc_addon.getSetting('enabled') == 'true'
+            delay = svc_addon.getSettingInt('delay') if hasattr(svc_addon, 'getSettingInt') else int(svc_addon.getSetting('delay') or '0')
+        except Exception:
+            enabled, delay = True, 2
+        status = 'ATTIVO' if enabled else 'DISATTIVATO'
+        col = '00FF00' if enabled else 'FF0000'
+        li = xbmcgui.ListItem(label=lbl('Stato: [COLOR %s]%s[/COLOR]  (ritardo %ds)' % (col, status, delay)))
+        li.setInfo('video', {'title': 'PZ8 Autostart', 'plot': 'Se ATTIVO, all\'avvio di Kodi apre automaticamente PZ8. Configura ritardo nelle impostazioni del service.'})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+
+        tog = 'Disattiva avvio automatico' if enabled else 'Attiva avvio automatico'
+        li2 = xbmcgui.ListItem(label=lbl('→ ' + tog))
+        li2.setArt({'thumb': ICON_LOGO})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=autostart_toggle', li2, isFolder=False)
+
+        li3 = xbmcgui.ListItem(label=lbl('→ Apri impostazioni PZ8 Autostart'))
+        li3.setArt({'thumb': ICON_LOGO})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=autostart_settings', li3, isFolder=False)
+
+        li4 = xbmcgui.ListItem(label=lbl('→ Test: apri subito PZ8 (RunAddon)'))
+        li4.setArt({'thumb': ICON_LOGO})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=autostart_test', li4, isFolder=False)
+
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def autostart_toggle():
+    svc_id = 'service.kodiakso.autostart'
+    try:
+        svc_addon = xbmcaddon.Addon(svc_id)
+        cur = svc_addon.getSettingBool('enabled') if hasattr(svc_addon, 'getSettingBool') else svc_addon.getSetting('enabled') == 'true'
+        svc_addon.setSettingBool('enabled', not cur) if hasattr(svc_addon, 'setSettingBool') else svc_addon.setSetting('enabled', 'false' if cur else 'true')
+        notify(NAME, 'Avvio automatico: ' + ('DISATTIVATO' if cur else 'ATTIVATO'))
+    except Exception as e:
+        notify(NAME, 'Errore toggle: ' + str(e), True)
+    xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
+
+
+def autostart_install():
+    # prova installazione da repository luishighnest
+    svc_id = 'service.kodiakso.autostart'
+    if xbmc.getCondVisibility('System.HasAddon(%s)' % svc_id):
+        notify(NAME, 'PZ8 Autostart già installato')
+        xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
+        return
+    # se repo installato, InstallAddon funziona
+    xbmc.executebuiltin('InstallAddon(%s)' % svc_id)
+    # fallback: suggerisci zip
+    xbmcgui.Dialog().ok(NAME, 'Se l\'installazione automatica non parte:\n\n1) Vai su Add-on → Installa da zip\n2) Scegli https://luishighnest.github.io/kodi/zips/plugin.video.kodiakso/service.kodiakso.autostart-1.0.1.zip\n\nOppure scarica lo zip e installalo manualmente.')
+    xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
 
 
 def main():
@@ -2354,6 +2446,19 @@ def main():
             events_view()
         elif action == 'gsearch':
             gsearch_view(query.get('q', [''])[0])
+        elif action == 'autostart':
+            autostart_view()
+        elif action == 'autostart_toggle':
+            autostart_toggle()
+        elif action == 'autostart_settings':
+            xbmcaddon.Addon('service.kodiakso.autostart').openSettings()
+            xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
+        elif action == 'autostart_test':
+            xbmc.executebuiltin('RunAddon(plugin.video.kodiakso)')
+        elif action == 'autostart_install':
+            autostart_install()
+        elif action == 'autostart_openrepo':
+            xbmc.executebuiltin('ActivateWindow(addonbrowser)')
         elif action == 'update':
             update_view()
         elif action == 'search':

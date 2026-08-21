@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<settings>
+    <setting id="enabled" type="bool" label="Abilita avvio automatico PZ8" default="true" help="Se attivo, all'avvio di Kodi apre automaticamente l'addon PZ8 (plugin.video.kodiakso)."/>
+    <setting id="delay" type="slider" label="Ritardo all'avvio (secondi)" default="2" range="0,10,1" option="int" help="Attesa dopo che la Home è pronta prima di aprire PZ8. 0 = immediato."/>
+</settings>
