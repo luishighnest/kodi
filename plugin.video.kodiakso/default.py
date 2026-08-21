@@ -1142,10 +1142,16 @@ def tmdb_add_item(it, mtype, back=''):
     li.setInfo('video', info)
     if mtype == 'movie':
         li.setProperty('isPlayable', 'true')
-        url = _tmdb_url('tmdbplay', id=it.get('id'), mtype='movie', q=title, back=back)
+        if _VOD_SRC == '2':
+            url = _tmdb_url('tmdbplay', id=it.get('id'), mtype='movie', q=title, back=back)
+        else:
+            url = _tmdb_url('tmdbplay', id=it.get('id'), mtype='movie', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     else:
-        url = _tmdb_url('tmdbs', id=it.get('id'), q=title, back=back)
+        if _VOD_SRC == '2':
+            url = _tmdb_url('tmdbs', id=it.get('id'), q=title, back=back)
+        else:
+            url = _tmdb_url('mseasonsauto', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
@@ -1418,9 +1424,7 @@ def mandra_auto_episode(title, season, episode):
                             headers={'User-Agent': API_UA}, timeout=25).json()
     except Exception as e:
         xbmc.log('KODIAKSO mandra auto ep ERR: ' + str(e), xbmc.LOGERROR)
-        notify(title, 'Errore ricerca', True)
-        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
-        return
+        return None
     for it in data.get('items', []):
         ext = it.get('externallink', '') or ''
         m = re.search(r'code=([^&]+)', ext)
@@ -1428,10 +1432,10 @@ def mandra_auto_episode(title, season, episode):
             code = m.group(1)
             parIn = '%s---%s---%s' % (code, season, episode)
             li = resolve_scws(parIn, '%s S%02dE%02d' % (title, int(season), int(episode)))
-            xbmcplugin.setResolvedUrl(HANDLE, True, li)
-            return
-    notify(title, 'Episodio non trovato su server', True)
-    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+            if li and li.getPath():
+                return li
+            return None
+    return None
 
 def mandra_auto_movie(query):
     try:
@@ -2512,10 +2516,14 @@ def main():
                 resolve_v2(query.get('id', [''])[0], query.get('mtype', ['movie'])[0],
                            query.get('s', [''])[0], query.get('e', [''])[0], query.get('t', [''])[0])
             else:
-                if query.get('mtype', [''])[0] == 'tv':
-                    mandra_auto_episode(query.get('q', [''])[0], query.get('s', [''])[0], query.get('e', [''])[0])
+                li = mandra_auto_movie(query.get('q', [''])[0])
+                if li:
+                    xbmcplugin.setResolvedUrl(HANDLE, True, li)
                 else:
-                    mandra_auto_movie(query.get('q', [''])[0])
+                    notify(query.get('q', [''])[0] or 'Film', 'Impossibile riprodurre il contenuto', True)
+                    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        elif action == 'mseasonsauto':
+            mandra_auto_series(query.get('q', [''])[0], query.get('back', [''])[0])
         elif action == 'mplay':
             li = resolve_scws(query.get('par', [''])[0], query.get('t', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
@@ -2523,11 +2531,8 @@ def main():
             mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0], query.get('back', [''])[0])
         elif action == 'mseason':
             mandra_season_view(query.get('code', [''])[0], query.get('back', [''])[0])
-            if li:
-                xbmcplugin.setResolvedUrl(HANDLE, True, li)
-            else:
-                notify(NAME, 'Nessun flusso VixSrc disponibile', True)
-                xbmcplugin.endOfDirectory(HANDLE)
+        elif action == 'mepisodes':
+            mandra_episodes_view(query.get('par', [''])[0], query.get('back', [''])[0])
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'skyplay':
