@@ -1595,6 +1595,18 @@ SZX_UA = 'Dalvik/2.1.0 (Linux; Android 13)'
 _SZX = {'events': None, 'cats': None, 'channels': {}}
 _SZX_TS = {}
 _SZX_TTL = {'events': 600, 'cats': 1800, 'channels': 1200}
+_SZX_API_URL = ''
+_SZX_API_TS = 0
+# SportzX v3 (reverse-engineered client): la chiave di decrittazione non e' piu
+# nel payload (versione 3) ma derivata da una password. La password puo' essere
+# aggiornata dalle impostazioni (szx_password) senza toccare il codice.
+SZX_APP_PASSWORD = 'oAR80SGuX3EEjUGFRwLFKBTiris='
+SZX_PW_CHARSET = b'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+!@#$%&='
+SZX_FIREBASE_API_KEY = 'AIzaSyCTIFo_vw_-XrjzDeE1yG4KuAqGLchzZ0M'
+SZX_FIREBASE_PROJECT = 'sportzx-afe67'
+SZX_FIREBASE_APP_ID = '1:234785582029:android:f5f9299eaa7a0d73'
+SZX_FIREBASE_CERT = 'A0047CD121AE5F71048D41854702C52814E2AE2B'
+SZX_FIREBASE_NUM = '234785582029'
 _DDY = {'data': None, 'ts': 0}
 _DDY_TTL = 1800
 
@@ -1710,7 +1722,119 @@ def _szx_aes_cbc_decrypt(key, iv, ct):
     return bytes(pt)
 
 
+def _szx_new_derive(s):
+    data = s.encode('utf-8', 'replace')
+    n = len(data)
+    if n == 0:
+        return b'', b''
+    u = 0x811c9dc5
+    for ch in data:
+        u = ((u ^ ch) * 0x1000193) & 0xFFFFFFFF
+    key = bytearray()
+    for i in range(16):
+        b = data[i % n]
+        u = ((u * 0x1f) + (i ^ b)) & 0xFFFFFFFF
+        key.append(SZX_PW_CHARSET[u % len(SZX_PW_CHARSET)])
+    u = 0x811c832a
+    for ch in data:
+        u = ((u ^ ch) * 0x1000193) & 0xFFFFFFFF
+    iv = bytearray()
+    idx = acc = 0
+    while len(iv) < 16:
+        b = data[idx % n]
+        u = ((u * 0x1d) + (acc ^ b)) & 0xFFFFFFFF
+        iv.append(SZX_PW_CHARSET[u % len(SZX_PW_CHARSET)])
+        idx += 3
+        acc = (acc + 7) & 0xFFFFFFFF
+    return bytes(key), bytes(iv)
+
+
+def _szx_new_decrypt(data, password):
+    try:
+        b = data.strip()
+        b += '=' * (-len(b) % 4)
+        blob = base64.urlsafe_b64decode(b)
+        if not blob or blob[0] not in (2, 3):
+            return None
+        ct = blob[1:]
+        if len(ct) % 16 != 0:
+            ct = blob
+        if len(ct) == 0 or len(ct) % 16 != 0:
+            return None
+        key, iv = _szx_new_derive(password)
+        pt = _szx_aes_cbc_decrypt(key, iv, ct)
+        pad = pt[-1] if pt else 0
+        if 1 <= pad <= 16:
+            pt = pt[:-pad]
+        if not pt:
+            return None
+        return pt
+    except Exception:
+        return None
+
+
+def _szx_firebase_api_url():
+    try:
+        import base64 as _b64
+        import os as _os
+        raw = bytearray(_os.urandom(17))
+        raw[0] = (raw[0] & 0x0F) | 0x70
+        fid = _b64.urlsafe_b64encode(raw).decode().rstrip('=')[:22]
+        ih = {'Accept': 'application/json', 'Content-Type': 'application/json',
+              'User-Agent': SZX_UA, 'X-Android-Cert': SZX_FIREBASE_CERT,
+              'X-Android-Package': 'com.sportzx.live',
+              'x-goog-api-key': SZX_FIREBASE_API_KEY}
+        ib = {'fid': fid, 'appId': SZX_FIREBASE_APP_ID, 'authVersion': 'FIS_v2',
+              'sdkVersion': 'a:18.0.0'}
+        r = requests.post('https://firebaseinstallations.googleapis.com/v1/projects/%s/installations' % SZX_FIREBASE_PROJECT,
+                          json=ib, headers=ih, timeout=20)
+        r.raise_for_status()
+        tok = r.json().get('authToken', {}).get('token')
+        if not tok:
+            return ''
+        ch = {'Content-Type': 'application/json', 'User-Agent': SZX_UA,
+              'X-Android-Cert': SZX_FIREBASE_CERT,
+              'X-Android-Package': 'com.sportzx.live', 'X-Firebase-RC-Fetch-Type': 'BASE/1',
+              'X-Goog-Api-Key': SZX_FIREBASE_API_KEY,
+              'X-Goog-Firebase-Installations-Auth': tok}
+        cb = {'appVersion': '2.1', 'firstOpenTime': '2025-11-10T16:00:00.000Z',
+              'timeZone': 'Europe/Rome', 'appInstanceIdToken': tok, 'languageCode': 'it-IT',
+              'appBuild': '12', 'appInstanceId': fid, 'countryCode': 'IT',
+              'appId': SZX_FIREBASE_APP_ID, 'platformVersion': '33', 'sdkVersion': '22.1.2',
+              'packageName': 'com.sportzx.live'}
+        r = requests.post('https://firebaseremoteconfig.googleapis.com/v1/projects/%s/namespaces/firebase:fetch' % SZX_FIREBASE_NUM,
+                          json=cb, headers=ch, timeout=20)
+        r.raise_for_status()
+        return r.json().get('entries', {}).get('api_url') or ''
+    except Exception as e:
+        log('szx firebase api url: %s' % e)
+        return ''
+
+
+def szx_base():
+    global _SZX_API_URL, _SZX_API_TS
+    cfg = ADDON.getSetting('szx_base').strip()
+    if cfg:
+        return cfg if cfg.endswith('/') else cfg + '/'
+    now = time.time()
+    if _SZX_API_URL and (now - _SZX_API_TS) < 21600:
+        return _SZX_API_URL
+    url = _szx_firebase_api_url()
+    if url:
+        _SZX_API_URL = url if url.endswith('/') else url + '/'
+        _SZX_API_TS = now
+    return _SZX_API_URL or SZX_BASE
+
+
 def _szx_decrypt(data):
+    pw = ADDON.getSetting('szx_password').strip() or SZX_APP_PASSWORD
+    d = _szx_new_decrypt(data, pw)
+    if d:
+        return d
+    return _szx_legacy_decrypt(data)
+
+
+def _szx_legacy_decrypt(data):
     try:
         b = data.rstrip('=')
         blob = base64.urlsafe_b64decode(b + '=' * (-len(b) % 4))
@@ -1735,9 +1859,10 @@ def _szx_decrypt(data):
 
 def _szx_fetch(name):
     last = None
+    base = szx_base()
     for attempt in range(2):
         try:
-            r = requests.get(SZX_BASE + name, timeout=20,
+            r = requests.get(base + name, timeout=20,
                              headers={'User-Agent': SZX_UA})
             r.raise_for_status()
             return r.json().get('data', '')
@@ -1903,6 +2028,8 @@ def sportzx_events_view():
     evs = _szx_load('events', 'events.json')
     if not evs:
         li = xbmcgui.ListItem(label=lbl('Nessun evento live'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sportzx', li, isFolder=False)
+        li = xbmcgui.ListItem(label=lbl('Se gli eventi non compaiono: imposta la password SportzX nelle Impostazioni'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sportzx', li, isFolder=False)
         xbmcplugin.endOfDirectory(HANDLE)
         return

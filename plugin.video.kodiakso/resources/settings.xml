@@ -36,4 +36,8 @@
         <setting id="show_warnings" type="bool" label="Mostra notifiche di errore" default="true" />
         <setting id="home_tmdb" type="bool" label="Mostra categoria FILM &amp; SERIE TV in home" default="true" />
     </category>
+    <category label="SportzX (Eventi 2)">
+        <setting id="szx_base" type="text" label="Base URL SportzX (vuoto = automatico da Firebase)" default="" />
+        <setting id="szx_password" type="text" label="Password decrittazione SportzX" default="oAR80SGuX3EEjUGFRwLFKBTiris=" />
+    </category>
 </settings>
