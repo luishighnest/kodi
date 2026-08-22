@@ -859,6 +859,12 @@ def sky_view():
     li4.setInfo('video', {'title': 'SKY 4 (SportOnline)', 'plot': 'Eventi HD7/HD8 ITALIAN (SportOnline - alternative Sky Sport IT)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky4_url, li4, isFolder=True)
 
+    sky5_url = BASE + '?action=sky5'
+    li5 = xbmcgui.ListItem(label=lbl('SKY 5 (CalcioStreaming)'))
+    li5.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li5.setInfo('video', {'title': 'SKY 5 (CalcioStreaming)', 'plot': 'Eventi CalcioStreaming DiretteCommunity (RSS + data-link SportOnline)'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky5_url, li5, isFolder=True)
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -1209,6 +1215,127 @@ def sky4_view(back=''):
     except Exception as e:
         xbmc.log('KODIAKSO sky4_view ERR: ' + str(e), xbmc.LOGERROR)
         notify('SKY 4', 'Errore caricamento SportOnline', True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+_CALCIO_CACHE = {'data': None, 'ts': 0}
+_CALCIO_TTL = 1800
+
+
+def _calcio_fetch():
+    now = time.time()
+    if _CALCIO_CACHE['data'] is not None and (now - _CALCIO_CACHE['ts'] < _CALCIO_TTL):
+        return _CALCIO_CACHE['data']
+    events = []
+    try:
+        rss_urls = ['https://fifa.direttecommunity.online/rss.xml', 'https://live.direttecommunity.online/rss.xml']
+        xml_txt = ''
+        for u in rss_urls:
+            try:
+                r = requests.get(u, headers={'User-Agent': UA}, timeout=12)
+                if r.status_code == 200 and '<item>' in r.text:
+                    xml_txt = r.text
+                    break
+            except Exception:
+                continue
+        if not xml_txt:
+            return []
+        root = ET.fromstring(xml_txt.encode('utf-8'))
+        for item in root.findall('.//item'):
+            title = (item.findtext('title') or '').strip()
+            link = (item.findtext('link') or '').strip()
+            cat = (item.findtext('category') or '').strip()
+            pub = (item.findtext('pubDate') or '').strip()
+            if not title or not link:
+                continue
+            # filtra calcio se presente, altrimenti tutti
+            events.append({'title': html.unescape(title), 'link': link, 'category': cat, 'pubDate': pub})
+        _CALCIO_CACHE['data'] = events
+        _CALCIO_CACHE['ts'] = now
+    except Exception as e:
+        log('calcio fetch ERR: ' + str(e))
+    return events
+
+
+def _calcio_links(event_url):
+    try:
+        r = requests.get(event_url, headers={'User-Agent': UA, 'Referer': 'https://live.direttecommunity.online/', 'Accept': 'text/html,*/*'}, timeout=15)
+        r.raise_for_status()
+        html_txt = r.text
+        links = re.findall(r'data-link="([^"]+)"', html_txt)
+        # fallback: cerca w2.sportsonlinee.click links diretti
+        if not links:
+            links = re.findall(r'(https?://w2\.sportsonlinee\.click[^\s"\'<>]+)', html_txt)
+        uniq = []
+        seen = set()
+        for u in links:
+            if u not in seen:
+                seen.add(u)
+                uniq.append(u)
+        return uniq
+    except Exception as e:
+        log('calcio links %s: %s' % (event_url, e))
+        return []
+
+
+def sky5_view(back=''):
+    back_button(back or (BASE + '?action=sky'))
+    try:
+        evs = _calcio_fetch()
+        xbmcplugin.setContent(HANDLE, 'videos')
+        if not evs:
+            li = xbmcgui.ListItem(label=lbl('Nessun evento CalcioStreaming al momento'))
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', li, isFolder=False)
+            xbmcplugin.endOfDirectory(HANDLE)
+            return
+        for ev in evs[:50]:
+            title = ev.get('title') or 'Evento'
+            cat = ev.get('category') or ''
+            pub = ev.get('pubDate') or ''
+            label = title
+            if cat:
+                label += '  [COLOR FF99CC33]%s[/COLOR]' % cat
+            li = xbmcgui.ListItem(label=lbl(label))
+            li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+            li.setProperty('isPlayable', 'false')
+            li.setInfo('video', {'title': title, 'plot': '%s | %s | %s' % (title, cat, pub)})
+            url = BASE + '?action=calcioevent&url=' + urllib.parse.quote(ev.get('link') or '') + '&t=' + urllib.parse.quote(title)
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    except Exception as e:
+        xbmc.log('KODIAKSO sky5_view ERR: ' + str(e), xbmc.LOGERROR)
+        notify('SKY 5', 'Errore caricamento CalcioStreaming', True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def calcio_event_view(url, title=''):
+    back_button(BASE + '?action=sky5')
+    try:
+        links = _calcio_links(url)
+        xbmcplugin.setContent(HANDLE, 'videos')
+        if not links:
+            li = xbmcgui.ListItem(label=lbl('Nessun flusso disponibile per %s' % (title or 'evento')))
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky5', li, isFolder=False)
+            xbmcplugin.endOfDirectory(HANDLE)
+            return
+        for idx, link in enumerate(links):
+            # etichetta canale: estrae hd7/hd8 etc o nome
+            ch = 'Canale %d' % (idx + 1)
+            m = re.search(r'/([^/]+)\.php', link)
+            if m:
+                ch = m.group(1).upper()
+                if 'hd7' in ch.lower():
+                    ch += ' [HD7 IT]'
+                elif 'hd8' in ch.lower():
+                    ch += ' [HD8 IT]'
+            li = xbmcgui.ListItem(label=lbl('%s - %s' % (title or 'Evento', ch)))
+            li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+            li.setProperty('isPlayable', 'true')
+            li.setInfo('video', {'title': ch})
+            play_url = BASE + '?action=sportplay&url=' + urllib.parse.quote(link) + '&t=' + urllib.parse.quote(title or ch)
+            xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
+    except Exception as e:
+        xbmc.log('KODIAKSO calcio_event ERR: ' + str(e), xbmc.LOGERROR)
+        notify('Calcio', 'Errore', True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -3134,6 +3261,10 @@ def main():
             sky3_view(query.get('back', [''])[0])
         elif action == 'sky4':
             sky4_view(query.get('back', [''])[0])
+        elif action == 'sky5':
+            sky5_view(query.get('back', [''])[0])
+        elif action == 'calcioevent':
+            calcio_event_view(query.get('url', [''])[0], query.get('t', [''])[0])
         elif action == 'sportplay':
             li = resolve_sportonline(query.get('url', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
