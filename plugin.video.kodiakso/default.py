@@ -1086,7 +1086,7 @@ def resolve_v2(id_, mtype='movie', season='0', episode='0', title='', eptitle=''
 
     li = xbmcgui.ListItem(label=lbl(player_title))
     li.setPath(purl)
-    li.setInfo('video', {'title': player_title, 'tvshowtitle': '', 'season': 0, 'episode': 0, 'mediatype': 'movie' if mtype == 'movie' else 'video'})
+    li.setInfo('video', {'title': player_title, 'mediatype': 'video'})
     if ptype == 'hls' or purl.endswith('.m3u8'):
         headers = urllib.parse.urlencode({'User-Agent': VIXSRC_UA, 'Referer': embed, 'Origin': base})
         li.setProperty('inputstream', 'inputstream.adaptive')
@@ -1436,7 +1436,7 @@ def resolve_scws(parIn, title, eptitle='', season=0, episode=0):
         player_title = title or ''
 
     li = xbmcgui.ListItem(path=urlSc, label=lbl(player_title), offscreen=True)
-    li.setInfo('video', {'title': player_title, 'tvshowtitle': '', 'season': 0, 'episode': 0})
+    li.setInfo('video', {'title': player_title, 'mediatype': 'video'})
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
     li.setProperty('inputstream', 'inputstream.adaptive')
@@ -1659,12 +1659,16 @@ def mandra_episodes_view(par, back=''):
         name = html.unescape(ep.get('name') or label)
         li = xbmcgui.ListItem(label=lbl(label))
         plot = html.unescape(ep.get('plot') or '')
-        info = {'title': name, 'plot': plot, 'mediatype': 'episode',
-                'tvshowtitle': show_name, 'season': numSea}
         try:
-            info['episode'] = int(ep.get('number') or 0)
+            s_int = int(numSea)
         except (TypeError, ValueError):
-            pass
+            s_int = 0
+        try:
+            e_int = int(ep.get('number') or 0)
+        except (TypeError, ValueError):
+            e_int = 0
+        info = {'title': name, 'plot': plot, 'mediatype': 'episode',
+                'tvshowtitle': show_name, 'season': s_int, 'episode': e_int}
         li.setInfo('video', info)
         thumb = cover
         if ep.get('images'):
