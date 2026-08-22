@@ -1043,48 +1043,146 @@ def _sportonline_fetch():
     return events
 
 
+def _sportonline_unpack(packed):
+    try:
+        # P.A.C.K.E.R. unpack minimal
+        import re as _re
+        m = _re.search(r"}\('(.*)',\s*(\d+),\s*(\d+),\s*'(.*)'\.split\('\|'\)", packed, _re.S)
+        if not m:
+            return None
+        p, a, c, k = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4).split('|')
+        # base36 decode
+        def base36(n):
+            chars = '0123456789abcdefghijklmnopqrstuvwxyz'
+            s = ''
+            if n == 0:
+                return '0'
+            while n:
+                n, r = divmod(n, 36)
+                s = chars[r] + s
+            return s
+        # build dict
+        d = {}
+        for i in range(c):
+            d[base36(i)] = k[i] if i < len(k) else base36(i)
+        # replace
+        def repl(mo):
+            w = mo.group(0)
+            return d.get(w, w)
+        unpacked = _re.sub(r'\b\w+\b', repl, p)
+        return unpacked
+    except Exception:
+        return None
+
+
 def resolve_sportonline(url):
     try:
-        # fetch channel page -> iframe -> m3u8
-        headers = {'User-Agent': UA, 'Referer': 'https://sportsonline.vc/', 'Accept': 'text/html,*/*'}
-        r = requests.get(url, headers=headers, timeout=15)
-        r.raise_for_status()
-        html_txt = r.text
+        sess = requests.Session()
+        sess.headers.update({'User-Agent': UA, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'it-IT,it;q=0.9,en;q=0.8', 'Accept-Encoding': 'gzip, deflate', 'Connection': 'keep-alive', 'Upgrade-Insecure-Requests': '1'})
+        # handle w2 vs sportzonline domain fallback
+        urls_try = [url]
+        if 'w2.sportsonlinee.click' in url:
+            urls_try.append(url.replace('w2.sportsonlinee.click', 'sportsonline.click'))
+            urls_try.append(url.replace('w2.sportsonlinee.click', 'w2.sportsonline.click'))
+        html_txt = ''
+        last_err = None
+        for u in urls_try:
+            try:
+                r = sess.get(u, headers={'Referer': 'https://sportsonline.vc/'}, timeout=15, verify=False)
+                if r.status_code == 200 and '<iframe' in r.text:
+                    html_txt = r.text
+                    url = u
+                    break
+                last_err = 'http %s' % r.status_code
+            except Exception as e:
+                last_err = str(e)
+        if not html_txt or '<iframe' not in html_txt:
+            raise ValueError('iframe non trovato (%s)' % last_err)
         m = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', html_txt, re.I)
         if not m:
-            raise ValueError('iframe non trovato')
+            raise ValueError('iframe src non trovato')
         iframe = m.group(1)
         if iframe.startswith('//'):
             iframe = 'https:' + iframe
         elif iframe.startswith('/'):
-            # relative to sportsonline host
             iframe = 'https://w2.sportsonlinee.click' + iframe
-        # second level
-        h2 = {'User-Agent': UA, 'Referer': url, 'Accept': 'text/html,*/*'}
-        r2 = requests.get(iframe, headers=h2, timeout=15)
+        # second level with full browser headers
+        h2 = {'User-Agent': UA, 'Referer': url, 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language': 'it-IT,it;q=0.9', 'Sec-Fetch-Site': 'cross-site', 'Sec-Fetch-Mode': 'navigate'}
+        r2 = sess.get(iframe, headers=h2, timeout=15, verify=False)
+        txt2 = r2.text if r2.status_code == 200 else ''
+        if r2.status_code == 403:
+            # Cloudflare block - try with barecrop direct via textise and retry with extra headers
+            h2b = dict(h2)
+            h2b['Accept'] = '*/*'
+            h2b['Referer'] = 'https://w2.sportsonlinee.click/'
+            try:
+                r2b = sess.get(iframe, headers=h2b, timeout=15, verify=False)
+                if r2b.status_code == 200:
+                    txt2 = r2b.text
+            except Exception:
+                pass
         # cerca m3u8 diretto
-        m3 = re.search(r'(https?://[^\s"\'<>]+\.m3u8[^\s"\'<>]*)', r2.text)
+        m3 = re.search(r'(https?://[^\s"\'<>]+\.m3u8[^\s"\'<>]*)', txt2)
         if m3:
-            link = m3.group(1).replace('\\/', '/')
+            link = m3.group(1).replace('\\/', '/').replace('&amp;', '&')
             li = xbmcgui.ListItem(path=link, offscreen=True)
             li.setContentLookup(False)
             li.setProperty('inputstream', 'inputstream.adaptive')
             li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-            hdrs = 'Referer=%s&User-Agent=%s' % (iframe, UA)
+            hdrs = 'Referer=%s&User-Agent=%s&Origin=%s' % (iframe, UA, 'https://' + iframe.split('/')[2])
             li.setProperty('inputstream.adaptive.stream_headers', hdrs)
             li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
             return li
-        # packer fallback - cerca eval
-        m4 = re.search(r'eval\(function\(p,a,c,k,e,d\).*?\)\)', r2.text, re.S)
+        # packer unpack
+        m4 = re.search(r'eval\(function\(p,a,c,k,e,d\).*?\)\)', txt2, re.S)
         if m4:
-            # per ora ritorna iframe come fallback (mediaflow potrebbe unpackare server-side se disponibile)
+            unpacked = _sportonline_unpack(m4.group(0))
+            if unpacked:
+                m5 = re.search(r'(https?://[^\s"\'<>]+\.m3u8[^\s"\'<>]*)', unpacked)
+                if m5:
+                    link = m5.group(1).replace('\\/', '/')
+                    li = xbmcgui.ListItem(path=link, offscreen=True)
+                    li.setContentLookup(False)
+                    li.setProperty('inputstream', 'inputstream.adaptive')
+                    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+                    hdrs = 'Referer=%s&User-Agent=%s' % (iframe, UA)
+                    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+                    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+                    return li
+                # se unpack ha file: "...file":"https://..."
+                m6 = re.search(r'"file"\s*:\s*"([^"]+m3u8[^"]*)"', unpacked)
+                if m6:
+                    link = m6.group(1).replace('\\/', '/')
+                    li = xbmcgui.ListItem(path=link, offscreen=True)
+                    li.setProperty('inputstream', 'inputstream.adaptive')
+                    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+                    return li
+            # fallback: ritorna iframe con header (Kodi potrebbe seguire redirect 302)
             li = xbmcgui.ListItem(path=iframe, offscreen=True)
+            li.setContentLookup(False)
             li.setProperty('inputstream', 'inputstream.adaptive')
             li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+            hdrs = 'Referer=%s&User-Agent=%s' % (url, UA)
+            li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+            li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+            log('sportonline packer fallback iframe %s' % iframe)
             return li
-        raise ValueError('stream non estratto')
+        # fallback generico: prova iframe diretto come HLS (Kodi segue redirect)
+        if iframe:
+            li = xbmcgui.ListItem(path=iframe, offscreen=True)
+            li.setContentLookup(False)
+            li.setProperty('inputstream', 'inputstream.adaptive')
+            li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+            hdrs = 'Referer=%s&User-Agent=%s' % (url, UA)
+            li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+            li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+            log('sportonline fallback iframe %s' % iframe)
+            return li
+        raise ValueError('stream non estratto (len=%s iframe=%s)' % (len(txt2), iframe[:60]))
     except Exception as e:
         log('sportonline resolve %s: %s' % (url, e))
+        import traceback
+        log('sportonline TB: ' + traceback.format_exc())
         notify('SKY 4', 'Errore risoluzione SportOnline', True)
         return xbmcgui.ListItem()
 
