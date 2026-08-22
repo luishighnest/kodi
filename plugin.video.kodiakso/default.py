@@ -3251,8 +3251,8 @@ def guida_comp_view(comp, name=''):
             broad = b
             name = n
             break
-    # emittenti generali competizione - senza dettagli
-    li = xbmcgui.ListItem(label=lbl(name + ' - Emittenti'))
+    # emittenti generali - senza dettagli
+    li = xbmcgui.ListItem(label=lbl(name + ' - Emittenti generali'))
     li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
     li.setInfo('video', {'title': name, 'plot': ''})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li, isFolder=False)
@@ -3263,47 +3263,75 @@ def guida_comp_view(comp, name=''):
         li2.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
         li2.setInfo('video', {'title': ch.strip(), 'plot': ''})
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li2, isFolder=False)
-    # partite di oggi per questa competizione - da LiveSoccerTV
+    # partite di oggi con TUTTI i canali IT+esteri per singolo evento - da LiveSoccerTV JSON-LD
     try:
-        import re as _re
-        url = 'https://www.livesoccertv.com/it/competitions/%s/' % comp
-        html = requests.get(url, headers={'User-Agent': UA}, timeout=12).text
-        # estrai match di oggi: cerca <a href="/it/match/...">Title</a>
-        matches = _re.findall(r'<a[^>]+href="/it/match/[^"]+"[^>]*>(.*?)</a>', html)
-        # pulizia html entities e tag
-        clean = []
-        for m in matches:
-            # rimuovi tag interni
-            t = _re.sub(r'<[^>]+>', '', m).strip()
-            t = html_unescape(t) if 'html_unescape' in globals() else t
-            if t and ' - ' in t:
-                clean.append(t)
-        # dedup e limita a 10
+        import re as _re, json as _json
+        comp_url = 'https://www.livesoccertv.com/it/competitions/%s/' % comp
+        html = requests.get(comp_url, headers={'User-Agent': UA}, timeout=12).text
+        # estrai link partite
+        match_hrefs = _re.findall(r'href="(/it/match/[^"]+)"', html)
+        # dedup, mantieni ordine, max 8 partite di oggi
         seen=set()
-        uniq=[]
-        for t in clean:
-            if t not in seen:
-                seen.add(t)
-                uniq.append(t)
-        if uniq:
-            li3 = xbmcgui.ListItem(label=lbl('--- Partite di Oggi ---'))
+        uniq_hrefs=[]
+        for h in match_hrefs:
+            if h not in seen and '/match/' in h:
+                seen.add(h)
+                uniq_hrefs.append(h)
+            if len(uniq_hrefs) >= 8:
+                break
+        if uniq_hrefs:
+            li3 = xbmcgui.ListItem(label=lbl('--- Partite di Oggi con Canali per Evento ---'))
             li3.setInfo('video', {'title': 'Oggi', 'plot': ''})
             xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li3, isFolder=False)
-            for mt in uniq[:15]:
-                li4 = xbmcgui.ListItem(label=lbl(mt))
-                li4.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
-                # per ogni partita, mostra TUTTI gli emittenti/canali sia italiani che esteri
-                chs = ' | '.join([x.strip() for x in broad.split('|')])
-                li4.setInfo('video', {'title': mt, 'plot': ''})
-                li4.setProperty('IsPlayable', 'false')
-                xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li4, isFolder=False)
-                # sotto-canali per questa partita
-                for ch in [x.strip() for x in broad.split('|')]:
-                    if not ch:
+            for href in uniq_hrefs:
+                try:
+                    m_url = 'https://www.livesoccertv.com' + href.split('#')[0]
+                    m_html = requests.get(m_url, headers={'User-Agent': UA}, timeout=10).text
+                    # estrai JSON-LD BroadcastEvent
+                    m_json = _re.search(r'<script[^>]+type="application/ld\+json"[^>]*>(.*?)</script>', m_html, _re.S)
+                    if not m_json:
                         continue
-                    li5 = xbmcgui.ListItem(label=lbl('     \u2022 %s: %s' % (mt, ch.strip())))
-                    li5.setInfo('video', {'title': ch.strip(), 'plot': ''})
-                    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li5, isFolder=False)
+                    data = _json.loads(m_json.group(1))
+                    # data puo essere dict o list
+                    broadcasts = []
+                    if isinstance(data, dict) and '@graph' in data:
+                        broadcasts = [x for x in data['@graph'] if x.get('@type') == 'BroadcastEvent']
+                    elif isinstance(data, list):
+                        broadcasts = [x for x in data if x.get('@type') == 'BroadcastEvent']
+                    elif isinstance(data, dict) and data.get('@type') == 'BroadcastEvent':
+                        broadcasts = [data]
+                    if not broadcasts:
+                        continue
+                    # titolo partita dal primo broadcast
+                    title = broadcasts[0].get('name','').split(' on ')[0] if broadcasts else href
+                    # pulizia
+                    title = title.replace('Cremonese vs Como on', 'Cremonese - Como').strip()
+                    li4 = xbmcgui.ListItem(label=lbl(title))
+                    li4.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+                    li4.setInfo('video', {'title': title, 'plot': ''})
+                    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li4, isFolder=False)
+                    # raggruppa per nazione
+                    by_country = {}
+                    for bc in broadcasts:
+                        ch_name = bc.get('publishedOn',{}).get('name','')
+                        country = bc.get('publishedOn',{}).get('areaServed',{}).get('name','Estero')
+                        if not ch_name:
+                            continue
+                        by_country.setdefault(country, []).append(ch_name)
+                    for country in sorted(by_country):
+                        li_c = xbmcgui.ListItem(label=lbl('  %s (%d canali)' % (country, len(by_country[country]))))
+                        li_c.setInfo('video', {'title': country, 'plot': ''})
+                        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li_c, isFolder=False)
+                        for ch_name in sorted(set(by_country[country])):
+                            li5 = xbmcgui.ListItem(label=lbl('     \u2022 %s' % ch_name))
+                            li5.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
+                            li5.setInfo('video', {'title': ch_name, 'plot': ''})
+                            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li5, isFolder=False)
+                except Exception:
+                    continue
+        else:
+            li3 = xbmcgui.ListItem(label=lbl('Nessuna partita di oggi trovata'))
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li3, isFolder=False)
     except Exception:
         pass
     xbmcplugin.endOfDirectory(HANDLE)
