@@ -897,6 +897,27 @@ def sky_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+_FLAGS = {
+    'Australia': 'https://flagcdn.com/w80/au.png',
+    'Brasile': 'https://flagcdn.com/w80/br.png',
+    'USA': 'https://flagcdn.com/w80/us.png',
+    'Irlanda': 'https://flagcdn.com/w80/ie.png',
+    'Paesi Bassi': 'https://flagcdn.com/w80/nl.png',
+    'Slovacchia': 'https://flagcdn.com/w80/sk.png',
+    'Messico': 'https://flagcdn.com/w80/mx.png',
+    'Croazia': 'https://flagcdn.com/w80/hr.png',
+    'Montenegro': 'https://flagcdn.com/w80/me.png',
+    'Portogallo': 'https://flagcdn.com/w80/pt.png',
+    'Svizzera/Francia': 'https://flagcdn.com/w80/ch.png',
+    'Austria': 'https://flagcdn.com/w80/at.png',
+    'Israele': 'https://flagcdn.com/w80/il.png',
+    'Grecia': 'https://flagcdn.com/w80/gr.png',
+    'Germania': 'https://flagcdn.com/w80/de.png',
+    'Singapore': 'https://flagcdn.com/w80/sg.png',
+    'Malaysia': 'https://flagcdn.com/w80/my.png',
+    'Altro': 'https://flagcdn.com/w80/un.png',
+}
+
 _MPD6 = [
     {'nation': 'Singapore', 'title': 'Channel 5', 'mpd': 'https://tglmp02.akamaized.net/out/v1/5081e069e08140c9b95f89a1659cf4dd/manifest.mpd', 'keys': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=607b7d22565c4bc3b95ff6c33ce65425&key=28cc5367df666c44be4382e64af64d57'},
     {'nation': 'Singapore', 'title': 'Channel 8', 'mpd': 'https://tglmp02.akamaized.net/out/v1/4f6561ad194b49ae93f4e1b075afdf41/manifest.mpd', 'keys': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=2448fc561b0c4220a81f1008971d3088&key=f48eb6753f3d1774da682970c93cf260'},
@@ -904,6 +925,60 @@ _MPD6 = [
     {'nation': 'Singapore', 'title': 'Suria', 'mpd': 'https://tglmp04.akamaized.net/out/v1/b200e885125f4787bd2329952ff28fa1/manifest.mpd', 'keys': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=7a9ea6df52044841b0c562766e602610&key=b9380188b4896b25e8d419dfce938c6e'},
     {'nation': 'Singapore', 'title': 'Vasantham', 'mpd': 'https://tglmp03.akamaized.net/out/v1/14eb6e921cae41298efaa4d9db0f2875/manifest.mpd', 'keys': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=9970038ef6c548e39768f3a1ff6f5081&key=3e19d54b7bcd8bb336776fe136d48f57'},
     {'nation': 'Malaysia', 'title': 'CNA', 'mpd': 'https://linearjitp-playback.astro.com.my/dash-wv/linear/605/default_ott.mpd', 'keys': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=f812aeae6be5b924a8181b512d5d7910&key=44275884ee394d05081fde395ff6e415'},
+]
+
+_AK47_MPD = [
+    {'nation': 'Australia', 'title': 'Bein Sports 1 [Australia]', 'mpd': 'https://aba5sdmaaaaaaaamooyrewxky2c4j.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/ghwcl6hv68/out/v1/83536910d8034e9b9895a20fbe1c1687/cenc.mpd', 'keys': '335dad778109954503dcbb21dc92015f:24bfd75d436cbf73168a2a2dccd40281'},
+    {'nation': 'Australia', 'title': 'Bein Sports 2 [Australia]', 'mpd': 'https://aba5sdmaaaaaaaamdwujas5g6mg4r.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/8m8cd46i1t/out/v1/83985c68e4174e90a58a1f2c024be4c9/cenc.mpd', 'keys': '0b42be2664d7e811d04f3e504e0924c5:ae24090123b8c72ac5404dc152847cb8'},
+    {'nation': 'Australia', 'title': 'Bein Sports 3 [Australia]', 'mpd': 'https://aba5sdmaaaaaaaamhq2w5oosrf5ae.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/q4u5nwaogz/out/v1/18de6d3e65934f3a8de4358e69eab86c/cenc.mpd', 'keys': '7995c724a13748ed970840a8ab5bb9b3:67bdaf1e2175b9ff682fcdf0e2354b1e'},
+    {'nation': 'Austria', 'title': 'Sky Sport Austria HD', 'mpd': 'https://at-live-6.tentcdn.eu/bpk-tv/Sky_Sport_Austria_HD/default/index.mpd', 'keys': ''},
+    {'nation': 'Israele', 'title': 'ESPNHDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/6/out/u/dash/ESPNHDH265/default.mpd', 'keys': ''},
+    {'nation': 'Israele', 'title': 'ESPN2HDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/7/out/u/dash/ESPN2HDH265/default.mpd', 'keys': ''},
+    {'nation': 'Israele', 'title': 'ESPN3HDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/6/out/u/dash/ESPN3HDH265/default.mpd', 'keys': ''},
+    {'nation': 'Israele', 'title': 'ESPN4HDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/6/out/u/dash/ESPN4HDH265/default.mpd', 'keys': ''},
+    {'nation': 'Brasile', 'title': 'Brasile abc3orwaaaaa', 'mpd': 'https://abc3orwaaaaaaaamhpui7wlnmfqgh.ottb.live.cf.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/nelfyucw9a/out/v1/6ffb2c365ad14f88b154591beb43d1f6/cenc.mpd', 'keys': '56b79c1782b30e6b6fc973b0e8fd4104:fa38aaa865a57eda7c77444697ba8ed3'},
+    {'nation': 'Brasile', 'title': 'Brasile abc3orwaaaaa', 'mpd': 'https://abc3orwaaaaaaaamliumq7klym4kj.ottb.live.cf.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/oy6rp0jwmf/out/v1/580ecf12bad24979baf8dd993dce053e/cenc.mpd', 'keys': '9dc40460c93087aea84d6315f08ecb64:f69c8d4624fddff4ca89bd0b31bdc4a7'},
+    {'nation': 'USA', 'title': 'TSN Logo [USA]', 'mpd': 'https://abkf7g7aaaaaaaamcmmhhhyli5fwh.otte.live.cf.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/u142pfptsm/out/v1/1caa3b2dfa9e448d8f61209bdfc1acdc/cenc.mpd', 'keys': '7e99f734748d098cbfa2f7bde968dd44:98ea6088c3222e9abaf61e537804d6cc'},
+    {'nation': 'USA', 'title': 'USA abfjk4haaaaa', 'mpd': 'https://abfjk4haaaaaaaampv6ofhkihi4r6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/cllekigzzn/out/v1/bd3b0c314fff4bb1ab4693358f3cd2d3/cenc.mpd', 'keys': ''},
+    {'nation': 'USA', 'title': 'KTVB NBC 7 Boise Idaho Logo [USA]', 'mpd': 'https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/3b7qwiqzk3/out/v1/9f14895badca43e6a716db021dcd0c31/cenc.mpd', 'keys': 'dc69b6159a0f9f0a4e03b3ff91cbacd5:d0dcbcd7723bc40df0bf34c9c092d51f'},
+    {'nation': 'USA', 'title': 'USA otte.live.fl', 'mpd': 'https://otte.live.fly.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/uiffe4jhf0/out/v1/3534efafca8c4815adbb4d2e9a1fe003/cenc.mpd', 'keys': '3dcfbec0e7146928baa55210bf2cb62f:bc85f74f815d9be5ae1dd6defaa05135'},
+    {'nation': 'USA', 'title': 'USA netskrt.live', 'mpd': 'https://netskrt.live.pv-cdn.net/OTTB/iad-nitro/live/clients/dash/enc/rbem8rorcw/out/v1/5318821e2c3c44c2a439681b9aa86e9b/cenc.mpd', 'keys': 'd9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861'},
+    {'nation': 'USA', 'title': 'USA abfjk4haaaaa', 'mpd': 'https://abfjk4haaaaaaaampv6ofhkihi4r6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/fb6jy4pxts/out/v1/f8fa17f087564f51aa4d5c700be43ec4/cenc.mpd', 'keys': ''},
+    {'nation': 'Slovacchia', 'title': 'SK Antik nvidia_sport_1', 'mpd': 'https://dash2.antik.sk/stream/nvidia_sport_1/playlist_cenc.mpd', 'keys': ''},
+    {'nation': 'Slovacchia', 'title': 'SK Antik nvidia_sport2', 'mpd': 'https://dash2.antik.sk/stream/nvidia_sport2/playlist_cenc.mpd?ck=', 'keys': ''},
+    {'nation': 'Slovacchia', 'title': '031133-50', 'mpd': 'https://linear207-de-dash1-prd-ak.cdn12.skycdp.com/031133-50/index.mpd', 'keys': ''},
+    {'nation': 'Messico', 'title': 'ESPN HD MX', 'mpd': 'https://covoslivechannels2dash.clarovideo.com/Content/DASH_DASH_FK/Live/Channel(ESPN_HD)/manifest.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena1_n', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena1_n/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena2', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena2/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena3', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena3/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena4', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena4/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena5', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena5/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena6', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena6/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena7', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena7/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'arena8', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/arena8/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'sk1', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/sk1/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'sk2', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/sk2/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'sk3', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/sk3/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'sk4', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/sk4/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'sk5', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/sk5/default/index.mpd', 'keys': ''},
+    {'nation': 'Croazia', 'title': 'sk6', 'mpd': 'https://bpcdnmanprod.nexttv.ht.hr/bpk-tv/sk6/default/index.mpd', 'keys': ''},
+    {'nation': 'Svizzera/Francia', 'title': 'browser-dash', 'mpd': 'https://viamotionhsi.netplus.ch/live/eds/tf1hd/browser-dash/tf1hd.mpd', 'keys': ''},
+    {'nation': 'Svizzera/Francia', 'title': 'browser-dash', 'mpd': 'https://viamotionhsi.netplus.ch/live/eds/france2hd/browser-dash/france2hd.mpd', 'keys': ''},
+    {'nation': 'Svizzera/Francia', 'title': 'browser-dash', 'mpd': 'https://viamotionhsi.netplus.ch/live/eds/6ter/browser-dash/6ter.mpd', 'keys': ''},
+    {'nation': 'Svizzera/Francia', 'title': '0c5c7fb388c649f78a1be36fc4bd365e', 'mpd': 'https://origin-18cd60dea8190528-rtlhu.live.6cloud.fr/out/v1/0c5c7fb388c649f78a1be36fc4bd365e/dash_long_cenc10_ucl1_hd_index.mpd', 'keys': ''},
+    {'nation': 'Germania', 'title': '3221228661', 'mpd': 'https://svc40.main.sl.t-online.de/LCID3221228661.originalserver.prod.sngtv.t-online.de/PLTV/88888888/224/3221228661/3221228661.mpd', 'keys': ''},
+    {'nation': 'Grecia', 'title': 'Dash', 'mpd': 'https://ocdn.antennaplus.gr/live/media0/Sports1/Dash/Sports1.mpd', 'keys': ''},
+    {'nation': 'Paesi Bassi', 'title': 'NL 86', 'mpd': 'https://mag03.tvx.prd.tv.odido.nl/wh7f454c46tw75168188_-627298088/PLTV/86/224/3221241590/3221241590.mpd?zoneoffset=0&devkbps=1-7000&servicetype=1&icpid=86&accounttype=1&limitflux=-1&limitdur=-1&tenantId=3103&accountinfo=%7E%7EV2.0%7EqbcsJh_jU5C9BcZc959e_wae44b4867b3417aa76b5db2da20fe46c%7EKZzTWjB8qD1zdgbJjRPVLJX-tV0qiN9RBHC_iseGrsmTSRjj06oGDtGlpSCRGOwF3626cf085c08d024c7e4aafc18c32440%7EExtInfo5Ro3VppWiUusj2ippqUPkQ%3D%3D4a2d2c8ce133f43026d0e31b822b8474%3A20240601012829%3AUTC%2C10001003329222%2C87.212.140.171%2C20240601012829%2C3103_SP1S%2C10001003329222%2C-1%2C0%2C1%2C%2C%2C2%2C3103_Sport1%2C%2C%2C2%2C10000044444303%2C0%2C10000025050255%2CNDEzODg2NTY3MzEwMzI2NzMwNjMwNTY%3D%2C%2C%2C5%2C1%2CEND&GuardEncType=2&RTS=1717205309&from=11&hms_devid=1008&online=1717205309&mag_hms=1008,311,305&_=1717205322621', 'keys': ''},
+    {'nation': 'Portogallo', 'title': 'PT LIVE 151', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$151/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
+    {'nation': 'Portogallo', 'title': 'PT LIVE 152', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$152/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
+    {'nation': 'Portogallo', 'title': 'PT LIVE 153', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$153/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
+    {'nation': 'Portogallo', 'title': 'PT LIVE 10', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$10/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
+    {'nation': 'Portogallo', 'title': 'PT LIVE 112', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$112/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
+    {'nation': 'Portogallo', 'title': 'PT LIVE 566', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$566/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
+    {'nation': 'Portogallo', 'title': 'PT LIVE 597', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$597/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
+    {'nation': 'Montenegro', 'title': 'default', 'mpd': 'https://bpkcdn.telekom.me/bpk-tv/arena_premium_1/default/index.mpd', 'keys': ''},
+    {'nation': 'Montenegro', 'title': 'default', 'mpd': 'https://bpkcdn.telekom.me/bpk-tv/arenasport_1/default/index.mpd', 'keys': ''},
+    {'nation': 'Irlanda', 'title': 'NBC Logo [Irlanda]', 'mpd': 'https://ottb.live.cf.ww.aiv-cdn.net/dub-nitro/live/clients/dash/enc/2jbycgm3g3/out/v1/066dd9325648468c9ecdc8b272370931/cenc.mpd', 'keys': '84077d18bcf234a42de3745be106a87f:aee3069c062ec8ee6bfdd32985f287ef'},
 ]
 
 
@@ -3033,7 +3108,7 @@ def ak47_events_view():
     xbmcplugin.setContent(HANDLE, 'videos')
     from collections import defaultdict
     nations = defaultdict(list)
-    for ch in _MPD6:
+    for ch in _AK47_MPD:
         nations[ch['nation']].append(ch)
     for nation in sorted(nations):
         cnt = len(nations[nation])
@@ -3049,7 +3124,7 @@ def ak47_events_view():
 def ak47_nation_view(nation):
     back_button(BASE + '?action=ak47_events')
     xbmcplugin.setContent(HANDLE, 'videos')
-    for ch in [c for c in _MPD6 if c['nation'] == nation]:
+    for ch in [c for c in _AK47_MPD if c['nation'] == nation]:
         mpd = ch['mpd']
         keys = ch.get('keys') or ''
         li = xbmcgui.ListItem(label=lbl(ch['title']), path=mpd)
