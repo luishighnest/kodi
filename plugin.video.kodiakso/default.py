@@ -648,17 +648,30 @@ def _sky_counts(cat):
     return counts
 
 
-def resolve_vavoo(url, title=''):
+def resolve_vavoo(url, title='', prog=''):
     try:
+        pname = title or ''
+        cur_prog = (prog or '').strip()
+        if not cur_prog:
+            try:
+                cur, _ = _epg_now(title)
+                if cur and len(cur) >= 3 and cur[2]:
+                    cur_prog = str(cur[2]).strip()
+            except Exception:
+                pass
+
+        if cur_prog:
+            pname = pname + ' • ' + cur_prog
+
         hdrs = 'User-Agent=VAVOO/2.6&Referer=https://vavoo.to/&Origin=https://vavoo.to&verifypeer=false'
-        li = xbmcgui.ListItem(path=url, label=lbl(title or ''), offscreen=True)
+        li = xbmcgui.ListItem(path=url, label=lbl(pname), offscreen=True)
         li.setContentLookup(False)
         li.setMimeType('application/x-mpegURL')
         li.setProperty('inputstream', 'inputstream.adaptive')
         li.setProperty('inputstream.adaptive.manifest_type', 'hls')
         li.setProperty('inputstream.adaptive.stream_headers', hdrs)
         li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
-        li.setInfo('video', {'title': title or '', 'mediatype': 'video'})
+        li.setInfo('video', {'title': pname, 'tvshowtitle': '', 'season': 0, 'episode': 0, 'mediatype': 'video'})
         return li
     except Exception as e:
         xbmc.log('KODIAKSO vavoo resolve ERR: ' + str(e), xbmc.LOGERROR)
@@ -2575,7 +2588,7 @@ def main():
         elif action == 'sky2':
             sky2_view(query.get('back', [''])[0])
         elif action == 'vavooplay':
-            li = resolve_vavoo(query.get('url', [''])[0], query.get('t', [''])[0])
+            li = resolve_vavoo(query.get('url', [''])[0], query.get('t', [''])[0], query.get('p', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'tv':
             tv_view()
