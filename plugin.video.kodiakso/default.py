@@ -12,6 +12,8 @@ import pickle
 import hashlib
 import hmac
 import html
+import uuid
+import threading
 import urllib.parse
 from datetime import datetime, timedelta
 from xml.etree import ElementTree as ET
@@ -63,6 +65,154 @@ _EXP_CACHE = {}
 _EXP_CACHE_DIRTY = False
 _EXP_CACHE_TTL = 180
 _EXP_CACHE_TTL_FAIL = 60
+
+# === VAVOO AUTH (OwnerPlugins/vavoo - port for Kodi) ===
+_VAVOO_PING_URL = 'https://www.vavoo.tv/api/app/ping'
+_VAVOO_PING_URL2 = 'https://www.vypn.net/api/app/ping'
+_VAVOO_VYPN_PKG = 'net.vypn.app'
+_VAVOO_VYPN_VER = '1.4.1'
+_VAVOO_BASES = ['https://vavoo.to', 'https://kool.to']
+_VAVOO_SIG = {'sig': None, 'ts': 0}
+_VAVOO_CAT_CACHE = {'data': None, 'ts': 0, 'sig': ''}
+_VAVOO_CAT_TTL = 1800
+_VAVOO_RESOLVE_CACHE = {}
+_VAVOO_RESOLVE_TTL = 300
+
+
+def _vavoo_rewrite_sig_ip(sig):
+    try:
+        padded = sig + '=' * (-len(sig) % 4)
+        dec = base64.b64decode(padded).decode('utf-8')
+        obj = json.loads(dec)
+        if not isinstance(obj, dict) or 'data' not in obj:
+            return sig
+        data = json.loads(obj['data'])
+        try:
+            ip = requests.get('https://api.ipify.org', timeout=8).text.strip()
+        except Exception:
+            return sig
+        if not ip:
+            return sig
+        ips = data.get('ips')
+        if not isinstance(ips, list):
+            ips = []
+        data['ips'] = [ip] + [x for x in ips if x and x != ip]
+        if isinstance(data.get('ip'), str):
+            data['ip'] = ip
+        obj['data'] = json.dumps(data)
+        nsig = base64.b64encode(json.dumps(obj).encode('utf-8')).decode('ascii')
+        return nsig
+    except Exception:
+        return sig
+
+
+def _vavoo_get_sig(force=False):
+    now = time.time()
+    if not force and _VAVOO_SIG['sig'] and (now - _VAVOO_SIG['ts'] < 480):
+        return _VAVOO_SIG['sig']
+    try:
+        uid = str(uuid.uuid4())
+        ts = int(time.time() * 1000)
+        payload = {
+            'token': '', 'reason': 'app-focus', 'locale': 'it', 'theme': 'dark',
+            'metadata': {'device': {'type': 'phone', 'uniqueId': uid}, 'os': {'name': 'android', 'version': '14', 'abis': ['arm64-v8a'], 'host': 'android'}, 'app': {'platform': 'android'}, 'version': {'package': _VAVOO_VYPN_PKG, 'binary': _VAVOO_VYPN_VER, 'js': _VAVOO_VYPN_VER}},
+            'appFocusTime': 0, 'playerActive': False, 'playDuration': 0, 'devMode': False, 'hasAddon': True, 'castConnected': False,
+            'package': _VAVOO_VYPN_PKG, 'version': _VAVOO_VYPN_VER, 'process': 'app', 'firstAppStart': ts - 86400000, 'lastAppStart': ts,
+            'ipLocation': None, 'adblockEnabled': True, 'migrationApplied': False, 'migrationTargetInstalled': False,
+            'proxy': {'supported': ['ss'], 'engine': 'Mu', 'ssVersion': '2022', 'enabled': False, 'autoServer': True, 'id': ''},
+            'iap': {'supported': False, 'error': ''}}
+        headers = {'user-agent': 'okhttp/4.11.0', 'accept': 'application/json', 'content-type': 'application/json; charset=utf-8', 'accept-encoding': 'gzip'}
+        sig = None
+        for url in [_VAVOO_PING_URL, _VAVOO_PING_URL2]:
+            try:
+                r = requests.post(url, json=payload, headers=headers, timeout=15)
+                if r.status_code == 200:
+                    j = r.json()
+                    sig = j.get('addonSig') or j.get('mhub')
+                    if sig:
+                        break
+            except Exception:
+                continue
+        if sig:
+            sig = _vavoo_rewrite_sig_ip(sig)
+            _VAVOO_SIG['sig'] = sig
+            _VAVOO_SIG['ts'] = now
+            return sig
+    except Exception as e:
+        log('vavoo sig ERR: ' + str(e))
+    return _VAVOO_SIG['sig']
+
+
+def _vavoo_catalog():
+    now = time.time()
+    if _VAVOO_CAT_CACHE['data'] is not None and (now - _VAVOO_CAT_CACHE['ts'] < _VAVOO_CAT_TTL):
+        return _VAVOO_CAT_CACHE['data']
+    sig = _vavoo_get_sig()
+    if not sig:
+        return []
+    all_ch = []
+    cursor = None
+    for page in range(15):
+        ok = False
+        for base in _VAVOO_BASES:
+            try:
+                h = {'content-type': 'application/json; charset=utf-8', 'mediahubmx-signature': sig, 'user-agent': 'MediaHubMX/2', 'accept': '*/*', 'Accept-Language': 'it', 'Accept-Encoding': 'gzip, deflate'}
+                body = {'language': 'it', 'region': 'IT', 'catalogId': 'iptv', 'id': 'iptv', 'adult': False, 'search': '', 'sort': '', 'filter': {}, 'cursor': cursor, 'clientVersion': '3.0.2'}
+                r = requests.post(base + '/mediahubmx-catalog.json', json=body, headers=h, timeout=30)
+                if r.status_code == 451:
+                    continue
+                r.raise_for_status()
+                j = r.json()
+                items = j.get('items', [])
+                if items:
+                    all_ch.extend(items)
+                cursor = j.get('nextCursor')
+                ok = True
+                break
+            except Exception as e:
+                log('vavoo catalog %s: %s' % (base, e))
+                continue
+        if not ok or not cursor:
+            break
+    _VAVOO_CAT_CACHE['data'] = all_ch
+    _VAVOO_CAT_CACHE['ts'] = now
+    _VAVOO_CAT_CACHE['sig'] = sig
+    return all_ch
+
+
+def _vavoo_resolve(play_url):
+    now = time.time()
+    hit = _VAVOO_RESOLVE_CACHE.get(play_url)
+    if hit and (now - hit[0] < _VAVOO_RESOLVE_TTL):
+        return hit[1]
+    sig = _vavoo_get_sig()
+    if not sig:
+        return None
+    for attempt in range(2):
+        for base in _VAVOO_BASES:
+            try:
+                h = {'content-type': 'application/json; charset=utf-8', 'mediahubmx-signature': sig, 'user-agent': 'MediaHubMX/2', 'accept': '*/*', 'Accept-Language': 'it', 'Accept-Encoding': 'gzip, deflate'}
+                body = {'language': 'it', 'region': 'IT', 'url': play_url, 'clientVersion': '3.0.2'}
+                r = requests.post(base + '/mediahubmx-resolve.json', json=body, headers=h, timeout=20)
+                if r.status_code == 451:
+                    continue
+                r.raise_for_status()
+                j = r.json()
+                stream = None
+                if isinstance(j, list) and j:
+                    stream = j[0].get('url')
+                elif isinstance(j, dict):
+                    stream = j.get('url') or j.get('streamUrl')
+                if stream:
+                    _VAVOO_RESOLVE_CACHE[play_url] = (now, stream)
+                    return stream
+            except Exception as e:
+                log('vavoo resolve %s: %s' % (base, e))
+                continue
+        sig = _vavoo_get_sig(force=True)
+        if not sig:
+            break
+    return None
 
 
 def lbl(txt):
@@ -659,16 +809,20 @@ def resolve_vavoo(url, title='', prog=''):
                     cur_prog = str(cur[2]).strip()
             except Exception:
                 pass
-
         if cur_prog:
-            pname = pname + ' • ' + cur_prog
-
-        hdrs = 'User-Agent=VAVOO/2.6&Referer=https://vavoo.to/&Origin=https://vavoo.to&verifypeer=false'
-        li = xbmcgui.ListItem(path=url, label=lbl(pname), offscreen=True)
+            pname = pname + ' \u2022 ' + cur_prog
+        # url is the vavoo play URL (https://vavoo.to/vavoo-iptv/play/...), resolve to HLS
+        stream = _vavoo_resolve(url) if url else None
+        if not stream:
+            notify(title or 'SKY 2', 'Impossibile risolvere lo stream Vavoo', True)
+            return xbmcgui.ListItem()
+        li = xbmcgui.ListItem(path=stream, label=lbl(pname), offscreen=True)
         li.setContentLookup(False)
         li.setMimeType('application/x-mpegURL')
         li.setProperty('inputstream', 'inputstream.adaptive')
         li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        # Vavoo HLS non richiede header firmati, UA generico
+        hdrs = 'User-Agent=%s' % UA
         li.setProperty('inputstream.adaptive.stream_headers', hdrs)
         li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
         li.setInfo('video', {'title': pname, 'tvshowtitle': '', 'season': 0, 'episode': 0, 'mediatype': 'video'})
@@ -715,39 +869,60 @@ def sky2_view(back=''):
     back_button(back or (BASE + '?action=sky'))
     epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
     try:
-        r = requests.get('https://vavoo.to/live2/index', headers={'User-Agent': 'Mozilla/5.0'}, timeout=15).json()
-        italy_channels = [x for x in r if x.get('group') == 'Italy']
-        sky_channels = [x for x in italy_channels if 'sky' in (x.get('name') or '').lower()]
-        if not sky_channels:
-            sky_channels = italy_channels
+        catalog = _vavoo_catalog()
+        # filtra Italy + sky, deduplica per nome base (rimuove .c/.s e backup)
+        seen = {}
+        for it in catalog:
+            grp = it.get('group', '')
+            if 'Italy' not in grp:
+                continue
+            name = (it.get('name') or '').strip()
+            if 'sky' not in name.lower():
+                continue
+            play_url = it.get('url', '')
+            if not play_url:
+                continue
+            # normalizza: toglie suffissi .c/.s, (BACKUP), spazi doppi, (7)
+            base = re.sub(r'\s*\.(c|s)\s*$', '', name, flags=re.IGNORECASE).strip()
+            base = re.sub(r'\s*\(BACKUP\)\s*', ' ', base, flags=re.IGNORECASE).strip()
+            base = re.sub(r'\s*\(\d+\)\s*$', '', base).strip()
+            base = re.sub(r'\s+', ' ', base)
+            key = base.lower()
+            # preferisci .c (cloud) al .s, e la prima occorrenza vince
+            if key not in seen:
+                seen[key] = (base, play_url, it.get('logo') or '')
+            elif '.c' in name.lower() and '.s' in seen[key][0].lower():
+                seen[key] = (base, play_url, it.get('logo') or seen[key][2])
+
+        if not seen:
+            raise Exception('catalogo Vavoo vuoto')
+
+        sky_list = sorted(seen.values(), key=lambda x: x[0].lower())
 
         xbmcplugin.setContent(HANDLE, 'videos')
-        for ch in sky_channels:
-            name = ch.get('name', 'Canale Sky').strip()
-            cname = re.sub(r'\s*\(\d+\)\s*$', '', name)
-            ch_url = ch.get('url', '')
-            logo = ch.get('logo') or SQUARE_ICON
-
+        for cname, ch_url, logo in sky_list:
             cur, nxt = _epg_now(cname, epg)
             cur_prog = str(cur[2]).strip() if (cur and len(cur) >= 3 and cur[2]) else ''
-
             lines = []
             if cur:
                 lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
             if nxt:
                 lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
-
+            # logo mappato o da catalog
+            lkey = cname.lower().replace('sky ', '').replace(' ', '')
+            mapped = LOGOS.get(lkey, '')
+            thumb = (LOGO_BASE + mapped) if mapped else (logo or SQUARE_ICON)
             li = xbmcgui.ListItem(label=lbl(cname))
-            logo_img = LOGOS.get(cname.lower().replace('sky ', ''), logo)
-            li.setArt({'thumb': logo, 'icon': logo, 'poster': logo})
+            li.setArt({'thumb': thumb, 'icon': thumb, 'poster': thumb})
             li.setProperty('isPlayable', 'true')
             li.setInfo('video', {'title': cname, 'plot': ' | '.join(lines), 'mediatype': 'video'})
-
             url = BASE + '?action=vavooplay&url=' + urllib.parse.quote(ch_url) + '&t=' + urllib.parse.quote(cname) + '&p=' + urllib.parse.quote(cur_prog)
             xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     except Exception as e:
         xbmc.log('KODIAKSO sky2_view ERR: ' + str(e), xbmc.LOGERROR)
-        notify('SKY 2', 'Errore caricamento canali', True)
+        import traceback
+        xbmc.log('KODIAKSO sky2_view TB: ' + traceback.format_exc(), xbmc.LOGERROR)
+        notify('SKY 2', 'Errore caricamento canali (Vavoo auth)', True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
