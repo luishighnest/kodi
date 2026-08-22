@@ -1512,7 +1512,15 @@ def mandra_season_view(code, back=''):
             m = re.search(r'<div id="app" data-page="(.*?)"', r.text)
             if m:
                 props = json.loads(m.group(1).replace('&quot;', '"'))['props']
-                seasons = props.get('title', {}).get('seasons', [])
+                title_obj = props.get('title', {})
+                poster_url = SQUARE_ICON
+                fanart_url = None
+                for im in title_obj.get('images', []):
+                    if im.get('type') == 'poster' and im.get('filename'):
+                        poster_url = 'https://cdn.streamingunity.vip/images/' + im['filename']
+                    elif im.get('type') == 'background' and im.get('filename'):
+                        fanart_url = 'https://cdn.streamingunity.vip/images/' + im['filename']
+                seasons = title_obj.get('seasons', [])
                 for s in seasons:
                     n = s.get('number')
                     if n and n > 0:
@@ -1520,7 +1528,10 @@ def mandra_season_view(code, back=''):
                         par = f"{code}---{s_num}"
                         stitle = f"Stagione {s_num}"
                         li = xbmcgui.ListItem(label=lbl(stitle))
-                        li.setArt({'thumb': SQUARE_ICON})
+                        art = {'thumb': poster_url, 'poster': poster_url}
+                        if fanart_url:
+                            art['fanart'] = fanart_url
+                        li.setArt(art)
                         li.setInfo('video', {'title': stitle})
                         url_item = _tmdb_url('mepisodes', par=par, back=season_url)
                         xbmcplugin.addDirectoryItem(HANDLE, url_item, li, isFolder=True)
