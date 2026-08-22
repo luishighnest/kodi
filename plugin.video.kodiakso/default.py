@@ -282,21 +282,21 @@ CAT_INT = 'SKY INTRATTENIMENTO'
 CAT_SPORT = 'SKY SPORT'
 
 _GUIDA = [
-    ('Serie A', 'serie-a', '', 'DAZN (10/10) | Sky Sport Calcio, Sky Sport 251, NOW (3/10) | Amazon (0)'),
-    ('Serie B', 'serie-b', '', 'DAZN | Amazon LaB Channel | OneFootball TV'),
-    ('Coppa Italia', 'coppa-italia', '', 'Mediaset Canale 5 / Italia 1 | DAZN'),
-    ('Supercoppa Italiana', 'supercoppa', '', 'Mediaset | DAZN'),
-    ('Champions League', 'champions', '', 'Sky 185/203 | NOW | Amazon 18 gare mercoledi | TV8 (estere)'),
-    ('Europa League', 'europa-league', '', 'Sky 342/342 | NOW | Diretta Gol'),
-    ('Conference League', 'conference', '', 'Sky 342/342 | NOW'),
-    ('Premier League', 'premier', '', 'Sky fino 2028 (7/10) | NOW | TV8'),
-    ('LaLiga', 'laliga', '', 'DAZN fino 2029'),
-    ('Bundesliga', 'bundesliga', '', 'Sky fino 2029 (5/34 + Coppa) | NOW'),
-    ('Ligue 1', 'ligue1', '', 'Sky 2/10 | NOW (novita 2025)'),
-    ('Primeira Liga', 'primeira', '', 'DAZN | Sky'),
-    ('Eredivisie', 'eredivisie', '', 'Como TV (gratis)'),
-    ('Saudi Pro League', 'saudi', '', 'Como TV'),
-    ('FA Cup', 'fa-cup', '', 'DAZN | Sky'),
+    ('Serie A', 'italy/serie-a', '', 'DAZN | Sky Sport Calcio, Sky Sport 251, NOW'),
+    ('Serie B', 'italy/serie-b', '', 'DAZN | Amazon LaB Channel | OneFootball TV'),
+    ('Coppa Italia', 'italy/coppa-italia', '', 'Mediaset Canale 5 / Italia 1 | DAZN'),
+    ('Supercoppa Italiana', 'italy/supercoppa-italiana', '', 'Mediaset | DAZN'),
+    ('Champions League', 'international/uefa-champions-league', '', 'Sky | NOW | Amazon 18 gare | TV8 estero'),
+    ('Europa League', 'international/uefa-europa-league', '', 'Sky | NOW | Diretta Gol'),
+    ('Conference League', 'international/uefa-europa-conference-league', '', 'Sky | NOW'),
+    ('Premier League', 'england/premier-league', '', 'Sky fino 2028 | NOW | TV8'),
+    ('LaLiga', 'spain/primera-division', '', 'DAZN fino 2029'),
+    ('Bundesliga', 'germany/bundesliga', '', 'Sky fino 2029 | NOW'),
+    ('Ligue 1', 'france/ligue-1', '', 'Sky | NOW'),
+    ('Primeira Liga', 'portugal/liga-sagres', '', 'DAZN | Sky'),
+    ('Eredivisie', 'netherlands/eredivisie', '', 'Como TV (gratis)'),
+    ('Saudi Pro League', 'saudi-arabia/saudi-pro-league', '', 'Como TV'),
+    ('FA Cup', 'england/fa-cup', '', 'DAZN | Sky'),
 ]
 
 SKY_DEFS = {
@@ -3178,10 +3178,9 @@ def guida_view():
     home_button()
     xbmcplugin.setContent(HANDLE, 'videos')
     for name, cid, flag, broad in _GUIDA:
-        label = '%s %s' % (flag, name)
-        li = xbmcgui.ListItem(label=lbl(label))
+        li = xbmcgui.ListItem(label=lbl(name))
         li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
-        li.setInfo('video', {'title': name, 'plot': 'Emittenti: ' + broad})
+        li.setInfo('video', {'title': name, 'plot': ''})
         li.setProperty('IsPlayable', 'false')
         url = BASE + '?action=guidacomp&comp=' + urllib.parse.quote(cid) + '&name=' + urllib.parse.quote(name)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
@@ -3191,33 +3190,76 @@ def guida_view():
 def guida_comp_view(comp, name=''):
     back_button(BASE + '?action=guida')
     xbmcplugin.setContent(HANDLE, 'videos')
-    # trova broadcaster per comp
     broad = ''
-    flag = ''
     for n,c,f,b in _GUIDA:
         if c == comp:
             broad = b
-            flag = f
             name = n
             break
-    # header emittenti
-    li = xbmcgui.ListItem(label=lbl('%s %s - Emittenti' % (flag, name)))
-    li.setInfo('video', {'title': name, 'plot': broad})
+    # emittenti generali competizione - senza dettagli
+    li = xbmcgui.ListItem(label=lbl(name + ' - Emittenti'))
     li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
+    li.setInfo('video', {'title': name, 'plot': ''})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li, isFolder=False)
-    # lista canali/emittenti singoli
     for ch in [x.strip() for x in broad.split('|')]:
         if not ch:
             continue
         li2 = xbmcgui.ListItem(label=lbl('  \u2022 ' + ch.strip()))
         li2.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
-        li2.setInfo('video', {'title': ch.strip(), 'plot': 'Trasmesso su: ' + ch.strip()})
+        li2.setInfo('video', {'title': ch.strip(), 'plot': ''})
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li2, isFolder=False)
-    # nota
-    li3 = xbmcgui.ListItem(label=lbl('[COLOR FF99CC33]Fonte: LiveSoccerTV.com/it/schedules[/COLOR]'))
-    li3.setInfo('video', {'plot': 'Palinsesto ufficiale: www.livesoccertv.com/it/competitions/%s' % comp})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li3, isFolder=False)
+    # partite di oggi per questa competizione - da LiveSoccerTV
+    try:
+        import re as _re
+        url = 'https://www.livesoccertv.com/it/competitions/%s/' % comp
+        html = requests.get(url, headers={'User-Agent': UA}, timeout=12).text
+        # estrai match di oggi: cerca <a href="/it/match/...">Title</a>
+        matches = _re.findall(r'<a[^>]+href="/it/match/[^"]+"[^>]*>(.*?)</a>', html)
+        # pulizia html entities e tag
+        clean = []
+        for m in matches:
+            # rimuovi tag interni
+            t = _re.sub(r'<[^>]+>', '', m).strip()
+            t = html_unescape(t) if 'html_unescape' in globals() else t
+            if t and ' - ' in t:
+                clean.append(t)
+        # dedup e limita a 10
+        seen=set()
+        uniq=[]
+        for t in clean:
+            if t not in seen:
+                seen.add(t)
+                uniq.append(t)
+        if uniq:
+            li3 = xbmcgui.ListItem(label=lbl('--- Partite di Oggi ---'))
+            li3.setInfo('video', {'title': 'Oggi', 'plot': ''})
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li3, isFolder=False)
+            for mt in uniq[:15]:
+                li4 = xbmcgui.ListItem(label=lbl(mt))
+                li4.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+                # per ogni partita, mostra TUTTI gli emittenti/canali sia italiani che esteri
+                chs = ' | '.join([x.strip() for x in broad.split('|')])
+                li4.setInfo('video', {'title': mt, 'plot': ''})
+                li4.setProperty('IsPlayable', 'false')
+                xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li4, isFolder=False)
+                # sotto-canali per questa partita
+                for ch in [x.strip() for x in broad.split('|')]:
+                    if not ch:
+                        continue
+                    li5 = xbmcgui.ListItem(label=lbl('     \u2022 %s: %s' % (mt, ch.strip())))
+                    li5.setInfo('video', {'title': ch.strip(), 'plot': ''})
+                    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li5, isFolder=False)
+    except Exception:
+        pass
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+def html_unescape(s):
+    try:
+        import html as _h
+        return _h.unescape(s)
+    except Exception:
+        return s
 
 
 def empty_item():
