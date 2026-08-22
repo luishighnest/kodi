@@ -837,6 +837,7 @@ def sky_view():
     sky1_url = BASE + '?action=sky1'
     sky2_url = BASE + '?action=sky2'
     sky3_url = BASE + '?action=sky3'
+    sky4_url = BASE + '?action=sky4'
 
     li1 = xbmcgui.ListItem(label=lbl('SKY 1'))
     li1.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
@@ -852,6 +853,11 @@ def sky_view():
     li3.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
     li3.setInfo('video', {'title': 'SKY 3 (Daddy)', 'plot': 'Eventi live esclusivamente Sky Sport Italia (DaddyLive)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky3_url, li3, isFolder=True)
+
+    li4 = xbmcgui.ListItem(label=lbl('SKY 4 (SportOnline - HD7/HD8 IT)'))
+    li4.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li4.setInfo('video', {'title': 'SKY 4 (SportOnline)', 'plot': 'Eventi HD7/HD8 ITALIAN (SportOnline - alternative Sky Sport IT)'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky4_url, li4, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -979,6 +985,132 @@ def sky3_view(back=''):
         import traceback
         xbmc.log('KODIAKSO sky3_view TB: ' + traceback.format_exc(), xbmc.LOGERROR)
         notify('SKY 3', 'Errore caricamento DaddyLive', True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def _sportonline_fetch():
+    cached = _VAVOO_CAT_CACHE.get('sportonline')
+    # reuse short TTL 15min
+    try:
+        if cached and (time.time() - cached[1] < 900):
+            return cached[0]
+    except Exception:
+        pass
+    events = []
+    try:
+        # prog.txt SportOnline - HD7/HD8 ITALIAN
+        urls = ['https://sportsonline.vc/prog.txt', 'https://sportsonline.gl/prog.txt']
+        txt = ''
+        for u in urls:
+            try:
+                r = requests.get(u, headers={'User-Agent': UA}, timeout=12)
+                if r.status_code == 200 and r.text:
+                    txt = r.text
+                    break
+            except Exception:
+                continue
+        if not txt:
+            return []
+        for line in txt.splitlines():
+            line = line.strip()
+            if not line or line.startswith('=') or line.startswith('|') or 'INFO:' in line or '24/7' in line or 'LAST UPDATE' in line or line.startswith('(') or 'HD' not in line and 'http' not in line:
+                if '|' not in line:
+                    continue
+            if '|' not in line:
+                continue
+            # entry format: 17:30   Udinese x Como | https://w2.sportsonlinee.click/channels/hd/hd8.php
+            left, right = line.split('|', 1)
+            left = left.strip()
+            url = right.strip()
+            # filtra solo HD7/HD8 ITALIAN
+            if 'hd7.php' not in url.lower() and 'hd8.php' not in url.lower():
+                continue
+            # left contains time + event
+            m = re.match(r'(\d{1,2}:\d{2})\s+(.*)', left)
+            if m:
+                t = m.group(1)
+                ev = m.group(2).strip()
+                # pulizia
+                ev = re.sub(r'\s+', ' ', ev)
+                title = '%s  %s [HD7/HD8 IT]' % (t, ev) if 'hd7' in url.lower() and 'hd8' in url.lower() else ('%s  %s [%s]' % (t, ev, 'HD7 IT' if 'hd7' in url.lower() else 'HD8 IT'))
+                # prefer title with channel tag
+                events.append({'title': title, 'url': url, 'time': t, 'event': ev})
+            else:
+                events.append({'title': left[:80], 'url': url})
+        _VAVOO_CAT_CACHE['sportonline'] = (events, time.time())
+    except Exception as e:
+        log('sportonline fetch ERR: ' + str(e))
+    return events
+
+
+def resolve_sportonline(url):
+    try:
+        # fetch channel page -> iframe -> m3u8
+        headers = {'User-Agent': UA, 'Referer': 'https://sportsonline.vc/', 'Accept': 'text/html,*/*'}
+        r = requests.get(url, headers=headers, timeout=15)
+        r.raise_for_status()
+        html_txt = r.text
+        m = re.search(r'<iframe[^>]+src=["\']([^"\']+)["\']', html_txt, re.I)
+        if not m:
+            raise ValueError('iframe non trovato')
+        iframe = m.group(1)
+        if iframe.startswith('//'):
+            iframe = 'https:' + iframe
+        elif iframe.startswith('/'):
+            # relative to sportsonline host
+            iframe = 'https://w2.sportsonlinee.click' + iframe
+        # second level
+        h2 = {'User-Agent': UA, 'Referer': url, 'Accept': 'text/html,*/*'}
+        r2 = requests.get(iframe, headers=h2, timeout=15)
+        # cerca m3u8 diretto
+        m3 = re.search(r'(https?://[^\s"\'<>]+\.m3u8[^\s"\'<>]*)', r2.text)
+        if m3:
+            link = m3.group(1).replace('\\/', '/')
+            li = xbmcgui.ListItem(path=link, offscreen=True)
+            li.setContentLookup(False)
+            li.setProperty('inputstream', 'inputstream.adaptive')
+            li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+            hdrs = 'Referer=%s&User-Agent=%s' % (iframe, UA)
+            li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+            li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+            return li
+        # packer fallback - cerca eval
+        m4 = re.search(r'eval\(function\(p,a,c,k,e,d\).*?\)\)', r2.text, re.S)
+        if m4:
+            # per ora ritorna iframe come fallback (mediaflow potrebbe unpackare server-side se disponibile)
+            li = xbmcgui.ListItem(path=iframe, offscreen=True)
+            li.setProperty('inputstream', 'inputstream.adaptive')
+            li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+            return li
+        raise ValueError('stream non estratto')
+    except Exception as e:
+        log('sportonline resolve %s: %s' % (url, e))
+        notify('SKY 4', 'Errore risoluzione SportOnline', True)
+        return xbmcgui.ListItem()
+
+
+def sky4_view(back=''):
+    back_button(back or (BASE + '?action=sky'))
+    try:
+        evs = _sportonline_fetch()
+        xbmcplugin.setContent(HANDLE, 'videos')
+        if not evs:
+            li = xbmcgui.ListItem(label=lbl('Nessun evento HD7/HD8 IT al momento (SportOnline)'))
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', li, isFolder=False)
+            xbmcplugin.endOfDirectory(HANDLE)
+            return
+        for ev in evs:
+            title = ev.get('title') or 'Evento'
+            url = ev.get('url') or ''
+            li = xbmcgui.ListItem(label=lbl(title))
+            li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+            li.setProperty('isPlayable', 'true')
+            li.setInfo('video', {'title': title, 'plot': title})
+            play_url = BASE + '?action=sportplay&url=' + urllib.parse.quote(url) + '&t=' + urllib.parse.quote(title)
+            xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
+    except Exception as e:
+        xbmc.log('KODIAKSO sky4_view ERR: ' + str(e), xbmc.LOGERROR)
+        notify('SKY 4', 'Errore caricamento SportOnline', True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -2895,6 +3027,11 @@ def main():
             sky2_view(query.get('back', [''])[0])
         elif action == 'sky3':
             sky3_view(query.get('back', [''])[0])
+        elif action == 'sky4':
+            sky4_view(query.get('back', [''])[0])
+        elif action == 'sportplay':
+            li = resolve_sportonline(query.get('url', [''])[0])
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'vavooplay':
             li = resolve_vavoo(query.get('url', [''])[0], query.get('t', [''])[0], query.get('p', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
