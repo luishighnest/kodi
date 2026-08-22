@@ -1022,12 +1022,12 @@ def v2_get(url, base):
     return ''
 
 
-def resolve_v2(id_, mtype='movie', season='0', episode='0', title=''):
+def resolve_v2(id_, mtype='movie', season='0', episode='0', title='', eptitle=''):
     base = 'https://videm.xyz'
-    season = str(season or '0')
-    episode = str(episode or '0')
+    season_str = str(season or '0')
+    episode_str = str(episode or '0')
     if mtype == 'tv':
-        embed = base + '/embed/tv/%s/%s/%s' % (id_, season, episode)
+        embed = base + '/embed/tv/%s/%s/%s' % (id_, season_str, episode_str)
     else:
         embed = base + '/embed/movie/%s' % id_
     html = v2_get(embed, base)
@@ -1040,7 +1040,7 @@ def resolve_v2(id_, mtype='movie', season='0', episode='0', title=''):
         return None
     qid = urllib.parse.quote(str(q.get('id', id_)))
     qs = 'type=%s&id=%s&s=%s&e=%s' % (q.get('type', mtype), qid,
-                                      q.get('s') or season, q.get('e') or episode)
+                                      q.get('s') or season_str, q.get('e') or episode_str)
     qt = urllib.parse.quote(str(q.get('t', '')))
     src = v2_get(base + '/api.php?a=sources&' + qs + '&t=' + qt, embed)
     try:
@@ -1068,9 +1068,25 @@ def resolve_v2(id_, mtype='movie', season='0', episode='0', title=''):
         return None
     if purl.startswith('/'):
         purl = base + purl
-    li = xbmcgui.ListItem(label=lbl(title or pick.get('name') or 'VidAPI'))
+
+    try:
+        s_num = int(season or 0)
+        e_num = int(episode or 0)
+    except (TypeError, ValueError):
+        s_num = 0
+        e_num = 0
+
+    if mtype == 'tv' and s_num > 0 and e_num > 0:
+        if eptitle:
+            player_title = '%s S%d:E%d - %s' % (title, s_num, e_num, eptitle)
+        else:
+            player_title = '%s S%d:E%d' % (title, s_num, e_num)
+    else:
+        player_title = title or pick.get('name') or 'VidAPI'
+
+    li = xbmcgui.ListItem(label=lbl(player_title))
     li.setPath(purl)
-    li.setInfo('video', {'title': title, 'mediatype': 'movie' if mtype == 'movie' else 'episode'})
+    li.setInfo('video', {'title': player_title, 'mediatype': 'movie' if mtype == 'movie' else 'episode'})
     if ptype == 'hls' or purl.endswith('.m3u8'):
         headers = urllib.parse.urlencode({'User-Agent': VIXSRC_UA, 'Referer': embed, 'Origin': base})
         li.setProperty('inputstream', 'inputstream.adaptive')
@@ -1125,7 +1141,7 @@ def v2_episodes_view(id_, s, back=''):
             li.setArt({'thumb': TMDB_IMG + 'w342' + still})
         etitle = '%s S%sE%s' % (tname, s, n)
         li.setInfo('video', {'title': etitle, 'plot': ep.get('overview') or '', 'mediatype': 'episode'})
-        url = _tmdb_url('v2play', id=id_, mtype='tv', s=s, e=str(n), t=etitle)
+        url = _tmdb_url('v2play', id=id_, mtype='tv', s=str(s), e=str(n), t=tname, ept=ename)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1411,10 +1427,16 @@ def resolve_scws(parIn, title, eptitle='', season=0, episode=0):
         return xbmcgui.ListItem()
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
-    li = xbmcgui.ListItem(path=urlSc, label='[COLOR snow]%s[/COLOR]' % (title or ''), offscreen=True)
     if s and e:
-        li.setLabel2('S%dE%d: %s' % (s, e, eptitle or ''))
-    li.setInfo('video', {'title': title or ''})
+        if eptitle:
+            player_title = '%s S%d:E%d - %s' % (title, s, e, eptitle)
+        else:
+            player_title = '%s S%d:E%d' % (title, s, e)
+    else:
+        player_title = title or ''
+
+    li = xbmcgui.ListItem(path=urlSc, label=lbl(player_title), offscreen=True)
+    li.setInfo('video', {'title': player_title})
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
     li.setProperty('inputstream', 'inputstream.adaptive')
@@ -2570,7 +2592,7 @@ def main():
         elif action == 'v2play':
             li = resolve_v2(query.get('id', [''])[0], query.get('mtype', ['movie'])[0],
                             query.get('s', ['0'])[0], query.get('e', ['0'])[0],
-                            query.get('t', [''])[0])
+                            query.get('t', [''])[0], query.get('ept', [''])[0])
             if li:
                 xbmcplugin.setResolvedUrl(HANDLE, True, li)
             else:
