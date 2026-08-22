@@ -429,7 +429,7 @@ def _sky_expiry(cid):
     return exp
 
 
-def resolve_sky(parIn, title, prog=''):
+def resolve_sky(parIn, title):
     try:
         resp = requests.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(parIn),
                             headers={'User-Agent': API_UA}, timeout=20)
@@ -470,8 +470,6 @@ def resolve_sky(parIn, title, prog=''):
     pname = title
     if parIn.startswith('skysport') and not pname.upper().startswith('SKY'):
         pname = 'SKY ' + pname
-    if prog:
-        pname += ' • ' + prog
     li.setLabel(pname)
     li.setInfo('video', {'title': pname})
     return li
@@ -891,7 +889,7 @@ def sky_cat_view(cat, back=''):
                 if nxt:
                     lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
                 li.setInfo('video', {'title': tname, 'plot': ' | '.join(lines)})
-                url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title) + '&p=' + urllib.parse.quote(prog)
+                url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             except Exception as e:
                 log('sky_cat item %s: %s' % (cid, e))
@@ -1070,7 +1068,7 @@ def resolve_v2(id_, mtype='movie', season='0', episode='0', title=''):
     return li
 
 
-def tmdb_seasons_view(id_, q, back=''):
+def v2_seasons_view(id_, back=''):
     back_button(back or (BASE + '?action=films'))
     try:
         j = tmdb_get('/tv/%s' % id_)
@@ -1091,12 +1089,12 @@ def tmdb_seasons_view(id_, q, back=''):
         if poster:
             li.setArt({'thumb': TMDB_IMG + 'w342' + poster})
         li.setInfo('video', {'title': '%s - Stagione %d' % (tname, n), 'mediatype': 'season'})
-        url = _tmdb_url('tmdbe', id=id_, s=str(n), q=q)
+        url = _tmdb_url('v2episodes', id=id_, s=str(n))
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def tmdb_episodes_view(id_, s, q, back=''):
+def v2_episodes_view(id_, s, back=''):
     back_button(back or (BASE + '?action=films'))
     try:
         j = tmdb_get('/tv/%s/season/%s' % (id_, s))
@@ -1111,9 +1109,9 @@ def tmdb_episodes_view(id_, s, q, back=''):
         still = ep.get('still_path')
         if still:
             li.setArt({'thumb': TMDB_IMG + 'w342' + still})
-        etitle = '%s S%02dE%02d' % (tname, int(s), int(n))
+        etitle = '%s S%sE%s' % (tname, s, n)
         li.setInfo('video', {'title': etitle, 'plot': ep.get('overview') or '', 'mediatype': 'episode'})
-        url = _tmdb_url('tmdbplay', id=id_, mtype='tv', s=s, e=str(n), t=etitle, q=q)
+        url = _tmdb_url('v2play', id=id_, mtype='tv', s=s, e=str(n), t=etitle)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1142,10 +1140,16 @@ def tmdb_add_item(it, mtype, back=''):
     li.setInfo('video', info)
     if mtype == 'movie':
         li.setProperty('isPlayable', 'true')
-        url = _tmdb_url('tmdbplay', id=it.get('id'), mtype='movie', q=title, back=back)
+        if _VOD_SRC == '2':
+            url = _tmdb_url('v2play', id=it.get('id'), mtype='movie')
+        else:
+            url = _tmdb_url('mplayauto', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     else:
-        url = _tmdb_url('tmdbs', id=it.get('id'), q=title, back=back)
+        if _VOD_SRC == '2':
+            url = _tmdb_url('v2seasons', id=it.get('id'))
+        else:
+            url = _tmdb_url('mseasonsauto', q=title, back=back)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
@@ -1412,48 +1416,6 @@ def resolve_scws(parIn, title, eptitle='', season=0, episode=0):
     return li
 
 
-def mandra_auto_episode(title, season, episode):
-    try:
-        data = requests.get(API + '?numTest=A1A332A&mode=1&search=' + urllib.parse.quote(title),
-                            headers={'User-Agent': API_UA}, timeout=25).json()
-    except Exception as e:
-        xbmc.log('KODIAKSO mandra auto ep search ERR: ' + str(e), xbmc.LOGERROR)
-        return None
-    code = None
-    for it in data.get('items', []):
-        ext = it.get('externallink', '') or ''
-        m = re.search(r'code=([^&]+)', ext)
-        if m:
-            code = m.group(1)
-            break
-    if not code:
-        return None
-    try:
-        cs = mandra_cs()
-        url = cs + 'it/titles/' + str(code) + '/season-' + str(season)
-        res = requests.get(url, headers={'User-Agent': UA}, timeout=25)
-        res.raise_for_status()
-        m = re.search(r'<div id="app" data-page="(.*?)"', res.text)
-        if not m:
-            return None
-        props = json.loads(m.group(1).replace('&quot;', '"'))['props']
-        episodes = props.get('loadedSeason', {}).get('episodes', [])
-        target_ep = None
-        for ep in episodes:
-            if str(ep.get('number')) == str(episode):
-                target_ep = ep
-                break
-        if not target_ep:
-            return None
-        ep_id = target_ep['id']
-        parIn = str(code) + '?episode_id=' + str(ep_id)
-        li = resolve_scws(parIn, '%s S%02dE%02d' % (title, int(season), int(episode)))
-        if li and li.getPath():
-            return li
-    except Exception as e:
-        xbmc.log('KODIAKSO mandra auto ep resolve ERR: ' + str(e), xbmc.LOGERROR)
-    return None
-
 def mandra_auto_movie(query):
     try:
         data = requests.get(API + '?numTest=A1A332A&search=' + urllib.parse.quote(query),
@@ -1539,23 +1501,53 @@ def mandra_search_view(query, mtype='', back=''):
 
 def mandra_season_view(code, back=''):
     back_button(back or (BASE + '?action=films'))
-    data = requests.get(API + '?numTest=A1A356&mode=2&code=' + urllib.parse.quote(code),
-                        headers={'User-Agent': API_UA}, timeout=25).json()
     xbmcplugin.setContent(HANDLE, 'tvshows')
     season_url = BASE + '?action=mseason&code=' + urllib.parse.quote(code)
-    for it in data.get('items', []):
-        mr = it.get('myresolve', '') or ''
-        if not mr.startswith('seriesc@@'):
-            continue
-        par = mr.split('@@', 1)[1]
-        title = man_title(it) or ('Stagione ' + par.split('---')[-1])
-        li = xbmcgui.ListItem(label=lbl(title))
-        li.setArt({'thumb': it.get('thumbnail') or SQUARE_ICON})
-        if it.get('fanart'):
-            li.setArt({'fanart': it['fanart']})
-        li.setInfo('video', {'title': title, 'plot': it.get('info') or ''})
-        url = _tmdb_url('mepisodes', par=par, back=season_url)
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    added = False
+    try:
+        cs = mandra_cs()
+        url = cs + 'it/titles/' + urllib.parse.quote(code)
+        r = requests.get(url, headers={'user-agent': UA}, timeout=15)
+        if r.status_code == 200:
+            m = re.search(r'<div id="app" data-page="(.*?)"', r.text)
+            if m:
+                props = json.loads(m.group(1).replace('&quot;', '"'))['props']
+                seasons = props.get('title', {}).get('seasons', [])
+                for s in seasons:
+                    n = s.get('number')
+                    if n and n > 0:
+                        s_num = str(n)
+                        par = f"{code}---{s_num}"
+                        stitle = f"Stagione {s_num}"
+                        li = xbmcgui.ListItem(label=lbl(stitle))
+                        li.setArt({'thumb': SQUARE_ICON})
+                        li.setInfo('video', {'title': stitle})
+                        url_item = _tmdb_url('mepisodes', par=par, back=season_url)
+                        xbmcplugin.addDirectoryItem(HANDLE, url_item, li, isFolder=True)
+                        added = True
+    except Exception as e:
+        xbmc.log('KODIAKSO su seasons ERR: ' + str(e), xbmc.LOGERROR)
+
+    if not added:
+        try:
+            data = requests.get(API + '?numTest=A1A356&mode=2&code=' + urllib.parse.quote(code),
+                                headers={'User-Agent': API_UA}, timeout=25).json()
+            for it in data.get('items', []):
+                mr = it.get('myresolve', '') or ''
+                if not mr.startswith('seriesc@@'):
+                    continue
+                par = mr.split('@@', 1)[1]
+                title = man_title(it) or ('Stagione ' + par.split('---')[-1])
+                li = xbmcgui.ListItem(label=lbl(title))
+                li.setArt({'thumb': it.get('thumbnail') or SQUARE_ICON})
+                if it.get('fanart'):
+                    li.setArt({'fanart': it['fanart']})
+                li.setInfo('video', {'title': title, 'plot': it.get('info') or ''})
+                url = _tmdb_url('mepisodes', par=par, back=season_url)
+                xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+        except Exception as e:
+            xbmc.log('KODIAKSO api seasons ERR: ' + str(e), xbmc.LOGERROR)
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -2524,39 +2516,45 @@ def main():
         elif action == 'msearch':
             mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0],
                                query.get('back', [''])[0])
-        elif action == 'tmdbs':
-            tmdb_seasons_view(query.get('id', [''])[0], query.get('q', [''])[0], query.get('back', [''])[0])
-        elif action == 'tmdbe':
-            tmdb_episodes_view(query.get('id', [''])[0], query.get('s', [''])[0], query.get('q', [''])[0], query.get('back', [''])[0])
-        elif action == 'tmdbplay':
+        elif action == 'mplayauto':
             if _VOD_SRC == '2':
-                resolve_v2(query.get('id', [''])[0], query.get('mtype', ['movie'])[0],
-                           query.get('s', [''])[0], query.get('e', [''])[0], query.get('t', [''])[0])
+                notify(NAME, 'VOD 2: riproduzione non ancora disponibile')
+                xbmcplugin.endOfDirectory(HANDLE)
             else:
-                if query.get('mtype', [''])[0] == 'tv':
-                    li = mandra_auto_episode(query.get('q', [''])[0], query.get('s', [''])[0], query.get('e', [''])[0])
-                else:
-                    li = mandra_auto_movie(query.get('q', [''])[0])
-                if li:
-                    xbmcplugin.setResolvedUrl(HANDLE, True, li)
-                else:
-                    notify(query.get('q', [''])[0] or 'Contenuto', 'Impossibile riprodurre il contenuto', True)
-                    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+                mandra_auto_movie(query.get('q', [''])[0])
         elif action == 'mseasonsauto':
             mandra_auto_series(query.get('q', [''])[0], query.get('back', [''])[0])
-        elif action == 'mplay':
-            li = resolve_scws(query.get('par', [''])[0], query.get('t', [''])[0])
-            xbmcplugin.setResolvedUrl(HANDLE, True, li)
-        elif action == 'msearch':
-            mandra_search_view(query.get('q', [''])[0], query.get('mt', [''])[0], query.get('back', [''])[0])
         elif action == 'mseason':
             mandra_season_view(query.get('code', [''])[0], query.get('back', [''])[0])
         elif action == 'mepisodes':
             mandra_episodes_view(query.get('par', [''])[0], query.get('back', [''])[0])
+        elif action == 'mplay':
+            if _VOD_SRC == '2':
+                notify(NAME, 'VOD 2: riproduzione non ancora disponibile')
+                xbmcplugin.endOfDirectory(HANDLE)
+            else:
+                li = resolve_scws(query.get('p', [''])[0], query.get('t', [''])[0],
+                                  query.get('ept', [''])[0], query.get('s', [''])[0],
+                                  query.get('e', [''])[0])
+                xbmcplugin.setResolvedUrl(HANDLE, True, li)
+        elif action == 'v2seasons':
+            v2_seasons_view(query.get('id', [''])[0], query.get('back', [''])[0])
+        elif action == 'v2episodes':
+            v2_episodes_view(query.get('id', [''])[0], query.get('s', [''])[0],
+                             query.get('back', [''])[0])
+        elif action == 'v2play':
+            li = resolve_v2(query.get('id', [''])[0], query.get('mtype', ['movie'])[0],
+                            query.get('s', ['0'])[0], query.get('e', ['0'])[0],
+                            query.get('t', [''])[0])
+            if li:
+                xbmcplugin.setResolvedUrl(HANDLE, True, li)
+            else:
+                notify(NAME, 'Nessun flusso VixSrc disponibile', True)
+                xbmcplugin.endOfDirectory(HANDLE)
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'skyplay':
-            li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0], query.get('p', [''])[0])
+            li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'sportzx':
             sportzx_view()
