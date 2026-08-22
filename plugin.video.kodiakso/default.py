@@ -836,16 +836,22 @@ def sky_view():
     home_button()
     sky1_url = BASE + '?action=sky1'
     sky2_url = BASE + '?action=sky2'
+    sky3_url = BASE + '?action=sky3'
 
     li1 = xbmcgui.ListItem(label=lbl('SKY 1'))
     li1.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li1.setInfo('video', {'title': 'SKY 1', 'plot': 'Canali Sky Italia (Server 1)'})
+    li1.setInfo('video', {'title': 'SKY 1', 'plot': 'Canali Sky Italia (Server 1 - API Heroku)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky1_url, li1, isFolder=True)
 
     li2 = xbmcgui.ListItem(label=lbl('SKY 2 (Vavoo)'))
     li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li2.setInfo('video', {'title': 'SKY 2 (Vavoo)', 'plot': 'Canali Sky Italia (Server 2 - Vavoo)'})
+    li2.setInfo('video', {'title': 'SKY 2 (Vavoo)', 'plot': 'Canali Sky Italia 24/7 (Vavoo - 87 canali)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
+
+    li3 = xbmcgui.ListItem(label=lbl('SKY 3 (Daddy - Sky Sport IT)'))
+    li3.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li3.setInfo('video', {'title': 'SKY 3 (Daddy)', 'plot': 'Eventi live esclusivamente Sky Sport Italia (DaddyLive)'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky3_url, li3, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -924,6 +930,55 @@ def sky2_view(back=''):
         xbmc.log('KODIAKSO sky2_view TB: ' + traceback.format_exc(), xbmc.LOGERROR)
         notify('SKY 2', 'Errore caricamento canali (Vavoo auth)', True)
 
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky3_view(back=''):
+    back_button(back or (BASE + '?action=sky'))
+    try:
+        cats = _daddy_fetch()
+        xbmcplugin.setContent(HANDLE, 'videos')
+        added = 0
+        for cat in cats:
+            for it in (cat.get('items') or []):
+                raw_title = it.get('title') or ''
+                title = strip_color(raw_title)
+                # filtro esclusivo: deve contenere Sky Sport e IT
+                if not re.search(r'Sky Sport', title, re.I):
+                    continue
+                if not re.search(r'\bIT\b', title):
+                    continue
+                # escludi DE/UK residui
+                if ' DE' in title or ' UK' in title:
+                    continue
+                mr = it.get('myresolve') or ''
+                code = mr.split('@@', 1)[1] if '@@' in mr else ''
+                if not code:
+                    continue
+                # label pulita: data/ora + evento + canale
+                label = lbl(title)
+                # EPG per Sky channel estratto dal titolo (es. Sky Sport Calcio IT)
+                mch = re.search(r'(Sky Sport[^\[\]]*?IT)', title, re.I)
+                ch_name = mch.group(1).strip() if mch else 'Sky Sport IT'
+                li = xbmcgui.ListItem(label=label)
+                lkey = re.sub(r'[^a-z]', '', ch_name.lower().replace('sky', '').replace('sport', 'skysport'))
+                # mappa skysport -> logo
+                mapped = LOGOS.get(lkey, '') or LOGOS.get(ch_name.lower().replace('sky ', '').replace(' ', ''), '')
+                thumb = (LOGO_BASE + mapped) if mapped else SQUARE_ICON
+                li.setArt({'thumb': thumb, 'icon': thumb, 'poster': thumb})
+                li.setProperty('isPlayable', 'true')
+                li.setInfo('video', {'title': title, 'plot': it.get('info') or title, 'mediatype': 'video'})
+                url = _tmdb_url('ddy_play', c=code)
+                xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+                added += 1
+        if not added:
+            li = xbmcgui.ListItem(label=lbl('Nessun evento Sky Sport Italia al momento (DaddyLive)'))
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', li, isFolder=False)
+    except Exception as e:
+        xbmc.log('KODIAKSO sky3_view ERR: ' + str(e), xbmc.LOGERROR)
+        import traceback
+        xbmc.log('KODIAKSO sky3_view TB: ' + traceback.format_exc(), xbmc.LOGERROR)
+        notify('SKY 3', 'Errore caricamento DaddyLive', True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -2838,6 +2893,8 @@ def main():
             sky1_view(query.get('back', [''])[0])
         elif action == 'sky2':
             sky2_view(query.get('back', [''])[0])
+        elif action == 'sky3':
+            sky3_view(query.get('back', [''])[0])
         elif action == 'vavooplay':
             li = resolve_vavoo(query.get('url', [''])[0], query.get('t', [''])[0], query.get('p', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
