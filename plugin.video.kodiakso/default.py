@@ -2874,10 +2874,17 @@ def check_update():
 
 
 def update_view():
-    back_button(BASE + '?action=root')
+    # Fix Backspace -> old version (1.10.70) visual bug: don't push history, refresh in place without cache
     check_update()
-    xbmc.executebuiltin('Container.Update("%s?action=root", replace)' % BASE)
-    xbmcplugin.endOfDirectory(HANDLE)
+    # UpdateLocalAddons already called in check_update(); force refresh of current container
+    # Use Refresh (re-executes root without pushing) + cacheToDisc=False to avoid cached old ListItems
+    try:
+        xbmc.sleep(400)
+    except Exception:
+        pass
+    xbmc.executebuiltin('Container.Refresh')
+    xbmc.executebuiltin('Container.Update("%s?action=root",replace)' % BASE)
+    xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
 
 
 def root_view():
@@ -2931,7 +2938,7 @@ def root_view():
         li.setArt({'thumb': ICON_LOGO})
         xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('autostart'), li, isFolder=True)
 
-    xbmcplugin.endOfDirectory(HANDLE)
+    xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
 
 
 def autostart_view():
