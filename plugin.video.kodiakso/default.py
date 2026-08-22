@@ -880,22 +880,22 @@ def sky_view():
 
 
 _MPD6 = [
-    {'nation': 'Australia', 'title': 'Australia 83536910', 'mpd': 'https://aba5sdmaaaaaaaamooyrewxky2c4j.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/ghwcl6hv68/out/v1/83536910d8034e9b9895a20fbe1c1687/cenc.mpd', 'keys': '335dad778109954503dcbb21dc92015f:24bfd75d436cbf73168a2a2dccd40281'},
-    {'nation': 'Australia', 'title': 'Australia 83985c68', 'mpd': 'https://aba5sdmaaaaaaaamdwujas5g6mg4r.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/8m8cd46i1t/out/v1/83985c68e4174e90a58a1f2c024be4c9/cenc.mpd', 'keys': '0b42be2664d7e811d04f3e504e0924c5:ae24090123b8c72ac5404dc152847cb8'},
-    {'nation': 'Australia', 'title': 'Australia 18de6d3e', 'mpd': 'https://aba5sdmaaaaaaaamhq2w5oosrf5ae.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/q4u5nwaogz/out/v1/18de6d3e65934f3a8de4358e69eab86c/cenc.mpd', 'keys': '7995c724a13748ed970840a8ab5bb9b3:67bdaf1e2175b9ff682fcdf0e2354b1e'},
+    {'nation': 'Australia', 'title': 'Bein Sports 1 [Australia]', 'mpd': 'https://aba5sdmaaaaaaaamooyrewxky2c4j.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/ghwcl6hv68/out/v1/83536910d8034e9b9895a20fbe1c1687/cenc.mpd', 'keys': '335dad778109954503dcbb21dc92015f:24bfd75d436cbf73168a2a2dccd40281'},
+    {'nation': 'Australia', 'title': 'Bein Sports 2 [Australia]', 'mpd': 'https://aba5sdmaaaaaaaamdwujas5g6mg4r.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/8m8cd46i1t/out/v1/83985c68e4174e90a58a1f2c024be4c9/cenc.mpd', 'keys': '0b42be2664d7e811d04f3e504e0924c5:ae24090123b8c72ac5404dc152847cb8'},
+    {'nation': 'Australia', 'title': 'Bein Sports 3 [Australia]', 'mpd': 'https://aba5sdmaaaaaaaamhq2w5oosrf5ae.otte.live.cf.ww.aiv-cdn.net/syd-nitro/live/clients/dash/enc/q4u5nwaogz/out/v1/18de6d3e65934f3a8de4358e69eab86c/cenc.mpd', 'keys': '7995c724a13748ed970840a8ab5bb9b3:67bdaf1e2175b9ff682fcdf0e2354b1e'},
     {'nation': 'Austria', 'title': 'Sky Sport Austria HD', 'mpd': 'https://at-live-6.tentcdn.eu/bpk-tv/Sky_Sport_Austria_HD/default/index.mpd', 'keys': ''},
     {'nation': 'Israele', 'title': 'ESPNHDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/6/out/u/dash/ESPNHDH265/default.mpd', 'keys': ''},
     {'nation': 'Israele', 'title': 'ESPN2HDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/7/out/u/dash/ESPN2HDH265/default.mpd', 'keys': ''},
     {'nation': 'Israele', 'title': 'ESPN3HDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/6/out/u/dash/ESPN3HDH265/default.mpd', 'keys': ''},
     {'nation': 'Israele', 'title': 'ESPN4HDH265', 'mpd': 'https://nog-live1-ott.izzigo.tv/6/out/u/dash/ESPN4HDH265/default.mpd', 'keys': ''},
-    {'nation': 'Brasile', 'title': 'Brasile 6ffb2c36', 'mpd': 'https://abc3orwaaaaaaaamhpui7wlnmfqgh.ottb.live.cf.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/nelfyucw9a/out/v1/6ffb2c365ad14f88b154591beb43d1f6/cenc.mpd', 'keys': '56b79c1782b30e6b6fc973b0e8fd4104:fa38aaa865a57eda7c77444697ba8ed3'},
-    {'nation': 'Brasile', 'title': 'Brasile 580ecf12', 'mpd': 'https://abc3orwaaaaaaaamliumq7klym4kj.ottb.live.cf.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/oy6rp0jwmf/out/v1/580ecf12bad24979baf8dd993dce053e/cenc.mpd', 'keys': '9dc40460c93087aea84d6315f08ecb64:f69c8d4624fddff4ca89bd0b31bdc4a7'},
-    {'nation': 'USA', 'title': 'USA 1caa3b2d', 'mpd': 'https://abkf7g7aaaaaaaamcmmhhhyli5fwh.otte.live.cf.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/u142pfptsm/out/v1/1caa3b2dfa9e448d8f61209bdfc1acdc/cenc.mpd', 'keys': '7e99f734748d098cbfa2f7bde968dd44:98ea6088c3222e9abaf61e537804d6cc'},
-    {'nation': 'USA', 'title': 'USA bd3b0c31', 'mpd': 'https://abfjk4haaaaaaaampv6ofhkihi4r6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/cllekigzzn/out/v1/bd3b0c314fff4bb1ab4693358f3cd2d3/cenc.mpd', 'keys': ''},
-    {'nation': 'USA', 'title': 'USA 9f14895b', 'mpd': 'https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/3b7qwiqzk3/out/v1/9f14895badca43e6a716db021dcd0c31/cenc.mpd', 'keys': 'dc69b6159a0f9f0a4e03b3ff91cbacd5:d0dcbcd7723bc40df0bf34c9c092d51f'},
-    {'nation': 'USA', 'title': 'USA 3534efaf', 'mpd': 'https://otte.live.fly.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/uiffe4jhf0/out/v1/3534efafca8c4815adbb4d2e9a1fe003/cenc.mpd', 'keys': '3dcfbec0e7146928baa55210bf2cb62f:bc85f74f815d9be5ae1dd6defaa05135'},
-    {'nation': 'USA', 'title': 'USA 5318821e', 'mpd': 'https://netskrt.live.pv-cdn.net/OTTB/iad-nitro/live/clients/dash/enc/rbem8rorcw/out/v1/5318821e2c3c44c2a439681b9aa86e9b/cenc.mpd', 'keys': 'd9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861'},
-    {'nation': 'USA', 'title': 'USA f8fa17f0', 'mpd': 'https://abfjk4haaaaaaaampv6ofhkihi4r6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/fb6jy4pxts/out/v1/f8fa17f087564f51aa4d5c700be43ec4/cenc.mpd', 'keys': ''},
+    {'nation': 'Brasile', 'title': 'Brasile abc3orwaaaaa', 'mpd': 'https://abc3orwaaaaaaaamhpui7wlnmfqgh.ottb.live.cf.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/nelfyucw9a/out/v1/6ffb2c365ad14f88b154591beb43d1f6/cenc.mpd', 'keys': '56b79c1782b30e6b6fc973b0e8fd4104:fa38aaa865a57eda7c77444697ba8ed3'},
+    {'nation': 'Brasile', 'title': 'Brasile abc3orwaaaaa', 'mpd': 'https://abc3orwaaaaaaaamliumq7klym4kj.ottb.live.cf.ww.aiv-cdn.net/gru-nitro/live/clients/dash/enc/oy6rp0jwmf/out/v1/580ecf12bad24979baf8dd993dce053e/cenc.mpd', 'keys': '9dc40460c93087aea84d6315f08ecb64:f69c8d4624fddff4ca89bd0b31bdc4a7'},
+    {'nation': 'USA', 'title': 'TSN Logo [USA]', 'mpd': 'https://abkf7g7aaaaaaaamcmmhhhyli5fwh.otte.live.cf.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/u142pfptsm/out/v1/1caa3b2dfa9e448d8f61209bdfc1acdc/cenc.mpd', 'keys': '7e99f734748d098cbfa2f7bde968dd44:98ea6088c3222e9abaf61e537804d6cc'},
+    {'nation': 'USA', 'title': 'USA abfjk4haaaaa', 'mpd': 'https://abfjk4haaaaaaaampv6ofhkihi4r6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/cllekigzzn/out/v1/bd3b0c314fff4bb1ab4693358f3cd2d3/cenc.mpd', 'keys': ''},
+    {'nation': 'USA', 'title': 'KTVB NBC 7 Boise Idaho Logo [USA]', 'mpd': 'https://otte.live.fly.ww.aiv-cdn.net/iad-nitro/live/clients/dash/enc/3b7qwiqzk3/out/v1/9f14895badca43e6a716db021dcd0c31/cenc.mpd', 'keys': 'dc69b6159a0f9f0a4e03b3ff91cbacd5:d0dcbcd7723bc40df0bf34c9c092d51f'},
+    {'nation': 'USA', 'title': 'USA otte.live.fl', 'mpd': 'https://otte.live.fly.ww.aiv-cdn.net/pdx-nitro/live/clients/dash/enc/uiffe4jhf0/out/v1/3534efafca8c4815adbb4d2e9a1fe003/cenc.mpd', 'keys': '3dcfbec0e7146928baa55210bf2cb62f:bc85f74f815d9be5ae1dd6defaa05135'},
+    {'nation': 'USA', 'title': 'USA netskrt.live', 'mpd': 'https://netskrt.live.pv-cdn.net/OTTB/iad-nitro/live/clients/dash/enc/rbem8rorcw/out/v1/5318821e2c3c44c2a439681b9aa86e9b/cenc.mpd', 'keys': 'd9623774ac5c8c351aafe97c5fe70267:5164e6d05164a2d65fa8fcc962aa4861'},
+    {'nation': 'USA', 'title': 'USA abfjk4haaaaa', 'mpd': 'https://abfjk4haaaaaaaampv6ofhkihi4r6.bia-cf.live.pv-cdn.net/iad-nitro/live/clients/dash/enc/fb6jy4pxts/out/v1/f8fa17f087564f51aa4d5c700be43ec4/cenc.mpd', 'keys': ''},
     {'nation': 'Slovacchia', 'title': 'SK Antik nvidia_sport_1', 'mpd': 'https://dash2.antik.sk/stream/nvidia_sport_1/playlist_cenc.mpd', 'keys': ''},
     {'nation': 'Slovacchia', 'title': 'SK Antik nvidia_sport2', 'mpd': 'https://dash2.antik.sk/stream/nvidia_sport2/playlist_cenc.mpd?ck=', 'keys': ''},
     {'nation': 'Slovacchia', 'title': '031133-50', 'mpd': 'https://linear207-de-dash1-prd-ak.cdn12.skycdp.com/031133-50/index.mpd', 'keys': ''},
@@ -930,7 +930,7 @@ _MPD6 = [
     {'nation': 'Portogallo', 'title': 'PT LIVE 597', 'mpd': 'https://rr.cdn.vodafone.pt/LIVE/sdash/LIVE$597/index.mpd/Manifest.mpd?start=LIVE&end=END&device=DASH_AVC_FULLHD', 'keys': ''},
     {'nation': 'Montenegro', 'title': 'default', 'mpd': 'https://bpkcdn.telekom.me/bpk-tv/arena_premium_1/default/index.mpd', 'keys': ''},
     {'nation': 'Montenegro', 'title': 'default', 'mpd': 'https://bpkcdn.telekom.me/bpk-tv/arenasport_1/default/index.mpd', 'keys': ''},
-    {'nation': 'Irlanda', 'title': 'Irlanda 066dd932', 'mpd': 'https://ottb.live.cf.ww.aiv-cdn.net/dub-nitro/live/clients/dash/enc/2jbycgm3g3/out/v1/066dd9325648468c9ecdc8b272370931/cenc.mpd', 'keys': '84077d18bcf234a42de3745be106a87f:aee3069c062ec8ee6bfdd32985f287ef'},
+    {'nation': 'Irlanda', 'title': 'NBC Logo [Irlanda]', 'mpd': 'https://ottb.live.cf.ww.aiv-cdn.net/dub-nitro/live/clients/dash/enc/2jbycgm3g3/out/v1/066dd9325648468c9ecdc8b272370931/cenc.mpd', 'keys': '84077d18bcf234a42de3745be106a87f:aee3069c062ec8ee6bfdd32985f287ef'},
 ]
 
 
@@ -976,23 +976,31 @@ def sky6_nation_view(nation, back=''):
     back_button(back or (BASE + '?action=sky6'))
     xbmcplugin.setContent(HANDLE, 'videos')
     for ch in [c for c in _MPD6 if c['nation'] == nation]:
-        # title + mpd short
-        li = xbmcgui.ListItem(label=lbl(ch['title']), path=ch['mpd'])
+        mpd = ch['mpd']
+        keys = ch.get('keys') or ch.get('key') or ''
+        # nome completo già in ch['title']
+        li = xbmcgui.ListItem(label=lbl(ch['title']), path=mpd)
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
         li.setProperty('isPlayable', 'true')
         li.setProperty('inputstream', 'inputstream.adaptive')
         li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
-        if ch.get('keys'):
-            # keys formato kid:key
-            li.setProperty('inputstream.adaptive.manifest_headers', 'User-Agent=' + UA)
+        # headers come Mandrakodi amstaffTest: Host + UA + Referer/Origin
+        try:
+            host = 'https://' + mpd.split('/')[2]
+        except Exception:
+            host = mpd
+        ua = UA
+        hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (ua, host, host)
+        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+        if keys:
+            # piu chiavi separate da virgola -> passa tutte (Mandrakodi fa drm_legacy con full)
             li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
-            # piu chiavi separate da virgola -> Kodi vuole kid:key singolo, prendi prima
-            k = ch['keys'].split(',')[0]
-            li.setProperty('inputstream.adaptive.license_key', k)
-        else:
-            li.setProperty('inputstream.adaptive.manifest_headers', 'User-Agent=' + UA)
-        li.setInfo('video', {'title': ch['title'], 'plot': '%s | %s | %s' % (ch['nation'], ch['title'], ch['mpd'][:60]), 'mediatype': 'video'})
-        xbmcplugin.addDirectoryItem(HANDLE, ch['mpd'], li, isFolder=False)
+            li.setProperty('inputstream.adaptive.license_key', keys)
+            # compat legacy
+            li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + keys)
+        li.setInfo('video', {'title': ch['title'], 'plot': '%s | %s' % (ch['nation'], mpd), 'mediatype': 'video'})
+        xbmcplugin.addDirectoryItem(HANDLE, mpd, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
