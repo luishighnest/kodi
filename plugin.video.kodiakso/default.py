@@ -648,6 +648,23 @@ def _sky_counts(cat):
     return counts
 
 
+def resolve_vavoo(url, title=''):
+    try:
+        hdrs = 'User-Agent=VAVOO/2.6&Referer=https://vavoo.to/&Origin=https://vavoo.to&verifypeer=false'
+        li = xbmcgui.ListItem(path=url, label=lbl(title or ''), offscreen=True)
+        li.setContentLookup(False)
+        li.setMimeType('application/x-mpegURL')
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+        li.setInfo('video', {'title': title or '', 'mediatype': 'video'})
+        return li
+    except Exception as e:
+        xbmc.log('KODIAKSO vavoo resolve ERR: ' + str(e), xbmc.LOGERROR)
+        return xbmcgui.ListItem()
+
+
 def sky_view():
     home_button()
     for cat in (CAT_INT, CAT_SPORT):
@@ -2553,6 +2570,13 @@ def main():
             root_view()
         elif action == 'sky':
             sky_view()
+        elif action == 'sky1':
+            sky1_view(query.get('back', [''])[0])
+        elif action == 'sky2':
+            sky2_view(query.get('back', [''])[0])
+        elif action == 'vavooplay':
+            li = resolve_vavoo(query.get('url', [''])[0], query.get('t', [''])[0])
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'tv':
             tv_view()
         elif action == 'films':
