@@ -865,6 +865,21 @@ def sky_view():
     li5.setInfo('video', {'title': 'SKY 5 (CalcioStreaming)', 'plot': 'Eventi CalcioStreaming DiretteCommunity (RSS + data-link SportOnline)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky5_url, li5, isFolder=True)
 
+    sky6_url = BASE + '?action=sky6'
+    li6 = xbmcgui.ListItem(label=lbl('Lista Canali 6'))
+    li6.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li6.setInfo('video', {'title': 'Lista Canali 6', 'plot': 'Categoria vuota - in preparazione'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky6_url, li6, isFolder=True)
+
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky6_view(back=''):
+    back_button(back or (BASE + '?action=sky'))
+    xbmcplugin.setContent(HANDLE, 'videos')
+    li = xbmcgui.ListItem(label=lbl('Lista vuota - nessun canale configurato'))
+    li.setInfo('video', {'title': 'Lista Canali 6', 'plot': 'Aggiungi qui i tuoi canali per la futura lista 6'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -3150,7 +3165,7 @@ def root_view():
 
     home_items = [
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
-        ('SKY', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
+        ('SPORT', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
@@ -3286,11 +3301,15 @@ def main():
             sky4_view(query.get('back', [''])[0])
         elif action == 'sky5':
             sky5_view(query.get('back', [''])[0])
+        elif action == 'sky6':
+            sky6_view(query.get('back', [''])[0])
         elif action == 'calcioevent':
             calcio_event_view(query.get('url', [''])[0], query.get('t', [''])[0])
         elif action == 'sportplay':
             li = resolve_sportonline(query.get('url', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
+        elif action == 'sport':
+            sky_view()
         elif action == 'vavooplay':
             li = resolve_vavoo(query.get('url', [''])[0], query.get('t', [''])[0], query.get('p', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
