@@ -3320,127 +3320,82 @@ def guida_view():
 def guida_comp_view(comp, name=''):
     back_button(BASE + '?action=guida')
     xbmcplugin.setContent(HANDLE, 'videos')
-    broad = ''
-    for n,c,f,b in _GUIDA:
-        if c == comp:
-            broad = b
-            name = n
+
+    # Mappa comp -> DaddyLive categoria
+    comp_to_daddy = {
+        'italy/serie-a': 'Serie A',
+        'italy/serie-b': 'Serie B',
+        'italy/coppa-italia': None,
+        'england/premier-league': 'Premier League',
+        'spain/primera-division': 'LaLiga',
+        'germany/bundesliga': 'Bundesliga',
+        'france/ligue-1': 'Ligue 1',
+        'international/uefa-champions-league': None,
+        'international/uefa-europa-league': None,
+    }
+
+    # estrai nome competizione per filtro
+    filter_kw = None
+    for k, v in comp_to_daddy.items():
+        if comp == k:
+            filter_kw = v
             break
-    # emittenti generali - senza dettagli
-    li = xbmcgui.ListItem(label=lbl(name + ' - Emittenti generali'))
-    li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
-    li.setInfo('video', {'title': name, 'plot': ''})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li, isFolder=False)
-    for ch in [x.strip() for x in broad.split('|')]:
-        if not ch:
-            continue
-        li2 = xbmcgui.ListItem(label=lbl('  \u2022 ' + ch.strip()))
-        li2.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
-        li2.setInfo('video', {'title': ch.strip(), 'plot': ''})
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li2, isFolder=False)
-    # partite di oggi - LiveSoccerTV + fallback DaddyLive per Serie A
+
+    # raccogli eventi da DaddyLive
+    events = {}
     try:
-        import re as _re, json as _json
-        showed=False
-        # tenta LiveSoccerTV
-        try:
-            comp_url = 'https://www.livesoccertv.com/it/competitions/%s/' % comp
-            html = requests.get(comp_url, headers={'User-Agent': UA}, timeout=12).text
-            match_hrefs = _re.findall(r'href="(/it/match/[^"]+)"', html)
-            seen=set()
-            uniq_hrefs=[]
-            for h in match_hrefs:
-                if h not in seen and '/match/' in h:
-                    seen.add(h)
-                    uniq_hrefs.append(h)
-                if len(uniq_hrefs) >= 6:
-                    break
-            if uniq_hrefs:
-                li3 = xbmcgui.ListItem(label=lbl('--- Partite di Oggi con Canali per Evento ---'))
-                li3.setInfo('video', {'title': 'Oggi', 'plot': ''})
-                xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li3, isFolder=False)
-                for href in uniq_hrefs:
-                    try:
-                        m_url = 'https://www.livesoccertv.com' + href.split('#')[0]
-                        m_html = requests.get(m_url, headers={'User-Agent': UA}, timeout=10).text
-                        m_json = _re.search(r'<script[^>]+type="application/ld\+json"[^>]*>(.*?)</script>', m_html, _re.S)
-                        if not m_json:
-                            continue
-                        data = _json.loads(m_json.group(1))
-                        broadcasts = []
-                        if isinstance(data, dict) and '@graph' in data:
-                            broadcasts = [x for x in data['@graph'] if x.get('@type') == 'BroadcastEvent']
-                        elif isinstance(data, list):
-                            broadcasts = [x for x in data if x.get('@type') == 'BroadcastEvent']
-                        if not broadcasts:
-                            continue
-                        title = broadcasts[0].get('name','').split(' on ')[0]
-                        title = title.strip()
-                        if not title:
-                            title = href.split('/')[-2].replace('-vs-',' - ').title()
-                        li4 = xbmcgui.ListItem(label=lbl(title))
-                        li4.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
-                        li4.setInfo('video', {'title': title, 'plot': ''})
-                        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li4, isFolder=False)
-                        by_country={}
-                        for bc in broadcasts:
-                            ch_name=bc.get('publishedOn',{}).get('name','')
-                            country=bc.get('publishedOn',{}).get('areaServed',{}).get('name','Estero')
-                            if ch_name:
-                                by_country.setdefault(country, []).append(ch_name)
-                        for country in sorted(by_country):
-                            li_c = xbmcgui.ListItem(label=lbl('  %s (%d canali)' % (country, len(by_country[country]))))
-                            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li_c, isFolder=False)
-                            for ch_name in sorted(set(by_country[country])):
-                                li5 = xbmcgui.ListItem(label=lbl('     \u2022 %s' % ch_name))
-                                li5.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
-                                li5.setInfo('video', {'title': ch_name, 'plot': ''})
-                                xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li5, isFolder=False)
-                        showed=True
-                    except Exception:
-                        continue
-        except Exception:
-            pass
-        # fallback definitivo per Serie A e altre: usa DaddyLive se LiveSoccerTV ha dato 0
-        if not showed:
-            # per Serie A, mostra direttamente i 4 match di oggi da DaddyLive
-            try:
-                cats = _daddy_fetch()
-                # cerca categoria All Soccer Events Italy
-                for cat in cats:
-                    if 'All Soccer Events Italy' in strip_color(cat.get('name','')):
-                        for it in cat.get('items',[])[:20]:
-                            title = strip_color(it.get('title') or '')
-                            # filtra solo Serie A se comp è serie-a
-                            if comp == 'italy/serie-a' and 'Serie A' not in title:
-                                continue
-                            if 'Serie A' in title or comp in title.lower() or True:
-                                # mostra titolo
-                                li4 = xbmcgui.ListItem(label=lbl(title))
-                                li4.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
-                                li4.setInfo('video', {'title': title, 'plot': ''})
-                                xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li4, isFolder=False)
-                                # canali: estrai Sky Sport IT etc da title
-                                mch = _re.search(r'(Sky Sport[^\[]*IT)', title, _re.I)
-                                chs = [mch.group(1).strip()] if mch else [c.strip() for c in broad.split('|') if c.strip()]
-                                for ch_name in chs[:3]:
-                                    li5 = xbmcgui.ListItem(label=lbl('     \u2022 %s' % ch_name))
-                                    li5.setInfo('video', {'title': ch_name, 'plot': ''})
-                                    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li5, isFolder=False)
-                                showed=True
-                                if showed and comp == 'italy/serie-a':
-                                    # limita a 4 per Serie A
-                                    if len([x for x in cats if 'Serie A' in strip_color(x.get('name',''))])>0:
-                                        pass
-                        break
-                if not showed:
-                    # se ancora vuoto, mostra competizioni generiche
-                    li3 = xbmcgui.ListItem(label=lbl('Nessuna partita di oggi trovata - mostra emittenti generali'))
-                    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li3, isFolder=False)
-            except Exception:
-                pass
-    except Exception:
-        pass
+        cats = _daddy_fetch()
+        for cat in cats:
+            cat_name = strip_color(cat.get('name','') or '')
+            for it in cat.get('items', []):
+                raw = it.get('title') or ''
+                title = strip_color(raw)
+                if not title:
+                    continue
+                # filtra solo Serie A se richiesta Serie A
+                if filter_kw and ('%s :' % filter_kw) not in title:
+                    continue
+                # estrai orario + partita + canale
+                m = re.match(r'^(\d+\w*\s+\w+\s+\d{4})\s+(\d{2}:\d{2})\s+(.+?)\s+([A-Za-z0-9 .\'&\-/]+?)$', title)
+                if m:
+                    date_str, time_str, match_name, channel = m.group(1), m.group(2), m.group(3).strip(), m.group(4).strip()
+                    match_key = '%s %s' % (time_str, match_name)
+                    if match_key not in events:
+                        events[match_key] = {'date': date_str, 'time': time_str, 'name': match_name, 'channels': set()}
+                    if channel.lower() != 'backup stream':
+                        events[match_key]['channels'].add(channel)
+
+    except Exception as e:
+        log('guida daddy fetch: %s' % e)
+
+    if not events:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento trovato'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    # ordina per orario
+    sorted_events = sorted(events.items(), key=lambda x: x[0])
+
+    for key, ev in sorted_events:
+        # header partita
+        label = '[COLOR snow]%s[/COLOR] [COLOR FF99CC33]%s[/COLOR]' % (ev['time'], ev['name'])
+        li = xbmcgui.ListItem(label=lbl(label))
+        li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+        li.setProperty('IsPlayable', 'false')
+        li.setInfo('video', {'title': ev['name'], 'plot': ''})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li, isFolder=False)
+
+        # canali ordinati alfabeticamente
+        chs = sorted(ev['channels'])
+        for i, ch in enumerate(chs):
+            prefix = '\u2514\u2500 ' if i == len(chs)-1 else '\u251c\u2500 '
+            li_c = xbmcgui.ListItem(label=lbl('%s %s' % (prefix, ch)))
+            li_c.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
+            li_c.setProperty('IsPlayable', 'false')
+            li_c.setInfo('video', {'title': ch, 'plot': ''})
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li_c, isFolder=False)
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 
