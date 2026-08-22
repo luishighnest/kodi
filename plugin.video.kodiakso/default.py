@@ -1077,13 +1077,16 @@ def resolve_v2(id_, mtype='movie', season='0', episode='0', title='', eptitle=''
         e_num = 0
 
     if mtype == 'tv' and s_num > 0 and e_num > 0:
-        player_title = eptitle if eptitle else ('Episodio %d' % e_num)
+        if eptitle:
+            player_title = '%s - S%d:E%d - %s' % (title, s_num, e_num, eptitle)
+        else:
+            player_title = '%s - S%d:E%d' % (title, s_num, e_num)
     else:
         player_title = title or pick.get('name') or 'VidAPI'
 
     li = xbmcgui.ListItem(label=lbl(player_title))
     li.setPath(purl)
-    li.setInfo('video', {'title': player_title})
+    li.setInfo('video', {'title': player_title, 'tvshowtitle': '', 'season': 0, 'episode': 0, 'mediatype': 'video'})
     if ptype == 'hls' or purl.endswith('.m3u8'):
         headers = urllib.parse.urlencode({'User-Agent': VIXSRC_UA, 'Referer': embed, 'Origin': base})
         li.setProperty('inputstream', 'inputstream.adaptive')
@@ -1425,12 +1428,15 @@ def resolve_scws(parIn, title, eptitle='', season=0, episode=0):
 
     hdrs = 'User-Agent=' + UA + '&Referer=' + cs + '&Origin=' + cs + '&verifypeer=false'
     if s and e:
-        player_title = eptitle if eptitle else ('Episodio %d' % e)
+        if eptitle:
+            player_title = '%s - S%d:E%d - %s' % (title, s, e, eptitle)
+        else:
+            player_title = '%s - S%d:E%d' % (title, s, e)
     else:
         player_title = title or ''
 
     li = xbmcgui.ListItem(path=urlSc, label=lbl(player_title), offscreen=True)
-    li.setInfo('video', {'title': player_title})
+    li.setInfo('video', {'title': player_title, 'tvshowtitle': '', 'season': 0, 'episode': 0, 'mediatype': 'video'})
     li.setContentLookup(False)
     li.setMimeType('application/x-mpegURL')
     li.setProperty('inputstream', 'inputstream.adaptive')
