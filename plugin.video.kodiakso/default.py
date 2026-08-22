@@ -680,6 +680,24 @@ def resolve_vavoo(url, title='', prog=''):
 
 def sky_view():
     home_button()
+    sky1_url = BASE + '?action=sky1'
+    sky2_url = BASE + '?action=sky2'
+
+    li1 = xbmcgui.ListItem(label=lbl('SKY 1'))
+    li1.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li1.setInfo('video', {'title': 'SKY 1', 'plot': 'Canali Sky Italia (Server 1)'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky1_url, li1, isFolder=True)
+
+    li2 = xbmcgui.ListItem(label=lbl('SKY 2 (Vavoo)'))
+    li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li2.setInfo('video', {'title': 'SKY 2 (Vavoo)', 'plot': 'Canali Sky Italia (Server 2 - Vavoo)'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
+
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky1_view(back=''):
+    back_button(back or (BASE + '?action=sky'))
     for cat in (CAT_INT, CAT_SPORT):
         label = lbl(cat)
         try:
@@ -688,8 +706,49 @@ def sky_view():
         except Exception as e:
             log('sky_counts %s: %s' % (cat, e))
         li = xbmcgui.ListItem(label=label)
-        url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
+        url = BASE + '?action=skycat&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky1')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky2_view(back=''):
+    back_button(back or (BASE + '?action=sky'))
+    epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
+    try:
+        r = requests.get('https://vavoo.to/live2/index', headers={'User-Agent': 'Mozilla/5.0'}, timeout=15).json()
+        italy_channels = [x for x in r if x.get('group') == 'Italy']
+        sky_channels = [x for x in italy_channels if 'sky' in (x.get('name') or '').lower()]
+        if not sky_channels:
+            sky_channels = italy_channels
+
+        xbmcplugin.setContent(HANDLE, 'videos')
+        for ch in sky_channels:
+            name = ch.get('name', 'Canale Sky').strip()
+            cname = re.sub(r'\s*\(\d+\)\s*$', '', name)
+            ch_url = ch.get('url', '')
+            logo = ch.get('logo') or SQUARE_ICON
+
+            cur, nxt = _epg_now(cname, epg)
+            cur_prog = str(cur[2]).strip() if (cur and len(cur) >= 3 and cur[2]) else ''
+
+            lines = []
+            if cur:
+                lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
+            if nxt:
+                lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
+
+            li = xbmcgui.ListItem(label=lbl(cname))
+            logo_img = LOGOS.get(cname.lower().replace('sky ', ''), logo)
+            li.setArt({'thumb': logo, 'icon': logo, 'poster': logo})
+            li.setProperty('isPlayable', 'true')
+            li.setInfo('video', {'title': cname, 'plot': ' | '.join(lines), 'mediatype': 'video'})
+
+            url = BASE + '?action=vavooplay&url=' + urllib.parse.quote(ch_url) + '&t=' + urllib.parse.quote(cname) + '&p=' + urllib.parse.quote(cur_prog)
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    except Exception as e:
+        xbmc.log('KODIAKSO sky2_view ERR: ' + str(e), xbmc.LOGERROR)
+        notify('SKY 2', 'Errore caricamento canali', True)
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 
