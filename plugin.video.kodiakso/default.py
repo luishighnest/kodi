@@ -834,46 +834,46 @@ def resolve_vavoo(url, title='', prog=''):
 
 def sky_view():
     home_button()
-    # SKY SPORT diretto (ex SKY 1 -> SKY SPORT) - un click prima
+    # Lista Canali 1 - SKY SPORT diretto (ex SKY 1)
     try:
         c = _sky_counts(CAT_SPORT)
-        label_sport = lbl(CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
     except Exception:
-        label_sport = lbl(CAT_SPORT)
+        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT)
     li0 = xbmcgui.ListItem(label=label_sport)
     li0.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li0.setInfo('video', {'title': CAT_SPORT, 'plot': 'Canali Sky Sport Italia (Server 1 - API Heroku)'})
+    li0.setInfo('video', {'title': 'Lista Canali 1 - ' + CAT_SPORT, 'plot': 'Canali Sky Sport Italia (Server 1 - API Heroku)'})
     url0 = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_SPORT) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
     xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
 
     sky2_url = BASE + '?action=sky2'
-    li2 = xbmcgui.ListItem(label=lbl('SKY 2 (Vavoo)'))
+    li2 = xbmcgui.ListItem(label=lbl('Lista Canali 2 (Vavoo)'))
     li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li2.setInfo('video', {'title': 'SKY 2 (Vavoo)', 'plot': 'Canali Sky Italia 24/7 (Vavoo - 87 canali)'})
+    li2.setInfo('video', {'title': 'Lista Canali 2 (Vavoo)', 'plot': 'Canali Sky Italia 24/7 (Vavoo - 87 canali)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
 
     sky3_url = BASE + '?action=sky3'
-    li3 = xbmcgui.ListItem(label=lbl('SKY 3 (Daddy - Sky Sport IT)'))
+    li3 = xbmcgui.ListItem(label=lbl('Lista Canali 3 (Daddy)'))
     li3.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li3.setInfo('video', {'title': 'SKY 3 (Daddy)', 'plot': 'Eventi live esclusivamente Sky Sport Italia (DaddyLive)'})
+    li3.setInfo('video', {'title': 'Lista Canali 3 (Daddy)', 'plot': 'Eventi live esclusivamente Sky Sport Italia (DaddyLive)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky3_url, li3, isFolder=True)
 
     sky4_url = BASE + '?action=sky4'
-    li4 = xbmcgui.ListItem(label=lbl('SKY 4 (SportOnline - HD7/HD8 IT)'))
+    li4 = xbmcgui.ListItem(label=lbl('Lista Canali 4 (SportOnline)'))
     li4.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li4.setInfo('video', {'title': 'SKY 4 (SportOnline)', 'plot': 'Eventi HD7/HD8 ITALIAN (SportOnline - alternative Sky Sport IT)'})
+    li4.setInfo('video', {'title': 'Lista Canali 4 (SportOnline)', 'plot': 'Eventi HD7/HD8 ITALIAN (SportOnline - alternative Sky Sport IT)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky4_url, li4, isFolder=True)
 
     sky5_url = BASE + '?action=sky5'
-    li5 = xbmcgui.ListItem(label=lbl('SKY 5 (CalcioStreaming)'))
+    li5 = xbmcgui.ListItem(label=lbl('Lista Canali 5 (CalcioStreaming)'))
     li5.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li5.setInfo('video', {'title': 'SKY 5 (CalcioStreaming)', 'plot': 'Eventi CalcioStreaming DiretteCommunity (RSS + data-link SportOnline)'})
+    li5.setInfo('video', {'title': 'Lista Canali 5 (CalcioStreaming)', 'plot': 'Eventi CalcioStreaming DiretteCommunity (RSS + data-link SportOnline)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky5_url, li5, isFolder=True)
 
     sky6_url = BASE + '?action=sky6'
-    li6 = xbmcgui.ListItem(label=lbl('Lista Canali 6'))
+    li6 = xbmcgui.ListItem(label=lbl('Lista Canali 6 (MPD)'))
     li6.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li6.setInfo('video', {'title': 'Lista Canali 6', 'plot': '10 MPD esteri (6 SG ClearKey + 4 clear)'})
+    li6.setInfo('video', {'title': 'Lista Canali 6 (MPD)', 'plot': 'Categoria vuota - in preparazione per futuri MPD esteri'})
     xbmcplugin.addDirectoryItem(HANDLE, sky6_url, li6, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
