@@ -282,21 +282,21 @@ CAT_INT = 'SKY INTRATTENIMENTO'
 CAT_SPORT = 'SKY SPORT'
 
 _GUIDA = [
-    ('Serie A', 'serie-a', '🇮🇹', 'DAZN (10/10) | Sky Sport Calcio, Sky Sport 251, NOW (3/10) | Amazon (0)'),
-    ('Serie B', 'serie-b', '🇮🇹', 'DAZN | Amazon LaB Channel | OneFootball TV'),
-    ('Coppa Italia', 'coppa-italia', '🇮🇹', 'Mediaset Canale 5 / Italia 1 | DAZN'),
-    ('Supercoppa Italiana', 'supercoppa', '🇮🇹', 'Mediaset | DAZN'),
-    ('Champions League', 'champions', '🇪🇺', 'Sky 185/203 | NOW | Amazon 18 gare mercoledi | TV8 (estere)'),
-    ('Europa League', 'europa-league', '🇪🇺', 'Sky 342/342 | NOW | Diretta Gol'),
-    ('Conference League', 'conference', '🇪🇺', 'Sky 342/342 | NOW'),
-    ('Premier League', 'premier', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Sky fino 2028 (7/10) | NOW | TV8'),
-    ('LaLiga', 'laliga', '🇪🇸', 'DAZN fino 2029'),
-    ('Bundesliga', 'bundesliga', '🇩🇪', 'Sky fino 2029 (5/34 + Coppa) | NOW'),
-    ('Ligue 1', 'ligue1', '🇫🇷', 'Sky 2/10 | NOW (novita 2025)'),
-    ('Primeira Liga', 'primeira', '🇵🇹', 'DAZN | Sky'),
-    ('Eredivisie', 'eredivisie', '🇳🇱', 'Como TV (gratis)'),
-    ('Saudi Pro League', 'saudi', '🇸🇦', 'Como TV'),
-    ('FA Cup', 'fa-cup', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'DAZN | Sky'),
+    ('Serie A', 'serie-a', '', 'DAZN (10/10) | Sky Sport Calcio, Sky Sport 251, NOW (3/10) | Amazon (0)'),
+    ('Serie B', 'serie-b', '', 'DAZN | Amazon LaB Channel | OneFootball TV'),
+    ('Coppa Italia', 'coppa-italia', '', 'Mediaset Canale 5 / Italia 1 | DAZN'),
+    ('Supercoppa Italiana', 'supercoppa', '', 'Mediaset | DAZN'),
+    ('Champions League', 'champions', '', 'Sky 185/203 | NOW | Amazon 18 gare mercoledi | TV8 (estere)'),
+    ('Europa League', 'europa-league', '', 'Sky 342/342 | NOW | Diretta Gol'),
+    ('Conference League', 'conference', '', 'Sky 342/342 | NOW'),
+    ('Premier League', 'premier', '', 'Sky fino 2028 (7/10) | NOW | TV8'),
+    ('LaLiga', 'laliga', '', 'DAZN fino 2029'),
+    ('Bundesliga', 'bundesliga', '', 'Sky fino 2029 (5/34 + Coppa) | NOW'),
+    ('Ligue 1', 'ligue1', '', 'Sky 2/10 | NOW (novita 2025)'),
+    ('Primeira Liga', 'primeira', '', 'DAZN | Sky'),
+    ('Eredivisie', 'eredivisie', '', 'Como TV (gratis)'),
+    ('Saudi Pro League', 'saudi', '', 'Como TV'),
+    ('FA Cup', 'fa-cup', '', 'DAZN | Sky'),
 ]
 
 SKY_DEFS = {
@@ -855,43 +855,43 @@ def sky_view():
     # Lista Canali 1 - SKY SPORT diretto (ex SKY 1)
     try:
         c = _sky_counts(CAT_SPORT)
-        label_sport = lbl('🇮🇹 Lista Canali 1 - ' + CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
     except Exception:
-        label_sport = lbl('🇮🇹 Lista Canali 1 - ' + CAT_SPORT)
+        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT)
     li0 = xbmcgui.ListItem(label=label_sport)
     li0.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li0.setInfo('video', {'title': '🇮🇹 Lista Canali 1 - ' + CAT_SPORT, 'plot': 'Canali Sky Sport Italia'})
+    li0.setInfo('video', {'title': 'Lista Canali 1 - ' + CAT_SPORT, 'plot': 'Canali Sky Sport Italia'})
     url0 = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_SPORT) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
     xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
 
     sky2_url = BASE + '?action=sky2'
-    li2 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 2'))
+    li2 = xbmcgui.ListItem(label=lbl('Lista Canali 2'))
     li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li2.setInfo('video', {'title': '🇮🇹 Lista Canali 2', 'plot': 'Canali Sky Italia 24/7'})
+    li2.setInfo('video', {'title': 'Lista Canali 2', 'plot': 'Canali Sky Italia 24/7'})
     xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
 
     sky3_url = BASE + '?action=sky3'
-    li3 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 3'))
+    li3 = xbmcgui.ListItem(label=lbl('Lista Canali 3'))
     li3.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li3.setInfo('video', {'title': '🇮🇹 Lista Canali 3', 'plot': 'Eventi live esclusivamente Sky Sport Italia'})
+    li3.setInfo('video', {'title': 'Lista Canali 3', 'plot': 'Eventi live esclusivamente Sky Sport Italia'})
     xbmcplugin.addDirectoryItem(HANDLE, sky3_url, li3, isFolder=True)
 
     sky4_url = BASE + '?action=sky4'
-    li4 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 4'))
+    li4 = xbmcgui.ListItem(label=lbl('Lista Canali 4'))
     li4.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li4.setInfo('video', {'title': '🇮🇹 Lista Canali 4', 'plot': 'Eventi HD7/HD8 ITALIAN'})
+    li4.setInfo('video', {'title': 'Lista Canali 4', 'plot': 'Eventi HD7/HD8 ITALIAN'})
     xbmcplugin.addDirectoryItem(HANDLE, sky4_url, li4, isFolder=True)
 
     sky5_url = BASE + '?action=sky5'
-    li5 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 5'))
+    li5 = xbmcgui.ListItem(label=lbl('Lista Canali 5'))
     li5.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li5.setInfo('video', {'title': '🇮🇹 Lista Canali 5', 'plot': 'Eventi CalcioStreaming DiretteCommunity'})
+    li5.setInfo('video', {'title': 'Lista Canali 5', 'plot': 'Eventi CalcioStreaming DiretteCommunity'})
     xbmcplugin.addDirectoryItem(HANDLE, sky5_url, li5, isFolder=True)
 
     sky6_url = BASE + '?action=sky6'
-    li6 = xbmcgui.ListItem(label=lbl('🌍 Lista Canali 6 (MPD)'))
+    li6 = xbmcgui.ListItem(label=lbl('Lista Canali 6 (MPD)'))
     li6.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li6.setInfo('video', {'title': '🌍 Lista Canali 6 (MPD)', 'plot': 'Categoria vuota'})
+    li6.setInfo('video', {'title': 'Lista Canali 6 (MPD)', 'plot': 'Categoria vuota'})
     xbmcplugin.addDirectoryItem(HANDLE, sky6_url, li6, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
@@ -954,22 +954,22 @@ _MPD6 = [
 
 
 _FLAGS = {
-    'Australia': '🇦🇺',
-    'Brasile': '🇧🇷',
-    'USA': '🇺🇸',
-    'Irlanda': '🇮🇪',
-    'Paesi Bassi': '🇳🇱',
-    'Slovacchia': '🇸🇰',
-    'Messico': '🇲🇽',
-    'Croazia': '🇭🇷',
-    'Montenegro': '🇲🇪',
-    'Portogallo': '🇵🇹',
-    'Svizzera/Francia': '🇨🇭',
-    'Austria': '🇦🇹',
-    'Israele': '🇮🇱',
-    'Grecia': '🇬🇷',
-    'Germania': '🇩🇪',
-    'Altro': '🌍',
+    'Australia': 'https://flagcdn.com/w80/au.png',
+    'Brasile': 'https://flagcdn.com/w80/br.png',
+    'USA': 'https://flagcdn.com/w80/us.png',
+    'Irlanda': 'https://flagcdn.com/w80/ie.png',
+    'Paesi Bassi': 'https://flagcdn.com/w80/nl.png',
+    'Slovacchia': 'https://flagcdn.com/w80/sk.png',
+    'Messico': 'https://flagcdn.com/w80/mx.png',
+    'Croazia': 'https://flagcdn.com/w80/hr.png',
+    'Montenegro': 'https://flagcdn.com/w80/me.png',
+    'Portogallo': 'https://flagcdn.com/w80/pt.png',
+    'Svizzera/Francia': 'https://flagcdn.com/w80/ch.png',
+    'Austria': 'https://flagcdn.com/w80/at.png',
+    'Israele': 'https://flagcdn.com/w80/il.png',
+    'Grecia': 'https://flagcdn.com/w80/gr.png',
+    'Germania': 'https://flagcdn.com/w80/de.png',
+    'Altro': 'https://flagcdn.com/w80/un.png',
 }
 
 def sky6_view(back=''):
@@ -982,9 +982,10 @@ def sky6_view(back=''):
         nations.setdefault(ch['nation'], []).append(ch)
     for nation in sorted(nations):
         cnt = len(nations[nation])
-        li = xbmcgui.ListItem(label=lbl('%s %s (%d)' % (_FLAGS.get(nation, ''), nation, cnt)))
-        li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
-        li.setInfo('video', {'title': _FLAGS.get(nation,'') + ' ' + nation, 'plot': '%d canali MPD LIVE | %s' % (cnt, _FLAGS.get(nation,''))})
+        flag = _FLAGS.get(nation, LOGO_BASE + 'skyhd.png')
+        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (nation, cnt)))
+        li.setArt({'thumb': flag, 'icon': flag})
+        li.setInfo('video', {'title': nation, 'plot': '%d canali MPD LIVE' % cnt})
         url = BASE + '?action=sky6nation&nation=' + urllib.parse.quote(nation) + '&back=' + urllib.parse.quote(BASE + '?action=sky6')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
