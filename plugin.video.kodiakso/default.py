@@ -834,26 +834,31 @@ def resolve_vavoo(url, title='', prog=''):
 
 def sky_view():
     home_button()
-    sky1_url = BASE + '?action=sky1'
+    # SKY SPORT diretto (ex SKY 1 -> SKY SPORT) - un click prima
+    try:
+        c = _sky_counts(CAT_SPORT)
+        label_sport = lbl(CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+    except Exception:
+        label_sport = lbl(CAT_SPORT)
+    li0 = xbmcgui.ListItem(label=label_sport)
+    li0.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li0.setInfo('video', {'title': CAT_SPORT, 'plot': 'Canali Sky Sport Italia (Server 1 - API Heroku)'})
+    url0 = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_SPORT) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
+    xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
+
     sky2_url = BASE + '?action=sky2'
-    sky3_url = BASE + '?action=sky3'
-    sky4_url = BASE + '?action=sky4'
-
-    li1 = xbmcgui.ListItem(label=lbl('SKY 1'))
-    li1.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li1.setInfo('video', {'title': 'SKY 1', 'plot': 'Canali Sky Italia (Server 1 - API Heroku)'})
-    xbmcplugin.addDirectoryItem(HANDLE, sky1_url, li1, isFolder=True)
-
     li2 = xbmcgui.ListItem(label=lbl('SKY 2 (Vavoo)'))
     li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
     li2.setInfo('video', {'title': 'SKY 2 (Vavoo)', 'plot': 'Canali Sky Italia 24/7 (Vavoo - 87 canali)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
 
+    sky3_url = BASE + '?action=sky3'
     li3 = xbmcgui.ListItem(label=lbl('SKY 3 (Daddy - Sky Sport IT)'))
     li3.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
     li3.setInfo('video', {'title': 'SKY 3 (Daddy)', 'plot': 'Eventi live esclusivamente Sky Sport Italia (DaddyLive)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky3_url, li3, isFolder=True)
 
+    sky4_url = BASE + '?action=sky4'
     li4 = xbmcgui.ListItem(label=lbl('SKY 4 (SportOnline - HD7/HD8 IT)'))
     li4.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
     li4.setInfo('video', {'title': 'SKY 4 (SportOnline)', 'plot': 'Eventi HD7/HD8 ITALIAN (SportOnline - alternative Sky Sport IT)'})
@@ -868,7 +873,7 @@ def sky_view():
     sky6_url = BASE + '?action=sky6'
     li6 = xbmcgui.ListItem(label=lbl('Lista Canali 6'))
     li6.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li6.setInfo('video', {'title': 'Lista Canali 6', 'plot': 'Categoria vuota - in preparazione'})
+    li6.setInfo('video', {'title': 'Lista Canali 6', 'plot': '10 MPD esteri (6 SG ClearKey + 4 clear)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky6_url, li6, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
@@ -1664,6 +1669,18 @@ def sky_cat_view(cat, back=''):
 
 def tv_view():
     home_button()
+    # SKY Intrattenimento spostato da SPORT -> TV (identica lista sky_cat_view)
+    try:
+        c = _sky_counts(CAT_INT)
+        label_int = lbl(CAT_INT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+    except Exception:
+        label_int = lbl(CAT_INT)
+    li_int = xbmcgui.ListItem(label=label_int)
+    li_int.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+    li_int.setInfo('video', {'title': CAT_INT, 'plot': 'Canali Sky Intrattenimento (Server 1 - API Heroku)'})
+    url_int = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_INT) + '&back=' + urllib.parse.quote(BASE + '?action=tv')
+    xbmcplugin.addDirectoryItem(HANDLE, url_int, li_int, isFolder=True)
+
     channels = fetch_channels()
     groups = {}
     for ch in channels:
