@@ -837,43 +837,43 @@ def sky_view():
     # Lista Canali 1 - SKY SPORT diretto (ex SKY 1)
     try:
         c = _sky_counts(CAT_SPORT)
-        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+        label_sport = lbl('🇮🇹 Lista Canali 1 - ' + CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
     except Exception:
-        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT)
+        label_sport = lbl('🇮🇹 Lista Canali 1 - ' + CAT_SPORT)
     li0 = xbmcgui.ListItem(label=label_sport)
     li0.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li0.setInfo('video', {'title': 'Lista Canali 1 - ' + CAT_SPORT, 'plot': 'Canali Sky Sport Italia (Server 1 - API Heroku)'})
+    li0.setInfo('video', {'title': '🇮🇹 Lista Canali 1 - ' + CAT_SPORT, 'plot': 'Canali Sky Sport Italia'})
     url0 = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_SPORT) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
     xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
 
     sky2_url = BASE + '?action=sky2'
-    li2 = xbmcgui.ListItem(label=lbl('Lista Canali 2 (Vavoo)'))
+    li2 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 2'))
     li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li2.setInfo('video', {'title': 'Lista Canali 2 (Vavoo)', 'plot': 'Canali Sky Italia 24/7 (Vavoo - 87 canali)'})
+    li2.setInfo('video', {'title': '🇮🇹 Lista Canali 2', 'plot': 'Canali Sky Italia 24/7'})
     xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
 
     sky3_url = BASE + '?action=sky3'
-    li3 = xbmcgui.ListItem(label=lbl('Lista Canali 3 (Daddy)'))
+    li3 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 3'))
     li3.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li3.setInfo('video', {'title': 'Lista Canali 3 (Daddy)', 'plot': 'Eventi live esclusivamente Sky Sport Italia (DaddyLive)'})
+    li3.setInfo('video', {'title': '🇮🇹 Lista Canali 3', 'plot': 'Eventi live esclusivamente Sky Sport Italia'})
     xbmcplugin.addDirectoryItem(HANDLE, sky3_url, li3, isFolder=True)
 
     sky4_url = BASE + '?action=sky4'
-    li4 = xbmcgui.ListItem(label=lbl('Lista Canali 4 (SportOnline)'))
+    li4 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 4'))
     li4.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li4.setInfo('video', {'title': 'Lista Canali 4 (SportOnline)', 'plot': 'Eventi HD7/HD8 ITALIAN (SportOnline - alternative Sky Sport IT)'})
+    li4.setInfo('video', {'title': '🇮🇹 Lista Canali 4', 'plot': 'Eventi HD7/HD8 ITALIAN'})
     xbmcplugin.addDirectoryItem(HANDLE, sky4_url, li4, isFolder=True)
 
     sky5_url = BASE + '?action=sky5'
-    li5 = xbmcgui.ListItem(label=lbl('Lista Canali 5 (CalcioStreaming)'))
+    li5 = xbmcgui.ListItem(label=lbl('🇮🇹 Lista Canali 5'))
     li5.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li5.setInfo('video', {'title': 'Lista Canali 5 (CalcioStreaming)', 'plot': 'Eventi CalcioStreaming DiretteCommunity (RSS + data-link SportOnline)'})
+    li5.setInfo('video', {'title': '🇮🇹 Lista Canali 5', 'plot': 'Eventi CalcioStreaming DiretteCommunity'})
     xbmcplugin.addDirectoryItem(HANDLE, sky5_url, li5, isFolder=True)
 
     sky6_url = BASE + '?action=sky6'
-    li6 = xbmcgui.ListItem(label=lbl('Lista Canali 6 (MPD)'))
+    li6 = xbmcgui.ListItem(label=lbl('🌍 Lista Canali 6 (MPD)'))
     li6.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li6.setInfo('video', {'title': 'Lista Canali 6 (MPD)', 'plot': 'Categoria vuota - in preparazione per futuri MPD esteri'})
+    li6.setInfo('video', {'title': '🌍 Lista Canali 6 (MPD)', 'plot': 'Categoria vuota'})
     xbmcplugin.addDirectoryItem(HANDLE, sky6_url, li6, isFolder=True)
 
     xbmcplugin.endOfDirectory(HANDLE)
@@ -934,6 +934,26 @@ _MPD6 = [
 ]
 
 
+
+_FLAGS = {
+    'Australia': '🇦🇺',
+    'Brasile': '🇧🇷',
+    'USA': '🇺🇸',
+    'Irlanda': '🇮🇪',
+    'Paesi Bassi': '🇳🇱',
+    'Slovacchia': '🇸🇰',
+    'Messico': '🇲🇽',
+    'Croazia': '🇭🇷',
+    'Montenegro': '🇲🇪',
+    'Portogallo': '🇵🇹',
+    'Svizzera/Francia': '🇨🇭',
+    'Austria': '🇦🇹',
+    'Israele': '🇮🇱',
+    'Grecia': '🇬🇷',
+    'Germania': '🇩🇪',
+    'Altro': '🌍',
+}
+
 def sky6_view(back=''):
     back_button(back or (BASE + '?action=sky'))
     xbmcplugin.setContent(HANDLE, 'videos')
@@ -944,9 +964,9 @@ def sky6_view(back=''):
         nations.setdefault(ch['nation'], []).append(ch)
     for nation in sorted(nations):
         cnt = len(nations[nation])
-        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (nation, cnt)))
+        li = xbmcgui.ListItem(label=lbl('%s %s (%d)' % (_FLAGS.get(nation, ''), nation, cnt)))
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
-        li.setInfo('video', {'title': nation, 'plot': '%d canali MPD LIVE' % cnt})
+        li.setInfo('video', {'title': _FLAGS.get(nation,'') + ' ' + nation, 'plot': '%d canali MPD LIVE | %s' % (cnt, _FLAGS.get(nation,''))})
         url = BASE + '?action=sky6nation&nation=' + urllib.parse.quote(nation) + '&back=' + urllib.parse.quote(BASE + '?action=sky6')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
