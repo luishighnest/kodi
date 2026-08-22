@@ -429,7 +429,7 @@ def _sky_expiry(cid):
     return exp
 
 
-def resolve_sky(parIn, title):
+def resolve_sky(parIn, title, prog=''):
     try:
         resp = requests.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(parIn),
                             headers={'User-Agent': API_UA}, timeout=20)
@@ -470,6 +470,19 @@ def resolve_sky(parIn, title):
     pname = title
     if parIn.startswith('skysport') and not pname.upper().startswith('SKY'):
         pname = 'SKY ' + pname
+
+    cur_prog = (prog or '').strip()
+    if not cur_prog:
+        try:
+            cur, _ = _epg_now(parIn)
+            if cur and cur[2]:
+                cur_prog = str(cur[2]).strip()
+        except Exception:
+            pass
+
+    if cur_prog:
+        pname = pname + ' • ' + cur_prog
+
     li.setLabel(pname)
     li.setInfo('video', {'title': pname})
     return li
@@ -889,7 +902,8 @@ def sky_cat_view(cat, back=''):
                 if nxt:
                     lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
                 li.setInfo('video', {'title': tname, 'plot': ' | '.join(lines)})
-                url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title)
+                cur_p = (cur[2].strip() if cur and cur[2] else '')
+                url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title) + '&p=' + urllib.parse.quote(cur_p)
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             except Exception as e:
                 log('sky_cat item %s: %s' % (cid, e))
@@ -2565,7 +2579,7 @@ def main():
         elif action == 'skycat':
             sky_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'skyplay':
-            li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0])
+            li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0], query.get('p', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'sportzx':
             sportzx_view()
