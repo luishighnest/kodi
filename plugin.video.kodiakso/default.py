@@ -1117,7 +1117,7 @@ def v2_seasons_view(id_, back=''):
             label += '  - %d ep.' % s['episode_count']
         li = xbmcgui.ListItem(label=lbl(label))
         if poster:
-            li.setArt({'thumb': TMDB_IMG + 'w342' + poster})
+            li.setArt({'thumb': TMDB_IMG + 'w1280' + poster})
         li.setInfo('video', {'title': '%s - Stagione %d' % (tname, n), 'mediatype': 'season'})
         url = _tmdb_url('v2episodes', id=id_, s=str(n))
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
@@ -1138,7 +1138,7 @@ def v2_episodes_view(id_, s, back=''):
         li = xbmcgui.ListItem(label=lbl(label))
         still = ep.get('still_path')
         if still:
-            li.setArt({'thumb': TMDB_IMG + 'w342' + still})
+            li.setArt({'thumb': TMDB_IMG + 'w1280' + still})
         etitle = '%s S%sE%s' % (tname, s, n)
         li.setInfo('video', {'title': etitle, 'plot': ep.get('overview') or '', 'mediatype': 'episode'})
         url = _tmdb_url('v2play', id=id_, mtype='tv', s=str(s), e=str(n), t=tname, ept=ename)
@@ -1152,10 +1152,10 @@ def tmdb_add_item(it, mtype, back=''):
     label = title + ('  (' + date[:4] + ')' if len(date) >= 4 else '')
     li = xbmcgui.ListItem(label=lbl(label))
     poster = it.get('poster_path')
-    li.setArt({'thumb': TMDB_IMG + 'w342' + poster if poster else SQUARE_ICON})
+    li.setArt({'thumb': TMDB_IMG + 'w1280' + poster if poster else SQUARE_ICON})
     fan = it.get('backdrop_path')
     if fan:
-        li.setArt({'fanart': TMDB_IMG + 'w780' + fan})
+        li.setArt({'fanart': TMDB_IMG + 'w1280' + fan})
     info = {'title': title, 'mediatype': 'movie' if mtype == 'movie' else 'tv',
             'plot': it.get('overview') or ''}
     if len(date) >= 4:
@@ -1535,6 +1535,29 @@ def mandra_search_view(query, mtype='', back=''):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def _tmdb_season_posters(show_title):
+    try:
+        j_search = tmdb_get('/search/tv', query=show_title)
+        results = j_search.get('results', [])
+        if not results:
+            return {}, None
+        show_id = results[0]['id']
+        tv_data = tmdb_get('/tv/%s' % show_id)
+        fanart = tv_data.get('backdrop_path')
+        fanart_url = (TMDB_IMG + 'w1280' + fanart) if fanart else None
+        
+        posters = {}
+        for s in tv_data.get('seasons', []):
+            sn = s.get('season_number')
+            sp = s.get('poster_path') or tv_data.get('poster_path')
+            if sn and sp:
+                posters[str(sn)] = TMDB_IMG + 'w1280' + sp
+        return posters, fanart_url
+    except Exception as e:
+        xbmc.log('KODIAKSO season posters ERR: ' + str(e), xbmc.LOGERROR)
+        return {}, None
+
+
 def mandra_season_view(code, back=''):
     back_button(back or (BASE + '?action=films'))
     xbmcplugin.setContent(HANDLE, 'tvshows')
@@ -1549,13 +1572,19 @@ def mandra_season_view(code, back=''):
             if m:
                 props = json.loads(m.group(1).replace('&quot;', '"'))['props']
                 title_obj = props.get('title', {})
-                poster_url = SQUARE_ICON
-                fanart_url = None
+                show_name = html.unescape(title_obj.get('name') or '')
+                
+                # Fetch HD season-specific posters from TMDB
+                tmdb_posters, tmdb_fanart = _tmdb_season_posters(show_name or code.replace('-', ' '))
+                
+                su_poster = SQUARE_ICON
+                su_fanart = tmdb_fanart
                 for im in title_obj.get('images', []):
-                    if im.get('type') == 'poster' and im.get('filename'):
-                        poster_url = 'https://cdn.streamingunity.vip/images/' + im['filename']
-                    elif im.get('type') == 'background' and im.get('filename'):
-                        fanart_url = 'https://cdn.streamingunity.vip/images/' + im['filename']
+                    if im.get('type') == 'poster' and im.get('filename') and su_poster == SQUARE_ICON:
+                        su_poster = 'https://cdn.streamingunity.vip/images/' + im['filename']
+                    elif im.get('type') == 'background' and im.get('filename') and not su_fanart:
+                        su_fanart = 'https://cdn.streamingunity.vip/images/' + im['filename']
+                
                 seasons = title_obj.get('seasons', [])
                 for s in seasons:
                     n = s.get('number')
@@ -1564,9 +1593,12 @@ def mandra_season_view(code, back=''):
                         par = f"{code}---{s_num}"
                         stitle = f"Stagione {s_num}"
                         li = xbmcgui.ListItem(label=lbl(stitle))
-                        art = {'thumb': poster_url, 'poster': poster_url}
-                        if fanart_url:
-                            art['fanart'] = fanart_url
+                        
+                        # Season-specific poster from TMDB if available
+                        p_url = tmdb_posters.get(s_num) or su_poster
+                        art = {'thumb': p_url, 'poster': p_url, 'icon': p_url}
+                        if su_fanart:
+                            art['fanart'] = su_fanart
                         li.setArt(art)
                         li.setInfo('video', {'title': stitle})
                         url_item = _tmdb_url('mepisodes', par=par, back=season_url)
