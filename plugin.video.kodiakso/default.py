@@ -2531,6 +2531,9 @@ def films_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+AK47_BASE = 'https://zerohazaarop.store/'
+AK47_SALT = b'ak47/v2/prk'
+AK47_UA = 'Dalvik/2.1.0 (Linux; Android 13)'
 SZX_BASE = 'https://cdn-stream.top/'
 SZX_DIGEST = bytes.fromhex('1676ec7db4771b0d826d70369b579684b182d2c0133be041bdd55f5d6d79a98b')
 SZX_SALT = b'sportzx/v2/prk'
@@ -2894,7 +2897,7 @@ def events_view():
     li = xbmcgui.ListItem(label=lbl('Eventi 1'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('Eventi'), li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('Eventi 2 (Sportzx)'))
+    li = xbmcgui.ListItem(label=lbl('Eventi 2 (AK47 Sports)'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sportzx'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 3 (Daddy)'))
@@ -3016,12 +3019,64 @@ def resolve_daddy(code):
 
 
 def sportzx_view():
+    # AK47 Sports - MPD giornalieri (ex SportzX)
     back_button(BASE + '?action=events')
-    li = xbmcgui.ListItem(label=lbl('Eventi live'))
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('szx_events'), li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('SportzX TV'))
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('szx_cats'), li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Eventi live MPD'))
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ak47_events'), li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('AK47 TV (MPD)'))
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ak47_cats'), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+def ak47_events_view():
+    back_button(BASE + '?action=sportzx')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    from collections import defaultdict
+    nations = defaultdict(list)
+    for ch in _MPD6:
+        nations[ch['nation']].append(ch)
+    for nation in sorted(nations):
+        cnt = len(nations[nation])
+        flag = _FLAGS.get(nation, LOGO_BASE + 'skyhd.png')
+        li = xbmcgui.ListItem(label=lbl('%s (%d) [MPD]' % (nation, cnt)))
+        li.setArt({'thumb': flag, 'icon': flag})
+        li.setInfo('video', {'title': nation, 'plot': ''})
+        url = BASE + '?action=ak47_nation&nation=' + urllib.parse.quote(nation)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def ak47_nation_view(nation):
+    back_button(BASE + '?action=ak47_events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    for ch in [c for c in _MPD6 if c['nation'] == nation]:
+        mpd = ch['mpd']
+        keys = ch.get('keys') or ''
+        li = xbmcgui.ListItem(label=lbl(ch['title']), path=mpd)
+        flag = _FLAGS.get(nation, LOGO_BASE + 'skyhd.png')
+        li.setArt({'thumb': flag})
+        li.setProperty('isPlayable', 'true')
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+        try:
+            host = 'https://' + mpd.split('/')[2]
+        except:
+            host = mpd
+        hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, host, host)
+        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+        if keys:
+            li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
+            li.setProperty('inputstream.adaptive.license_key', keys)
+            li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + keys)
+        li.setInfo('video', {'title': ch['title'], 'plot': ''})
+        xbmcplugin.addDirectoryItem(HANDLE, mpd, li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def ak47_cats_view():
+    back_button(BASE + '?action=sportzx')
+    ak47_events_view()
 
 
 def sportzx_events_view():
@@ -3594,6 +3649,12 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'sportzx':
             sportzx_view()
+        elif action == 'ak47_events':
+            ak47_events_view()
+        elif action == 'ak47_nation':
+            ak47_nation_view(query.get('nation', [''])[0])
+        elif action == 'ak47_cats':
+            ak47_cats_view()
         elif action == 'ddy':
             daddy_view()
         elif action == 'ddy_cat':
