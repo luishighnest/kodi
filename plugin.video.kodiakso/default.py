@@ -1714,8 +1714,26 @@ def mandra_episodes_view(par, back=''):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def films_view():
+def vod_view():
     home_button()
+    vod1_url = BASE + '?action=films'
+    vod2_url = BASE + '?action=films&src=2'
+
+    li1 = xbmcgui.ListItem(label=lbl('VOD 1'))
+    li1.setArt({'thumb': LOGO_BASE + 'netflix.png', 'icon': LOGO_BASE + 'netflix.png'})
+    li1.setInfo('video', {'title': 'VOD 1', 'plot': 'Catalogo VOD 1 (StreamingUnity / VixCloud)'})
+    xbmcplugin.addDirectoryItem(HANDLE, vod1_url, li1, isFolder=True)
+
+    li2 = xbmcgui.ListItem(label=lbl('VOD 2'))
+    li2.setArt({'thumb': LOGO_BASE + 'netflix.png', 'icon': LOGO_BASE + 'netflix.png'})
+    li2.setInfo('video', {'title': 'VOD 2', 'plot': 'Catalogo VOD 2 (VidAPI / Videm)'})
+    xbmcplugin.addDirectoryItem(HANDLE, vod2_url, li2, isFolder=True)
+
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def films_view():
+    back_button(BASE + '?action=vod')
     films_url = BASE + '?action=films'
     li = xbmcgui.ListItem(label=lbl('Ricerca'))
     
@@ -2461,10 +2479,9 @@ def root_view():
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
-        home_items.append(('VOD 1', LOGO_BASE + 'netflix.png', BASE + '?action=films'))
-        home_items.append(('VOD 2', LOGO_BASE + 'netflix.png', BASE + '?action=films&src=2'))
+        home_items.append(('VOD', LOGO_BASE + 'netflix.png', BASE + '?action=vod'))
     for label, icon, url in home_items:
-        if label == 'VOD 1':
+        if label == 'VOD':
             empty_item()
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': icon or SQUARE_ICON})
@@ -2592,6 +2609,8 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'tv':
             tv_view()
+        elif action == 'vod':
+            vod_view()
         elif action == 'films':
             films_view()
         elif action == 'events':
