@@ -1248,8 +1248,31 @@ def _calcio_fetch():
             pub = (item.findtext('pubDate') or '').strip()
             if not title or not link:
                 continue
-            # filtra calcio se presente, altrimenti tutti
+            # filtro data: mostra solo eventi di oggi/domani, scarta ieri
+            try:
+                import email.utils as eut
+                dt = eut.parsedate_to_datetime(pub) if pub else None
+                if dt is not None:
+                    # normalizza a UTC poi confronta con oggi UTC
+                    now_dt = datetime.now(dt.tzinfo) if dt.tzinfo else datetime.now()
+                    # scarta se più vecchio di 6 ore rispetto a now (ieri)
+                    if (now_dt - dt).total_seconds() > 6*3600 and dt.date() < now_dt.date():
+                        continue
+            except Exception:
+                pass
             events.append({'title': html.unescape(title), 'link': link, 'category': cat, 'pubDate': pub})
+        # ordina per data crescente (prossimi prima)
+        try:
+            import email.utils as eut2
+            def _k(ev):
+                try:
+                    d = eut2.parsedate_to_datetime(ev.get('pubDate') or '')
+                    return d.timestamp() if d else 0
+                except Exception:
+                    return 0
+            events.sort(key=_k)
+        except Exception:
+            pass
         _CALCIO_CACHE['data'] = events
         _CALCIO_CACHE['ts'] = now
     except Exception as e:
