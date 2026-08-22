@@ -879,25 +879,18 @@ def sky_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-_MPD6 = [
-    # ClearKey Singapore - MPD con licenza
-    {'title': 'SG Channel 5', 'logo': 'https://poster.starhubgo.com/Linear_channels2/102_1920x1080_HTV.png', 'mpd': 'https://tglmp02.akamaized.net/out/v1/5081e069e08140c9b95f89a1659cf4dd/manifest.mpd', 'key': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=607b7d22565c4bc3b95ff6c33ce65425&key=28cc5367df666c44be4382e64af64d57'},
-    {'title': 'SG Channel 8', 'logo': 'https://poster.starhubgo.com/Linear_channels2/103_1920x1080_HTV.png', 'mpd': 'https://tglmp02.akamaized.net/out/v1/4f6561ad194b49ae93f4e1b075afdf41/manifest.mpd', 'key': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=2448fc561b0c4220a81f1008971d3088&key=f48eb6753f3d1774da682970c93cf260'},
-    {'title': 'SG Channel U', 'logo': 'https://poster.starhubgo.com/Linear_channels2/107_1920x1080_HTV.png', 'mpd': 'https://tglmp03.akamaized.net/out/v1/1057d89ee3d94148b430b5866e3a540a/manifest.mpd', 'key': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=0328a153c2994b279ab03ab25102fc59&key=2cc69eaaa858fed24c5623654daf8d3d'},
-    {'title': 'SG Suria', 'logo': 'https://poster.starhubgo.com/Linear_channels2/104_1920x1080_HTV.png', 'mpd': 'https://tglmp04.akamaized.net/out/v1/b200e885125f4787bd2329952ff28fa1/manifest.mpd', 'key': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=7a9ea6df52044841b0c562766e602610&key=b9380188b4896b25e8d419dfce938c6e'},
-    {'title': 'SG Vasantham', 'logo': 'https://poster.starhubgo.com/Linear_channels2/105_1920x1080_HTV.png', 'mpd': 'https://tglmp03.akamaized.net/out/v1/14eb6e921cae41298efaa4d9db0f2875/manifest.mpd', 'key': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=9970038ef6c548e39768f3a1ff6f5081&key=3e19d54b7bcd8bb336776fe136d48f57'},
-    {'title': 'MY CNA', 'logo': 'https://poster.starhubgo.com/Linear_channels2/106_1920x1080_HTV.png', 'mpd': 'https://linearjitp-playback.astro.com.my/dash-wv/linear/605/default_ott.mpd', 'key': 'https://clearkey-base64-2-hex-json.herokuapp.com/results.php?keyid=f812aeae6be5b924a8181b512d5d7910&key=44275884ee394d05081fde395ff6e415'},
-    # Clear MPD senza licenza - estero test
-    {'title': 'DASH-IF Livesim', 'logo': LOGO_BASE + 'skyhd.png', 'mpd': 'https://livesim.dashif.org/livesim/mup_30/testpic_2s/Manifest.mpd', 'key': ''},
-    {'title': 'Sintel (clear)', 'logo': LOGO_BASE + 'skyhd.png', 'mpd': 'https://dash.akamaized.net/dash264/TestCases/1a/sony/Sintel_Manifest.mpd', 'key': ''},
-    {'title': 'Big Buck Bunny', 'logo': LOGO_BASE + 'skyhd.png', 'mpd': 'https://dash.akamaized.net/akamai/bbb_30fps/bbb_with_multiple_tiled_thumbnails.mpd', 'key': ''},
-    {'title': 'Tears of Steel', 'logo': LOGO_BASE + 'skyhd.png', 'mpd': 'https://dash.akamaized.net/dash264/TestCases/2c/qualcomm/1/Manifest.mpd', 'key': ''},
-]
+_MPD6 = []  # svuotata su richiesta - pronta per futuri MPD esteri
 
 
 def sky6_view(back=''):
     back_button(back or (BASE + '?action=sky'))
     xbmcplugin.setContent(HANDLE, 'videos')
+    if not _MPD6:
+        li = xbmcgui.ListItem(label=lbl('Lista vuota - nessun canale configurato'))
+        li.setInfo('video', {'title': 'Lista Canali 6', 'plot': 'Categoria vuota - in preparazione per futuri MPD esteri'})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
     for ch in _MPD6:
         li = xbmcgui.ListItem(label=lbl(ch['title']), path=ch['mpd'])
         li.setArt({'thumb': ch['logo'] or SQUARE_ICON})
@@ -1687,9 +1680,18 @@ def tv_view():
         if ch['group'].lower() in ('dazn', 'eventi'):
             continue
         groups.setdefault(ch['group'], []).append(ch)
+    TV_ICONS = {
+        'digitale terrestre': 'tv_icon.png',
+        'eurosport': 'eurosport.png',
+        'supertennis': 'supertennis.png',
+        'eventi': 'eventi_icon.png',
+        'dazn': 'dazn.png',
+    }
     for group in sorted(groups):
         li = xbmcgui.ListItem(label=lbl(group))
-        
+        icon = TV_ICONS.get(group.lower(), 'tv_icon.png')
+        li.setArt({'thumb': LOGO_BASE + icon, 'icon': LOGO_BASE + icon})
+        li.setInfo('video', {'title': group})
         url = BASE + '?group=' + urllib.parse.quote(group) + '&deep=1&back=' + urllib.parse.quote(BASE + '?action=tv')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
