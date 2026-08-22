@@ -281,6 +281,24 @@ LOGOS = {
 CAT_INT = 'SKY INTRATTENIMENTO'
 CAT_SPORT = 'SKY SPORT'
 
+_GUIDA = [
+    ('Serie A', 'serie-a', '🇮🇹', 'DAZN (10/10) | Sky Sport Calcio, Sky Sport 251, NOW (3/10) | Amazon (0)'),
+    ('Serie B', 'serie-b', '🇮🇹', 'DAZN | Amazon LaB Channel | OneFootball TV'),
+    ('Coppa Italia', 'coppa-italia', '🇮🇹', 'Mediaset Canale 5 / Italia 1 | DAZN'),
+    ('Supercoppa Italiana', 'supercoppa', '🇮🇹', 'Mediaset | DAZN'),
+    ('Champions League', 'champions', '🇪🇺', 'Sky 185/203 | NOW | Amazon 18 gare mercoledi | TV8 (estere)'),
+    ('Europa League', 'europa-league', '🇪🇺', 'Sky 342/342 | NOW | Diretta Gol'),
+    ('Conference League', 'conference', '🇪🇺', 'Sky 342/342 | NOW'),
+    ('Premier League', 'premier', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Sky fino 2028 (7/10) | NOW | TV8'),
+    ('LaLiga', 'laliga', '🇪🇸', 'DAZN fino 2029'),
+    ('Bundesliga', 'bundesliga', '🇩🇪', 'Sky fino 2029 (5/34 + Coppa) | NOW'),
+    ('Ligue 1', 'ligue1', '🇫🇷', 'Sky 2/10 | NOW (novita 2025)'),
+    ('Primeira Liga', 'primeira', '🇵🇹', 'DAZN | Sky'),
+    ('Eredivisie', 'eredivisie', '🇳🇱', 'Como TV (gratis)'),
+    ('Saudi Pro League', 'saudi', '🇸🇦', 'Como TV'),
+    ('FA Cup', 'fa-cup', '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'DAZN | Sky'),
+]
+
 SKY_DEFS = {
     'tg24': ('Sky TG 24', CAT_INT),
     'skyuno': ('Sky Uno', CAT_INT),
@@ -3220,6 +3238,52 @@ def resolve_sportzx(eid, idx):
     return li
 
 
+def guida_view():
+    home_button()
+    xbmcplugin.setContent(HANDLE, 'videos')
+    for name, cid, flag, broad in _GUIDA:
+        label = '%s %s' % (flag, name)
+        li = xbmcgui.ListItem(label=lbl(label))
+        li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
+        li.setInfo('video', {'title': name, 'plot': 'Emittenti: ' + broad})
+        li.setProperty('IsPlayable', 'false')
+        url = BASE + '?action=guidacomp&comp=' + urllib.parse.quote(cid) + '&name=' + urllib.parse.quote(name)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def guida_comp_view(comp, name=''):
+    back_button(BASE + '?action=guida')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    # trova broadcaster per comp
+    broad = ''
+    flag = ''
+    for n,c,f,b in _GUIDA:
+        if c == comp:
+            broad = b
+            flag = f
+            name = n
+            break
+    # header emittenti
+    li = xbmcgui.ListItem(label=lbl('%s %s - Emittenti' % (flag, name)))
+    li.setInfo('video', {'title': name, 'plot': broad})
+    li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li, isFolder=False)
+    # lista canali/emittenti singoli
+    for ch in [x.strip() for x in broad.split('|')]:
+        if not ch:
+            continue
+        li2 = xbmcgui.ListItem(label=lbl('  \u2022 ' + ch.strip()))
+        li2.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
+        li2.setInfo('video', {'title': ch.strip(), 'plot': 'Trasmesso su: ' + ch.strip()})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li2, isFolder=False)
+    # nota
+    li3 = xbmcgui.ListItem(label=lbl('[COLOR FF99CC33]Fonte: LiveSoccerTV.com/it/schedules[/COLOR]'))
+    li3.setInfo('video', {'plot': 'Palinsesto ufficiale: www.livesoccertv.com/it/competitions/%s' % comp})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=guida', li3, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
 def empty_item():
     li = xbmcgui.ListItem(label=' ')
     li.setArt({'thumb': EMPTY_LOGO, 'icon': EMPTY_LOGO})
@@ -3306,6 +3370,7 @@ def root_view():
     empty_item()
 
     home_items = [
+        ('GUIDA TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=guida'),
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
         ('SPORT', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
@@ -3431,6 +3496,10 @@ def main():
                     xbmcplugin.endOfDirectory(HANDLE)
         elif action == 'root':
             root_view()
+        elif action == 'guida':
+            guida_view()
+        elif action == 'guidacomp':
+            guida_comp_view(query.get('comp', [''])[0], query.get('name', [''])[0])
         elif action == 'sky':
             sky_view()
         elif action == 'sky1':
