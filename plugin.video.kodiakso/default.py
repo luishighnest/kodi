@@ -988,35 +988,98 @@ _AK47_MPD = [
 ]
 
 
-_XTREM = {'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'}
-_IPTV7_CACHE = {'ts': 0, 'cats': [], 'streams': []}
+_IPTV_LISTS = [
+    {'name': 'FXMAG1', 'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'},
+]
+_IPTV7_CACHE = {}
 
 
-def _xtrem_api(action, extra=''):
-    url = '%s/player_api.php?username=%s&password=%s&action=%s%s' % (_XTREM['host'], _XTREM['user'], _XTREM['pass'], action, extra)
+def _xtrem_api(lst, action=''):
+    url = '%s/player_api.php?username=%s&password=%s' % (lst['host'], lst['user'], lst['pass'])
+    if action:
+        url += '&action=' + action
     r = requests.get(url, timeout=15, headers={'User-Agent': UA})
     return json.loads(r.text)
+
+
+def _xtrem_info(lst):
+    key = lst['host'] + '|' + lst['user']
+    now = _iptv_now()
+    c = _IPTV7_CACHE.get(key + '|info')
+    if c and now - c[0] < 300:
+        return c[1]
+    try:
+        d = _xtrem_api(lst)
+        info = (d.get('user_info') or {}) if isinstance(d, dict) else {}
+        res = {'exp': '', 'act': '?', 'max': '?'}
+        exp = info.get('exp_date')
+        if exp:
+            try:
+                res['exp'] = _iptv_fmt_date(int(exp))
+            except Exception:
+                pass
+        res['act'] = info.get('active_cons', '?')
+        res['max'] = info.get('max_connections', '?')
+        res['status'] = info.get('status', '')
+    except Exception as e:
+        log('sky7 info ERR: %s' % e)
+        res = {'exp': '', 'act': '?', 'max': '?', 'status': 'offline'}
+    _IPTV7_CACHE[key + '|info'] = (now, res)
+    return res
+
+
+def _iptv_now():
+    import time
+    return time.time()
+
+
+def _iptv_fmt_date(ts):
+    from datetime import datetime
+    return datetime.fromtimestamp(ts).strftime('%d/%m/%Y')
 
 
 def sky7_view(back=''):
     back_button(back or (BASE + '?action=sky'))
     xbmcplugin.setContent(HANDLE, 'videos')
-    import time as _time
-    now = _time.time()
-    if not _IPTV7_CACHE['streams'] or now - _IPTV7_CACHE['ts'] > 600:
+    for lst in _IPTV_LISTS:
+        i = _xtrem_info(lst)
+        label = '%s | Scadenza: %s | Connessi: %s/%s' % (
+            lst['name'], i.get('exp') or 'n/d', i.get('act', '?'), i.get('max', '?'))
+        li = xbmcgui.ListItem(label=lbl(label))
+        li.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+        plot = 'Lista IPTV Xtream\nServer: %s\nStato: %s' % (lst['host'], i.get('status') or 'n/d')
+        li.setInfo('video', {'title': label, 'plot': plot})
+        url = BASE + '?action=sky7list&idx=' + urllib.parse.quote(str(_IPTV_LISTS.index(lst))) + '&back=' + urllib.parse.quote(BASE + '?action=sky7')
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky7_list_view(idx, back=''):
+    back_button(back or (BASE + '?action=sky7'))
+    xbmcplugin.setContent(HANDLE, 'videos')
+    try:
+        lst = _IPTV_LISTS[int(idx)]
+    except Exception:
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    key = lst['host'] + '|' + lst['user']
+    now = _iptv_now()
+    c = _IPTV7_CACHE.get(key)
+    if not c or now - c[0] > 600:
         try:
-            cats = _xtrem_api('get_live_categories') or []
-            streams = _xtrem_api('get_live_streams') or []
-            _IPTV7_CACHE['cats'] = cats
-            _IPTV7_CACHE['streams'] = streams
-            _IPTV7_CACHE['ts'] = now
+            cats = _xtrem_api(lst, 'get_live_categories') or []
+            streams = _xtrem_api(lst, 'get_live_streams') or []
+            _IPTV7_CACHE[key] = (now, cats, streams)
         except Exception as e:
             log('sky7 xtream ERR: %s' % e)
+            cats, streams = [], []
+    else:
+        cats, streams = c[1], c[2]
     cat_names = {}
-    for c in _IPTV7_CACHE['cats']:
-        cat_names[str(c.get('category_id'))] = c.get('category_name', '?')
+    for cc in cats:
+        cat_names[str(cc.get('category_id'))] = cc.get('category_name', '?')
     groups = {}
-    for s in _IPTV7_CACHE['streams']:
+    for s in streams:
         cid = str(s.get('category_id'))
         groups.setdefault(cid, []).append(s)
     for cid in sorted(groups, key=lambda x: cat_names.get(x, '?').lower()):
@@ -1025,24 +1088,31 @@ def sky7_view(back=''):
         li = xbmcgui.ListItem(label=lbl('%s (%d)' % (name, cnt)))
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
         li.setInfo('video', {'title': name, 'plot': '%d canali IPTV' % cnt})
-        url = BASE + '?action=sky7cat&cat=' + urllib.parse.quote(cid) + '&back=' + urllib.parse.quote(BASE + '?action=sky7')
+        url = BASE + '?action=sky7cat&idx=' + urllib.parse.quote(str(idx)) + '&cat=' + urllib.parse.quote(cid) + '&back=' + urllib.parse.quote(BASE + '?action=sky7list&idx=' + urllib.parse.quote(str(idx)))
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def sky7_cat_view(cat, back=''):
+def sky7_cat_view(idx, cat, back=''):
     back_button(back or (BASE + '?action=sky7'))
     xbmcplugin.setContent(HANDLE, 'videos')
-    for s in [x for x in _IPTV7_CACHE['streams'] if str(x.get('category_id')) == str(cat)]:
+    try:
+        lst = _IPTV_LISTS[int(idx)]
+    except Exception:
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    key = lst['host'] + '|' + lst['user']
+    streams = _IPTV7_CACHE.get(key, (0, [], []))[2]
+    for s in [x for x in streams if str(x.get('category_id')) == str(cat)]:
         name = s.get('name', s.get('stream_id'))
         sid = s.get('stream_id')
-        url = '%s/%s/%s/%s.m3u8' % (_XTREM['host'], _XTREM['user'], _XTREM['pass'], sid)
+        url = '%s/%s/%s/%s.m3u8' % (lst['host'], lst['user'], lst['pass'], sid)
         li = xbmcgui.ListItem(label=lbl(name), path=url)
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
         li.setProperty('isPlayable', 'true')
         li.setProperty('inputstream', 'inputstream.adaptive')
         li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        hdrs = 'User-Agent=%s' % UA
+        hdrs = 'User-Agent=VLC/3.0.20 LibVLC/3.0.20'
         li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
         li.setProperty('inputstream.adaptive.stream_headers', hdrs)
         li.setInfo('video', {'title': name, 'mediatype': 'video'})
@@ -3709,8 +3779,10 @@ def main():
             sky6_nation_view(query.get('nation', [''])[0], query.get('back', [''])[0])
         elif action == 'sky7':
             sky7_view(query.get('back', [''])[0])
+        elif action == 'sky7list':
+            sky7_list_view(query.get('idx', ['0'])[0], query.get('back', [''])[0])
         elif action == 'sky7cat':
-            sky7_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
+            sky7_cat_view(query.get('idx', ['0'])[0], query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'calcioevent':
             calcio_event_view(query.get('url', [''])[0], query.get('t', [''])[0])
         elif action == 'sportplay':
