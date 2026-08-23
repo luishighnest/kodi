@@ -894,6 +894,12 @@ def sky_view():
     li6.setInfo('video', {'title': 'Lista Canali 6 (MPD)', 'plot': 'Categoria vuota'})
     xbmcplugin.addDirectoryItem(HANDLE, sky6_url, li6, isFolder=True)
 
+    sky7_url = BASE + '?action=sky7'
+    li7 = xbmcgui.ListItem(label=lbl('Lista Canali 7 (IPTV)'))
+    li7.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li7.setInfo('video', {'title': 'Lista Canali 7 (IPTV)', 'plot': 'Canali live IPTV Xtream'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky7_url, li7, isFolder=True)
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -980,6 +986,68 @@ _AK47_MPD = [
     {'nation': 'Montenegro', 'title': 'default', 'mpd': 'https://bpkcdn.telekom.me/bpk-tv/arenasport_1/default/index.mpd', 'keys': ''},
     {'nation': 'Irlanda', 'title': 'NBC Logo [Irlanda]', 'mpd': 'https://ottb.live.cf.ww.aiv-cdn.net/dub-nitro/live/clients/dash/enc/2jbycgm3g3/out/v1/066dd9325648468c9ecdc8b272370931/cenc.mpd', 'keys': '84077d18bcf234a42de3745be106a87f:aee3069c062ec8ee6bfdd32985f287ef'},
 ]
+
+
+_XTREM = {'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'}
+_IPTV7_CACHE = {'ts': 0, 'cats': [], 'streams': []}
+
+
+def _xtrem_api(action, extra=''):
+    url = '%s/player_api.php?username=%s&password=%s&action=%s%s' % (_XTREM['host'], _XTREM['user'], _XTREM['pass'], action, extra)
+    r = requests.get(url, timeout=15, headers={'User-Agent': UA})
+    return json.loads(r.text)
+
+
+def sky7_view(back=''):
+    back_button(back or (BASE + '?action=sky'))
+    xbmcplugin.setContent(HANDLE, 'videos')
+    import time as _time
+    now = _time.time()
+    if not _IPTV7_CACHE['streams'] or now - _IPTV7_CACHE['ts'] > 600:
+        try:
+            cats = _xtrem_api('get_live_categories') or []
+            streams = _xtrem_api('get_live_streams') or []
+            _IPTV7_CACHE['cats'] = cats
+            _IPTV7_CACHE['streams'] = streams
+            _IPTV7_CACHE['ts'] = now
+        except Exception as e:
+            log('sky7 xtream ERR: %s' % e)
+    cat_names = {}
+    for c in _IPTV7_CACHE['cats']:
+        cat_names[str(c.get('category_id'))] = c.get('category_name', '?')
+    groups = {}
+    for s in _IPTV7_CACHE['streams']:
+        cid = str(s.get('category_id'))
+        groups.setdefault(cid, []).append(s)
+    for cid in sorted(groups, key=lambda x: cat_names.get(x, '?').lower()):
+        name = cat_names.get(cid, 'Categoria %s' % cid)
+        cnt = len(groups[cid])
+        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (name, cnt)))
+        li.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+        li.setInfo('video', {'title': name, 'plot': '%d canali IPTV' % cnt})
+        url = BASE + '?action=sky7cat&cat=' + urllib.parse.quote(cid) + '&back=' + urllib.parse.quote(BASE + '?action=sky7')
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky7_cat_view(cat, back=''):
+    back_button(back or (BASE + '?action=sky7'))
+    xbmcplugin.setContent(HANDLE, 'videos')
+    for s in [x for x in _IPTV7_CACHE['streams'] if str(x.get('category_id')) == str(cat)]:
+        name = s.get('name', s.get('stream_id'))
+        sid = s.get('stream_id')
+        url = '%s/%s/%s/%s.m3u8' % (_XTREM['host'], _XTREM['user'], _XTREM['pass'], sid)
+        li = xbmcgui.ListItem(label=lbl(name), path=url)
+        li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+        li.setProperty('isPlayable', 'true')
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        hdrs = 'User-Agent=%s' % UA
+        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+        li.setInfo('video', {'title': name, 'mediatype': 'video'})
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
 
 
 def sky6_view(back=''):
@@ -3639,6 +3707,10 @@ def main():
             sky6_view(query.get('back', [''])[0])
         elif action == 'sky6nation':
             sky6_nation_view(query.get('nation', [''])[0], query.get('back', [''])[0])
+        elif action == 'sky7':
+            sky7_view(query.get('back', [''])[0])
+        elif action == 'sky7cat':
+            sky7_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
         elif action == 'calcioevent':
             calcio_event_view(query.get('url', [''])[0], query.get('t', [''])[0])
         elif action == 'sportplay':
