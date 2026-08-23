@@ -1102,7 +1102,18 @@ def sky7_cat_view(idx, cat, back=''):
         xbmcplugin.endOfDirectory(HANDLE)
         return
     key = lst['host'] + '|' + lst['user']
-    streams = _IPTV7_CACHE.get(key, (0, [], []))[2]
+    now = _iptv_now()
+    c = _IPTV7_CACHE.get(key)
+    if not c or now - c[0] > 600:
+        try:
+            cats = _xtrem_api(lst, 'get_live_categories') or []
+            streams = _xtrem_api(lst, 'get_live_streams') or []
+            _IPTV7_CACHE[key] = (now, cats, streams)
+        except Exception as e:
+            log('sky7 xtream ERR: %s' % e)
+            streams = []
+    else:
+        streams = c[2]
     for s in [x for x in streams if str(x.get('category_id')) == str(cat)]:
         name = s.get('name', s.get('stream_id'))
         sid = s.get('stream_id')
