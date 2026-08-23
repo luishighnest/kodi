@@ -1116,18 +1116,119 @@ def sky7_cat_view(idx, cat, back=''):
     for s in [x for x in streams if str(x.get('category_id')) == str(cat)]:
         name = s.get('name', s.get('stream_id'))
         sid = s.get('stream_id')
-        url = plmap.get(name) or '%s/%s/%s/%s.m3u8' % (lst['host'], lst['user'], lst['pass'], sid)
-        li = xbmcgui.ListItem(label=lbl(name), path=url)
+        li = xbmcgui.ListItem(label=lbl(name))
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
         li.setProperty('isPlayable', 'true')
-        li.setProperty('inputstream', 'inputstream.adaptive')
-        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-        hdrs = 'User-Agent=VLC/3.0.20 LibVLC/3.0.20'
-        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
-        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
         li.setInfo('video', {'title': name, 'mediatype': 'video'})
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+        play_url = BASE + '?action=sky7play&idx=' + urllib.parse.quote(str(idx)) + '&sid=' + urllib.parse.quote(str(sid)) + '&name=' + urllib.parse.quote(name)
+        xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+_TG_BRIDGE = {'client': None, 'pages': {}}
+
+
+def _tg_get_client():
+    """Usa il client HTTP di Thegroove360 (installato in Kodi) per ottenere URL con token fresco."""
+    if _TG_BRIDGE['client']:
+        return _TG_BRIDGE['client']
+    import sys as _sys
+    import xbmcaddon as _xa
+    tg = _xa.Addon('plugin.video.thegroove360')
+    path = tg.getAddonInfo('path')
+    if path not in _sys.path:
+        _sys.path.insert(0, path)
+    from resources.modules.thegroove.thegroove_httpclient import ThegrooveHttpClient
+    _TG_BRIDGE['client'] = ThegrooveHttpClient()
+    return _TG_BRIDGE['client']
+
+
+def _tg_fetch_page(page):
+    """Scarica una pagina XML dal server thegroove (cache 5 min)."""
+    import time as _t
+    now = _t.time()
+    c = _TG_BRIDGE['pages'].get(page)
+    if c and now - c[0] < 300:
+        return c[1]
+    xml = ''
+    try:
+        res = _tg_get_client().get_request(page)
+        if isinstance(res, str):
+            xml = res
+        else:
+            xml = getattr(res, 'text', '')
+    except Exception as e:
+        log('sky7 TG page ERR %s: %s' % (page, e))
+    _TG_BRIDGE['pages'][page] = (now, xml)
+    return xml
+
+
+_RE_ITEM = re.compile(r'(<item>.*?</item>|<dir>.*?</dir>)', re.S)
+_RE_TITLE = re.compile(r'<title>(.*?)</title>', re.S)
+_RE_LINK = re.compile(r'<link>(.*?)</link>', re.S)
+
+
+def _tg_find_channel(page, wanted, depth=0, seen=None):
+    """Cerca ricorsivamente nei menu XML di thegroove l'item il cui titolo corrisponde al canale.
+    Ritorna (url_playable, None) oppure (None, sub_pages) da esplorare."""
+    if seen is None:
+        seen = set()
+    if depth > 4 or page in seen:
+        return None, []
+    seen.add(page)
+    xml = _tg_fetch_page(page)
+    subs = []
+    for m in _RE_ITEM.finditer(xml):
+        block = m.group(1)
+        tm = _RE_TITLE.search(block)
+        lm = _RE_LINK.search(block)
+        if not tm or not lm:
+            continue
+        title = re.sub(r'\[.*?\]|\(.*?\)', '', tm.group(1)).strip()
+        link = lm.group(1).strip()
+        if link.lower().startswith('http'):
+            if wanted.lower() in title.lower():
+                return link, []
+        elif link and wanted.lower() in title.lower():
+            subs.insert(0, link)
+        elif link.startswith('/'):
+            subs.append(link)
+    for sp in subs:
+        r, _ = _tg_find_channel(sp, wanted, depth + 1, seen)
+        if r:
+            return r, []
+    return None, []
+
+
+def sky7_play(idx, cat, name):
+    """Riproduce un canale Lista 7 passando dal server thegroove (token fresco)."""
+    import xbmcgui as _xg
+    url = None
+    try:
+        url, _ = _tg_find_channel('/thegroove/ingresso', name)
+    except Exception as e:
+        log('sky7 play ERR: %s' % e)
+    if not url:
+        # fallback: URL diretto standard (funziona su pannelli Xtream normali)
+        try:
+            lst = _IPTV_LISTS[int(idx)]
+            url = '%s/%s/%s/%s.m3u8' % (lst['host'], lst['user'], lst['pass'], cat)
+        except Exception:
+            url = None
+    if not url:
+        dlg = _xg.Dialog()
+        dlg.notification('PZ8', 'Canale non trovato / non riproducible', _xg.NOTIFICATION_ERROR, 4000)
+        xbmcplugin.setResolvedUrl(HANDLE, False, _xg.ListItem())
+        return
+    li = _xg.ListItem(label=name, path=url)
+    li.setProperty('isPlayable', 'true')
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    hdrs = 'User-Agent=VLC/3.0.20 LibVLC/3.0.20'
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setInfo('video', {'title': name, 'mediatype': 'video'})
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
 def sky6_view(back=''):
@@ -3793,6 +3894,8 @@ def main():
             sky7_list_view(query.get('idx', ['0'])[0], query.get('back', [''])[0])
         elif action == 'sky7cat':
             sky7_cat_view(query.get('idx', ['0'])[0], query.get('cat', [''])[0], query.get('back', [''])[0])
+        elif action == 'sky7play':
+            sky7_play(query.get('idx', ['0'])[0], query.get('sid', [''])[0], query.get('name', [''])[0])
         elif action == 'calcioevent':
             calcio_event_view(query.get('url', [''])[0], query.get('t', [''])[0])
         elif action == 'sportplay':
