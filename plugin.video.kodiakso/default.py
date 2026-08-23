@@ -988,8 +988,7 @@ _AK47_MPD = [
 ]
 
 
-_IPTV_LISTS = [
-    {'name': 'FXMAG1', 'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'},
+_IPTV_LISTS = [    {'name': 'FXMAG1', 'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'},
 ]
 _IPTV7_CACHE = {}
 
@@ -1117,7 +1116,7 @@ def sky7_cat_view(idx, cat, back=''):
     for s in [x for x in streams if str(x.get('category_id')) == str(cat)]:
         name = s.get('name', s.get('stream_id'))
         sid = s.get('stream_id')
-        url = '%s/%s/%s/%s.m3u8' % (lst['host'], lst['user'], lst['pass'], sid)
+        url = plmap.get(name) or '%s/%s/%s/%s.m3u8' % (lst['host'], lst['user'], lst['pass'], sid)
         li = xbmcgui.ListItem(label=lbl(name), path=url)
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
         li.setProperty('isPlayable', 'true')
