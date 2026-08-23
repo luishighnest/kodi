@@ -987,10 +987,36 @@ _AK47_MPD = [
     {'nation': 'Irlanda', 'title': 'NBC Logo [Irlanda]', 'mpd': 'https://ottb.live.cf.ww.aiv-cdn.net/dub-nitro/live/clients/dash/enc/2jbycgm3g3/out/v1/066dd9325648468c9ecdc8b272370931/cenc.mpd', 'keys': '84077d18bcf234a42de3745be106a87f:aee3069c062ec8ee6bfdd32985f287ef'},
 ]
 
-
-_IPTV_LISTS = [    {'name': 'FXMAG1', 'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'},
+_IPTV_LISTS = [
+    {'type': 'm3u', 'name': 'Canali ITALIANI FREE (Rai, Mediaset, FAST)', 'url': 'https://iptv-org.github.io/iptv/countries/it.m3u'},
+    {'type': 'xtream', 'name': 'FXMAG1', 'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'},
 ]
 _IPTV7_CACHE = {}
+
+
+def _m3u_parse(url):
+    """Scarica e parsa una playlist M3U -> (gruppi ordinati, dict gruppo->[ (nome,url) ])."""
+    key = 'm3u|' + url
+    now = _iptv_now()
+    c = _IPTV7_CACHE.get(key)
+    if c and now - c[0] < 3600:
+        return c[1], c[2]
+    r = requests.get(url, headers={'User-Agent': UA}, timeout=30)
+    r.encoding = 'utf-8'
+    groups = {}
+    cur_name, cur_group = '', ''
+    for line in r.text.splitlines():
+        line = line.strip()
+        if line.startswith('#EXTINF'):
+            nm = line.split(',', 1)[1].strip() if ',' in line else ''
+            gm = re.search(r'group-title="([^"]*)"', line)
+            cur_name = nm
+            cur_group = gm.group(1).strip() if gm else 'Varie'
+        elif line.startswith('http'):
+            groups.setdefault(cur_group or 'Varie', []).append((cur_name or line, line))
+    keys = sorted(groups.keys(), key=lambda x: x.lower())
+    _IPTV7_CACHE[key] = (now, keys, groups)
+    return keys, groups
 
 
 def _xtrem_api(lst, action=''):
@@ -1040,15 +1066,19 @@ def _iptv_fmt_date(ts):
 def sky7_view(back=''):
     back_button(back or (BASE + '?action=sky'))
     xbmcplugin.setContent(HANDLE, 'videos')
-    for lst in _IPTV_LISTS:
-        i = _xtrem_info(lst)
-        label = '%s | Scadenza: %s | Connessi: %s/%s' % (
-            lst['name'], i.get('exp') or 'n/d', i.get('act', '?'), i.get('max', '?'))
+    for n, lst in enumerate(_IPTV_LISTS):
+        if lst.get('type') == 'm3u':
+            label = lst['name']
+            plot = 'Lista M3U gratuita - canali riproducibili'
+        else:
+            i = _xtrem_info(lst)
+            label = '%s | Scadenza: %s | Connessi: %s/%s' % (
+                lst['name'], i.get('exp') or 'n/d', i.get('act', '?'), i.get('max', '?'))
+            plot = 'Lista IPTV Xtream\nServer: %s\nStato: %s' % (lst['host'], i.get('status') or 'n/d')
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-        plot = 'Lista IPTV Xtream\nServer: %s\nStato: %s' % (lst['host'], i.get('status') or 'n/d')
         li.setInfo('video', {'title': label, 'plot': plot})
-        url = BASE + '?action=sky7list&idx=' + urllib.parse.quote(str(_IPTV_LISTS.index(lst))) + '&back=' + urllib.parse.quote(BASE + '?action=sky7')
+        url = BASE + '?action=sky7list&idx=' + urllib.parse.quote(str(n)) + '&back=' + urllib.parse.quote(BASE + '?action=sky7')
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
@@ -1059,6 +1089,21 @@ def sky7_list_view(idx, back=''):
     try:
         lst = _IPTV_LISTS[int(idx)]
     except Exception:
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    if lst.get('type') == 'm3u':
+        try:
+            keys, groups = _m3u_parse(lst['url'])
+        except Exception as e:
+            log('sky7 m3u ERR: %s' % e)
+            keys, groups = [], {}
+        for g in keys:
+            cnt = len(groups[g])
+            li = xbmcgui.ListItem(label=lbl('%s (%d)' % (g, cnt)))
+            li.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+            li.setInfo('video', {'title': g, 'plot': '%d canali IPTV' % cnt})
+            url = BASE + '?action=sky7cat&idx=' + urllib.parse.quote(str(idx)) + '&cat=' + urllib.parse.quote(g) + '&back=' + urllib.parse.quote(BASE + '?action=sky7list&idx=' + urllib.parse.quote(str(idx)))
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
         xbmcplugin.endOfDirectory(HANDLE)
         return
     key = lst['host'] + '|' + lst['user']
@@ -1093,11 +1138,30 @@ def sky7_list_view(idx, back=''):
 
 
 def sky7_cat_view(idx, cat, back=''):
-    back_button(back or (BASE + '?action=sky7'))
+    back_button(back or (BASE + '?action=sky7list&idx=' + urllib.parse.quote(str(idx))))
     xbmcplugin.setContent(HANDLE, 'videos')
     try:
         lst = _IPTV_LISTS[int(idx)]
     except Exception:
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    if lst.get('type') == 'm3u':
+        try:
+            _, groups = _m3u_parse(lst['url'])
+        except Exception as e:
+            log('sky7 m3u ERR: %s' % e)
+            groups = {}
+        for name, url in groups.get(cat, []):
+            li = xbmcgui.ListItem(label=lbl(name), path=url)
+            li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+            li.setProperty('isPlayable', 'true')
+            li.setProperty('inputstream', 'inputstream.adaptive')
+            li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+            hdrs = 'User-Agent=%s' % UA
+            li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+            li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+            li.setInfo('video', {'title': name, 'mediatype': 'video'})
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
         xbmcplugin.endOfDirectory(HANDLE)
         return
     key = lst['host'] + '|' + lst['user']
@@ -1116,119 +1180,18 @@ def sky7_cat_view(idx, cat, back=''):
     for s in [x for x in streams if str(x.get('category_id')) == str(cat)]:
         name = s.get('name', s.get('stream_id'))
         sid = s.get('stream_id')
-        li = xbmcgui.ListItem(label=lbl(name))
+        url = '%s/%s/%s/%s.m3u8' % (lst['host'], lst['user'], lst['pass'], sid)
+        li = xbmcgui.ListItem(label=lbl(name), path=url)
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
         li.setProperty('isPlayable', 'true')
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+        hdrs = 'User-Agent=VLC/3.0.20 LibVLC/3.0.20'
+        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
         li.setInfo('video', {'title': name, 'mediatype': 'video'})
-        play_url = BASE + '?action=sky7play&idx=' + urllib.parse.quote(str(idx)) + '&sid=' + urllib.parse.quote(str(sid)) + '&name=' + urllib.parse.quote(name)
-        xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
-
-
-_TG_BRIDGE = {'client': None, 'pages': {}}
-
-
-def _tg_get_client():
-    """Usa il client HTTP di Thegroove360 (installato in Kodi) per ottenere URL con token fresco."""
-    if _TG_BRIDGE['client']:
-        return _TG_BRIDGE['client']
-    import sys as _sys
-    import xbmcaddon as _xa
-    tg = _xa.Addon('plugin.video.thegroove360')
-    path = tg.getAddonInfo('path')
-    if path not in _sys.path:
-        _sys.path.insert(0, path)
-    from resources.modules.thegroove.thegroove_httpclient import ThegrooveHttpClient
-    _TG_BRIDGE['client'] = ThegrooveHttpClient()
-    return _TG_BRIDGE['client']
-
-
-def _tg_fetch_page(page):
-    """Scarica una pagina XML dal server thegroove (cache 5 min)."""
-    import time as _t
-    now = _t.time()
-    c = _TG_BRIDGE['pages'].get(page)
-    if c and now - c[0] < 300:
-        return c[1]
-    xml = ''
-    try:
-        res = _tg_get_client().get_request(page)
-        if isinstance(res, str):
-            xml = res
-        else:
-            xml = getattr(res, 'text', '')
-    except Exception as e:
-        log('sky7 TG page ERR %s: %s' % (page, e))
-    _TG_BRIDGE['pages'][page] = (now, xml)
-    return xml
-
-
-_RE_ITEM = re.compile(r'(<item>.*?</item>|<dir>.*?</dir>)', re.S)
-_RE_TITLE = re.compile(r'<title>(.*?)</title>', re.S)
-_RE_LINK = re.compile(r'<link>(.*?)</link>', re.S)
-
-
-def _tg_find_channel(page, wanted, depth=0, seen=None):
-    """Cerca ricorsivamente nei menu XML di thegroove l'item il cui titolo corrisponde al canale.
-    Ritorna (url_playable, None) oppure (None, sub_pages) da esplorare."""
-    if seen is None:
-        seen = set()
-    if depth > 4 or page in seen:
-        return None, []
-    seen.add(page)
-    xml = _tg_fetch_page(page)
-    subs = []
-    for m in _RE_ITEM.finditer(xml):
-        block = m.group(1)
-        tm = _RE_TITLE.search(block)
-        lm = _RE_LINK.search(block)
-        if not tm or not lm:
-            continue
-        title = re.sub(r'\[.*?\]|\(.*?\)', '', tm.group(1)).strip()
-        link = lm.group(1).strip()
-        if link.lower().startswith('http'):
-            if wanted.lower() in title.lower():
-                return link, []
-        elif link and wanted.lower() in title.lower():
-            subs.insert(0, link)
-        elif link.startswith('/'):
-            subs.append(link)
-    for sp in subs:
-        r, _ = _tg_find_channel(sp, wanted, depth + 1, seen)
-        if r:
-            return r, []
-    return None, []
-
-
-def sky7_play(idx, cat, name):
-    """Riproduce un canale Lista 7 passando dal server thegroove (token fresco)."""
-    import xbmcgui as _xg
-    url = None
-    try:
-        url, _ = _tg_find_channel('/thegroove/ingresso', name)
-    except Exception as e:
-        log('sky7 play ERR: %s' % e)
-    if not url:
-        # fallback: URL diretto standard (funziona su pannelli Xtream normali)
-        try:
-            lst = _IPTV_LISTS[int(idx)]
-            url = '%s/%s/%s/%s.m3u8' % (lst['host'], lst['user'], lst['pass'], cat)
-        except Exception:
-            url = None
-    if not url:
-        dlg = _xg.Dialog()
-        dlg.notification('PZ8', 'Canale non trovato / non riproducible', _xg.NOTIFICATION_ERROR, 4000)
-        xbmcplugin.setResolvedUrl(HANDLE, False, _xg.ListItem())
-        return
-    li = _xg.ListItem(label=name, path=url)
-    li.setProperty('isPlayable', 'true')
-    li.setProperty('inputstream', 'inputstream.adaptive')
-    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-    hdrs = 'User-Agent=VLC/3.0.20 LibVLC/3.0.20'
-    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
-    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
-    li.setInfo('video', {'title': name, 'mediatype': 'video'})
-    xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
 def sky6_view(back=''):
@@ -3894,8 +3857,6 @@ def main():
             sky7_list_view(query.get('idx', ['0'])[0], query.get('back', [''])[0])
         elif action == 'sky7cat':
             sky7_cat_view(query.get('idx', ['0'])[0], query.get('cat', [''])[0], query.get('back', [''])[0])
-        elif action == 'sky7play':
-            sky7_play(query.get('idx', ['0'])[0], query.get('sid', [''])[0], query.get('name', [''])[0])
         elif action == 'calcioevent':
             calcio_event_view(query.get('url', [''])[0], query.get('t', [''])[0])
         elif action == 'sportplay':
