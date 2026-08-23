@@ -1145,6 +1145,21 @@ def sky7_cat_view(idx, cat, back=''):
     except Exception:
         xbmcplugin.endOfDirectory(HANDLE)
         return
+    # --- AGGIUNTA STREAM DAZN CON HEADERS CORRETTI ---
+    # Stream trovato nel log Kodi alle 20:20:23, testato su Mandrakodi
+    dazn_url = 'https://dcb-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc1OTM1MjgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiZDEwODhlYWU3NjM2NTU0ODE5ZDk0ZGU3NWEzMjliM2M0NDZiODQ2YiIsInNzaWQiOiI5ODI3YzNjZjkxZDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJpYXQiOjE3ODc1MDcxMjh9.MEAcSpqyDUucSjOY6Ip5CENYYt3BOGY4sf9BkKzoHw0/cmehl9tafhudzj6x6cvop1jj/web/stream.mpd?channel=4510&mta=it&outlet=dazn-italy&plang=it'
+    dazn_headers = 'User-Agent=Mozilla/5.0 (WebOS; SmartTV; AppleWebKit/537.41 (KHTML, like Gecko) Large Screen Safari/537.41 (LGE; WEBOS1; 05.06.10; 1) ; webOS.TV-2014 ; LG NetCast.TV-2013 Compatible (LGE, WEBOS1; wireless) ; Referer=https://www.dazn.com/&Origin=https://www.dazn.com)'
+    dazn_stream_headers = 'User-Agent=Mozilla/5.0 (WebOS; SmartTV; AppleWebKit/537.41 (KHTML, like Gecko) Large Screen Safari/537.41 (LGE; WEBOS1; 05.06.10; 1) ; webOS.TV-2014 ; LG NetCast.TV-2013 Compatible (LGE, WEBOS1; wireless) )'
+    li_dazn = xbmcgui.ListItem(label='DAZN 20:21 | TOR-MIL ATA-SAS')
+    li_dazn.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+    li_dazn.setProperty('isPlayable', 'true')
+    li_dazn.setProperty('inputstream', 'inputstream.adaptive')
+    li_dazn.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+    li_dazn.setProperty('inputstream.adaptive.manifest_headers', dazn_headers)
+    li_dazn.setProperty('inputstream.adaptive.stream_headers', dazn_stream_headers)
+    li_dazn.setInfo('video', {'title': 'DAZN 20:21 | TOR-MIL ATA-SAS', 'mediatype': 'video'})
+    xbmcplugin.addDirectoryItem(HANDLE, dazn_url, li_dazn, isFolder=False)
+    # ------------------------------------------------
     if lst.get('type') == 'm3u':
         try:
             _, groups = _m3u_parse(lst['url'])
