@@ -3636,7 +3636,8 @@ def _ver_tuple(s):
 
 def check_update():
     try:
-        r = requests.get(REPO_BASE + '/addons.xml', timeout=15)
+        headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
+        r = requests.get(REPO_BASE + '/addons.xml?_=' + str(int(time.time())), headers=headers, timeout=15)
         r.raise_for_status()
         m = re.search(r'<addon id="plugin\.video\.kodiakso" name="PZ8" version="([^"]+)"', r.text)
         if not m:
@@ -3648,8 +3649,7 @@ def check_update():
         if _ver_tuple(new) <= _ver_tuple(cur):
             notify(NAME, 'Aggiornato: sei gia alla v' + cur)
             return
-        z = requests.get(REPO_BASE + '/zips/plugin.video.kodiakso/plugin.video.kodiakso-' + new + '.zip',
-                         timeout=120)
+        z = requests.get(REPO_BASE + '/zips/plugin.video.kodiakso/plugin.video.kodiakso-' + new + '.zip?_=' + str(int(time.time())), headers=headers, timeout=120)
         z.raise_for_status()
         data = zipfile.ZipFile(io.BytesIO(z.content))
         dest = ADDON.getAddonInfo('path')
@@ -3671,7 +3671,18 @@ def check_update():
             try:
                 with open(tmp, 'wb') as f:
                     f.write(data.read(name))
-                os.replace(tmp, target)
+                try:
+                    os.replace(tmp, target)
+                except Exception:
+                    if os.path.exists(target):
+                        try:
+                            os.remove(target)
+                        except Exception:
+                            try:
+                                os.rename(target, target + '.' + str(int(time.time())) + '.old')
+                            except Exception:
+                                pass
+                    os.replace(tmp, target)
                 count += 1
             except Exception as e:
                 xbmc.log('KODIAKSO update file ERR (' + rel + '): ' + str(e), xbmc.LOGERROR)
@@ -3830,7 +3841,8 @@ def _test_fetch():
     now = time.time()
     if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 120):
         return _TEST_CACHE['data']
-    r = requests.get(TEST_JSON_URL + '?_=' + str(int(now)), timeout=15)
+    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
+    r = requests.get(TEST_JSON_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
     r.raise_for_status()
     data = json.loads(r.content.decode('utf-8-sig'))
     _TEST_CACHE['data'] = data
