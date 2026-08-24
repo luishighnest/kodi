@@ -3909,9 +3909,11 @@ def test_play(cat, idx):
     # UA: usa quello salvato nell'evento (il token e' legato all'hash dell'UA di estrazione)
     ev_ua = (it.get('ua') or '').strip()
     ua_use = ev_ua or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0'
-    # estrae il dazn-token dall'URL per passarlo anche come header (richiesto dal CDN)
+    # estrae il dazn-token dall'URL oppure dal campo dedicato (VOD: token solo negli header)
     m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
     tok = urllib.parse.unquote(m.group(1)) if m else ''
+    if not tok:
+        tok = (it.get('dazn_token') or '').strip()
     hdrs = 'User-Agent=' + ua_use + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
     if tok:
         hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
