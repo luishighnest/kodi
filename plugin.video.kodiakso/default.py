@@ -3906,7 +3906,12 @@ def test_play(cat, idx):
     mpd = it.get('mpd') or ''
     key = it.get('key') or ''
     name = it.get('name') or 'TEST'
+    # estrae il dazn-token dall'URL per passarlo anche come header (richiesto dal CDN)
+    m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
+    tok = urllib.parse.unquote(m.group(1)) if m else ''
     hdrs = 'User-Agent=' + UA + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
+    if tok:
+        hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
     li = xbmcgui.ListItem(path=mpd, offscreen=True)
     li.setContentLookup(False)
     li.setProperty('inputstream', 'inputstream.adaptive')
@@ -3915,7 +3920,6 @@ def test_play(cat, idx):
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
-    li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
     if ADDON.getSetting('live_async') == 'true':
         li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
     bw = ADDON.getSetting('max_bandwidth').strip()
