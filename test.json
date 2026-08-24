@@ -44,6 +44,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTM1Y3M4bnBlNmFlazFvczVqbjF2dmlhM2YiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzU2OTI5MSwiZXhwIjoxNzg3NjU1NjkxfQ.yc9zdqFmrHipQ-g6NKKPOINExYpGEDmqHWniErN-5KE",
          "type": "evento"
+      },
+      {
+         "name": "Social Corner",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=5k1zxa7xnbtbrtl3dmm10u9wa_image-header_pIt_1757509860000&quality=80&width=800&height=450",
+         "start": "2026-08-24T13:00:00Z",
+         "end": "2026-08-24T14:10:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/1d9v92x3rk04f171qx8eamsff5/web/stream.mpd?channel=5061&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWQ5djkyeDNyazA0ZjE3MXF4OGVhbXNmZjUiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzU3NzIxMiwiZXhwIjoxNzg3NjYzNjEyfQ.Fw8RlsK428huV_skk_p2EnenUfNYUrMfsaPNU1oVaSA",
+         "key": "ab8b8f712a24540da232cac603b57b9f:2018bad8e990964aa8348c4dea9c7ec5",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWQ5djkyeDNyazA0ZjE3MXF4OGVhbXNmZjUiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzU3NzIxMiwiZXhwIjoxNzg3NjYzNjEyfQ.Fw8RlsK428huV_skk_p2EnenUfNYUrMfsaPNU1oVaSA",
+         "type": "evento"
       }
    ]
 }
