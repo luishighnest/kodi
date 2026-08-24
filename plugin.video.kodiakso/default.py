@@ -3921,7 +3921,7 @@ def _test_add_playable(cat, idx, it):
             dt = datetime.fromisoformat(s)
             if dt.tzinfo is None:
                 dt = dt.replace(tzinfo=timezone.utc)
-            label = '%s  [%s]' % (name, dt.astimezone().strftime('%H:%M'))
+            label = '%s  %s' % (name, dt.astimezone().strftime('%H:%M'))
         except Exception:
             label = name
     li = xbmcgui.ListItem(label=lbl(label))
