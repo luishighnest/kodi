@@ -3199,9 +3199,6 @@ def events_view():
     li = xbmcgui.ListItem(label=lbl('Eventi 1'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('VOD DAZN'))
-    li.setArt({'thumb': LOGO_BASE + 'dazn.png'})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=voddazn', li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 2 (AK47 Sports)'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sportzx'), li, isFolder=True)
@@ -3884,7 +3881,10 @@ def _test_is_channel(it):
 
 
 def _test_classified():
-    """Ritorna (canali, eventi, vod): liste di (cat, idx, entry) dal JSON."""
+    """Ritorna (canali, eventi, vod): liste di (cat, idx, entry) dal JSON.
+
+    Usa il campo 'type' dichiarato da dazn2 (100% affidabile); se assente, euristica sull'URL.
+    """
     canali, eventi, vod = [], [], []
     try:
         data = _test_fetch()
@@ -3893,8 +3893,13 @@ def _test_classified():
         return canali, eventi, vod
     for cat, items in data.items():
         for idx, it in enumerate(items or []):
-            if _test_is_channel(it):
+            t = (it.get('type') or '').lower()
+            if t == 'vod':
+                vod.append((cat, idx, it))
+            elif t == 'canale' or _test_is_channel(it):
                 canali.append((cat, idx, it))
+            elif t == 'evento':
+                eventi.append((cat, idx, it))
             elif _test_is_vod(it):
                 vod.append((cat, idx, it))
             else:
@@ -3917,10 +3922,13 @@ def _test_add_playable(cat, idx, it):
 
 
 def dazn_json_view():
-    """Sezione DAZN della home: canali dal JSON (stesso funzionamento della sezione TEST)."""
+    """Sezione DAZN della home: canali dal JSON + cartella VOD DAZN (stesso funzionamento della sezione TEST)."""
     home_button()
     xbmcplugin.setContent(HANDLE, 'videos')
-    canali, _, _ = _test_classified()
+    canali, _, vod = _test_classified()
+    li = xbmcgui.ListItem(label=lbl('VOD DAZN (%d)' % len(vod)))
+    li.setArt({'thumb': LOGO_BASE + 'dazn.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=voddazn', li, isFolder=True)
     if not canali:
         li = xbmcgui.ListItem(label=lbl('Nessun canale DAZN nel JSON'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)

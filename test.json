@@ -7,7 +7,8 @@
          "end": "3000-01-01T00:00:00Z",
          "mpd": "https://dcs-ac-live.cdn.indazn.com/dash/dazn-linear-206/stream.mpd?p=web&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjpmYWxzZSwiaXAiOmZhbHNlLCJhc24iOmZhbHNlLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiMmxJMXF1bUhzRE9UNm5zRzVCTlBQMDZ2RVZpZVNGbFRidnMtdV9iOFY3cyIsImlhdCI6MTc4NzU1OTM5MCwiZXhwIjoxNzg3NjQ1NzkwfQ.8gA5Y8fBO3RYtVb8cmLJ_aTnA8a_hX4DY4KNnWwmw0A",
          "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0"
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "type": "canale"
       }
    ],
    "Radio TV Serie A": [
@@ -19,7 +20,8 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/12nb05lpr305o14gc51bup51s0/web/stream.mpd?channel=5065&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc2NTE5ODYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ5MTFhNmM0NGQwMTIxN2UwZjQ0MzVkZGFmNjczMDllYjBmNTUwMiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc1NjU1ODZ9.4yLcJlQj4Vpf5CZwxuy_NjwBLBdOcKXHOCRhK7-5rOk",
          "key": "5d3314dfdc195858917688ef3833543c:441f3b12902e1c8918846bb859e4f50b",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc2NTE5ODYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ5MTFhNmM0NGQwMTIxN2UwZjQ0MzVkZGFmNjczMDllYjBmNTUwMiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc1NjU1ODZ9.4yLcJlQj4Vpf5CZwxuy_NjwBLBdOcKXHOCRhK7-5rOk"
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc2NTE5ODYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ5MTFhNmM0NGQwMTIxN2UwZjQ0MzVkZGFmNjczMDllYjBmNTUwMiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc1NjU1ODZ9.4yLcJlQj4Vpf5CZwxuy_NjwBLBdOcKXHOCRhK7-5rOk",
+         "type": "vod"
       }
    ]
 }
