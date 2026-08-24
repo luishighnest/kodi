@@ -22,17 +22,6 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc2NTE5ODYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ5MTFhNmM0NGQwMTIxN2UwZjQ0MzVkZGFmNjczMDllYjBmNTUwMiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc1NjU1ODZ9.4yLcJlQj4Vpf5CZwxuy_NjwBLBdOcKXHOCRhK7-5rOk",
          "type": "vod"
-      },
-      {
-         "name": "Focus Serie A",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=20j70n4p1f9zveditpnlfiqx1_image-header_pIt_1787145012000&quality=80&width=800&height=450",
-         "start": "2026-08-24T07:00:00Z",
-         "end": "2026-08-24T08:15:00Z",
-         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/1qapgsesah59w11r1zc8bmqeq9/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it",
-         "key": "23f019be004656b1919ef52eb24a0c0e:c046fd13d641222cfa23ba66d8c0ec69",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc2NTI5NDgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiZWM4NjNmNGY0MWNhYmM3N2M4ZDg1YWIyNjcyNzljYzY1NzUwODgzYSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc1NjY1NDh9.ftz8l3YyDP5DExd_5bIfzg5D9eP8h5_yC-ghqHADg1c",
-         "type": "vod"
       }
    ]
 }
