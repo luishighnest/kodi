@@ -1,0 +1,12 @@
+{
+   "Radio TV Serie A": [
+      {
+         "name": "Focus Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=dua6wobknsecpr1vxyd4qvsbb_image-header_pIt_1782205084000&quality=80&width=800&height=450",
+         "start": "2026-08-24T07:00:00Z",
+         "end": "2026-08-24T08:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/1qapgsesah59w11r1zc8bmqeq9/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXFhcGdzZXNhaDU5dzExcjF6YzhibXFlcTkiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzU1NzU5NCwiZXhwIjoxNzg3NjQzOTk0fQ.0gSWL0AdusVHHGD2hCz_Jp2ImU4ceNl1TLtccFHSi8Q",
+         "key": "23f019be004656b1919ef52eb24a0c0e:c046fd13d641222cfa23ba66d8c0ec69"
+      }
+   ]
+}

@@ -3725,6 +3725,7 @@ def root_view():
         ('SPORT', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
+        ('TEST', LOGO_BASE + 'eventi_icon.png', BASE + '?action=test'),
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
         home_items.append(('VOD', LOGO_BASE + 'netflix.png', BASE + '?action=vod'))
@@ -3832,6 +3833,99 @@ def autostart_install():
     xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
 
 
+TEST_JSON_URL = REPO_BASE + '/test.json'
+_TEST_CACHE = {'data': None, 'ts': 0}
+
+
+def _test_fetch():
+    now = time.time()
+    if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 120):
+        return _TEST_CACHE['data']
+    r = requests.get(TEST_JSON_URL + '?_=' + str(int(now)), timeout=15)
+    r.raise_for_status()
+    data = json.loads(r.text)
+    _TEST_CACHE['data'] = data
+    _TEST_CACHE['ts'] = now
+    return data
+
+
+def test_view(back=''):
+    home_button()
+    xbmcplugin.setContent(HANDLE, 'videos')
+    try:
+        data = _test_fetch()
+    except Exception as e:
+        log('test fetch ERR: %s' % e)
+        li = xbmcgui.ListItem(label=lbl('Impossibile scaricare test.json'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for cat in data.keys():
+        items = data[cat] or []
+        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (cat, len(items))))
+        li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
+        li.setInfo('video', {'title': cat, 'plot': '%d eventi' % len(items)})
+        url = BASE + '?action=testcat&cat=' + urllib.parse.quote(cat)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def test_cat_view(cat):
+    back_button(BASE + '?action=test')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    try:
+        data = _test_fetch()
+    except Exception as e:
+        log('test fetch ERR: %s' % e)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for it in (data.get(cat) or []):
+        name = it.get('name') or ''
+        start = (it.get('start') or '').replace('T', ' ')[:16]
+        end = (it.get('end') or '').replace('T', ' ')[:16]
+        label = '%s  [%s - %s]' % (name, start, end) if start else name
+        li = xbmcgui.ListItem(label=lbl(label))
+        if it.get('image'):
+            li.setArt({'thumb': it['image']})
+        li.setProperty('isPlayable', 'true')
+        li.setInfo('video', {'title': name})
+        idx = (data.get(cat) or []).index(it)
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=testplay&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx), li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def test_play(cat, idx):
+    try:
+        data = _test_fetch()
+        it = (data.get(cat) or [])[int(idx)]
+    except Exception as e:
+        log('test play ERR: %s' % e)
+        notify(NAME, 'Errore lettura evento TEST', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    mpd = it.get('mpd') or ''
+    key = it.get('key') or ''
+    name = it.get('name') or 'TEST'
+    hdrs = 'User-Agent=' + UA + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
+    li = xbmcgui.ListItem(path=mpd, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+    if ':' in key:
+        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key)
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    li.setLabel(lbl(name))
+    li.setInfo('video', {'title': name})
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
+
+
 def main():
     global _VOD_SRC
     query = urllib.parse.parse_qs(sys.argv[2][1:])
@@ -3884,6 +3978,12 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'tv':
             tv_view()
+        elif action == 'test':
+            test_view()
+        elif action == 'testcat':
+            test_cat_view(query.get('cat', [''])[0])
+        elif action == 'testplay':
+            test_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'vod':
             vod_view()
         elif action == 'films':
