@@ -3926,7 +3926,7 @@ def dazn_json_view():
     home_button()
     xbmcplugin.setContent(HANDLE, 'videos')
     canali, _, vod = _test_classified()
-    li = xbmcgui.ListItem(label=lbl('VOD DAZN (%d)' % len(vod)))
+    li = xbmcgui.ListItem(label=lbl('VOD DAZN'))
     li.setArt({'thumb': LOGO_BASE + 'dazn.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=voddazn', li, isFolder=True)
     if not canali:
