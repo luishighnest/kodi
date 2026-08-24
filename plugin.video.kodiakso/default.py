@@ -3906,10 +3906,13 @@ def test_play(cat, idx):
     mpd = it.get('mpd') or ''
     key = it.get('key') or ''
     name = it.get('name') or 'TEST'
+    # UA: usa quello salvato nell'evento (il token e' legato all'hash dell'UA di estrazione)
+    ev_ua = (it.get('ua') or '').strip()
+    ua_use = ev_ua or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0'
     # estrae il dazn-token dall'URL per passarlo anche come header (richiesto dal CDN)
     m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
     tok = urllib.parse.unquote(m.group(1)) if m else ''
-    hdrs = 'User-Agent=' + UA + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
+    hdrs = 'User-Agent=' + ua_use + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
     if tok:
         hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
     li = xbmcgui.ListItem(path=mpd, offscreen=True)
