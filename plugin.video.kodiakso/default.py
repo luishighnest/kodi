@@ -989,6 +989,9 @@ _AK47_MPD = [
 
 _IPTV_LISTS = [
     {'type': 'm3u', 'name': 'Canali ITALIANI FREE (Rai, Mediaset, FAST)', 'url': 'https://iptv-org.github.io/iptv/countries/it.m3u'},
+    {'type': 'm3u', 'name': 'Free-TV Italia + Internazionali', 'url': 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8'},
+    {'type': 'm3u', 'name': 'SPORT FREE (internazionale)', 'url': 'https://iptv-org.github.io/iptv/categories/sports.m3u'},
+    {'type': 'm3u', 'name': 'FILM & SERIE TV FREE (internazionale)', 'url': 'https://iptv-org.github.io/iptv/categories/movies.m3u'},
     {'type': 'xtream', 'name': 'FXMAG1', 'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'},
 ]
 _IPTV7_CACHE = {}
