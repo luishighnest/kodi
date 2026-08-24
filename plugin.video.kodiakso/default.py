@@ -3909,10 +3909,21 @@ def _test_classified():
 
 def _test_add_playable(cat, idx, it):
     """Aggiunge una voce riproducibile del JSON (stesso funzionamento della sezione TEST)."""
+    from datetime import datetime, timezone
     name = it.get('name') or ''
-    start = (it.get('start') or '').replace('T', ' ')[:16]
-    end = (it.get('end') or '').replace('T', ' ')[:16]
-    label = '%s  [%s - %s]' % (name, start, end) if start else name
+    t = (it.get('type') or '').lower()
+    if t == 'canale' or _test_is_channel(it) or not it.get('start'):
+        label = name
+    else:
+        # solo l'orario di inizio convertito in ora locale
+        try:
+            s = (it.get('start') or '').replace('Z', '+00:00')
+            dt = datetime.fromisoformat(s)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            label = '%s  [%s]' % (name, dt.astimezone().strftime('%H:%M'))
+        except Exception:
+            label = name
     li = xbmcgui.ListItem(label=lbl(label))
     if it.get('image'):
         li.setArt({'thumb': it['image']})
