@@ -9,5 +9,17 @@
          "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0"
       }
+   ],
+   "Radio TV Serie A": [
+      {
+         "name": "Buongiorno Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=em6zu650i0ym3i7fflk7egzp2_image-header_pIt_1787142706000&quality=80&width=800&height=450",
+         "start": "2026-08-24T06:00:00Z",
+         "end": "2026-08-24T07:15:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/12nb05lpr305o14gc51bup51s0/web/stream.mpd?channel=5065&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc2NTE5ODYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ5MTFhNmM0NGQwMTIxN2UwZjQ0MzVkZGFmNjczMDllYjBmNTUwMiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc1NjU1ODZ9.4yLcJlQj4Vpf5CZwxuy_NjwBLBdOcKXHOCRhK7-5rOk",
+         "key": "5d3314dfdc195858917688ef3833543c:441f3b12902e1c8918846bb859e4f50b",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc2NTE5ODYsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ5MTFhNmM0NGQwMTIxN2UwZjQ0MzVkZGFmNjczMDllYjBmNTUwMiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc1NjU1ODZ9.4yLcJlQj4Vpf5CZwxuy_NjwBLBdOcKXHOCRhK7-5rOk"
+      }
    ]
 }
