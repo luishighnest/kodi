@@ -3198,7 +3198,10 @@ def events_view():
     home_button()
     li = xbmcgui.ListItem(label=lbl('Eventi 1'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?group=' + urllib.parse.quote('Eventi'), li, isFolder=True)
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('VOD DAZN'))
+    li.setArt({'thumb': LOGO_BASE + 'dazn.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=voddazn', li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 2 (AK47 Sports)'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sportzx'), li, isFolder=True)
@@ -3723,9 +3726,8 @@ def root_view():
         ('GUIDA TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=guida'),
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
         ('SPORT', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
-        ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?group=' + urllib.parse.quote('DAZN')),
+        ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?action=dazn'),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
-        ('TEST', LOGO_BASE + 'eventi_icon.png', BASE + '?action=test'),
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
         home_items.append(('VOD', LOGO_BASE + 'netflix.png', BASE + '?action=vod'))
@@ -3850,7 +3852,7 @@ def _test_fetch():
 
 
 def test_view(back=''):
-    home_button()
+    back_button(BASE + '?action=root')
     xbmcplugin.setContent(HANDLE, 'videos')
     try:
         data = _test_fetch()
@@ -3867,6 +3869,96 @@ def test_view(back=''):
         li.setInfo('video', {'title': cat, 'plot': '%d eventi' % len(items)})
         url = BASE + '?action=testcat&cat=' + urllib.parse.quote(cat)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def _test_is_vod(it):
+    mpd = (it.get('mpd') or '')
+    return any(x in mpd for x in ('/vod', '-vod', 'dcn-ac-vod', '/SFP/', '/DM/', '/BB/', 'highlightauto')) or ('channel=' not in mpd and '/live' not in mpd)
+
+
+def _test_is_channel(it):
+    name = (it.get('name') or '').lower()
+    mpd = (it.get('mpd') or '')
+    return ('dazn-linear' in mpd) or (name == 'dazn 1') or name.startswith('dazn ') and 'channel=' not in mpd and '/vod' not in mpd
+
+
+def _test_classified():
+    """Ritorna (canali, eventi, vod): liste di (cat, idx, entry) dal JSON."""
+    canali, eventi, vod = [], [], []
+    try:
+        data = _test_fetch()
+    except Exception as e:
+        log('test fetch ERR: %s' % e)
+        return canali, eventi, vod
+    for cat, items in data.items():
+        for idx, it in enumerate(items or []):
+            if _test_is_channel(it):
+                canali.append((cat, idx, it))
+            elif _test_is_vod(it):
+                vod.append((cat, idx, it))
+            else:
+                eventi.append((cat, idx, it))
+    return canali, eventi, vod
+
+
+def _test_add_playable(cat, idx, it):
+    """Aggiunge una voce riproducibile del JSON (stesso funzionamento della sezione TEST)."""
+    name = it.get('name') or ''
+    start = (it.get('start') or '').replace('T', ' ')[:16]
+    end = (it.get('end') or '').replace('T', ' ')[:16]
+    label = '%s  [%s - %s]' % (name, start, end) if start else name
+    li = xbmcgui.ListItem(label=lbl(label))
+    if it.get('image'):
+        li.setArt({'thumb': it['image']})
+    li.setProperty('isPlayable', 'true')
+    li.setInfo('video', {'title': name})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=testplay&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx), li, isFolder=False)
+
+
+def dazn_json_view():
+    """Sezione DAZN della home: canali dal JSON (stesso funzionamento della sezione TEST)."""
+    home_button()
+    xbmcplugin.setContent(HANDLE, 'videos')
+    canali, _, _ = _test_classified()
+    if not canali:
+        li = xbmcgui.ListItem(label=lbl('Nessun canale DAZN nel JSON'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+    for cat, idx, it in canali:
+        _test_add_playable(cat, idx, it)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def eventi1_json_view():
+    """Eventi 1: eventi dal JSON (stesso funzionamento della sezione TEST)."""
+    back_button(BASE + '?action=events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    _, eventi, _ = _test_classified()
+    if not eventi:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+    # raggruppa per competizione
+    cats = []
+    for cat, idx, it in eventi:
+        if cat not in cats:
+            cats.append(cat)
+    for cat in cats:
+        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (cat, sum(1 for c, _, _ in eventi if c == cat))))
+        li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=testcat&cat=' + urllib.parse.quote(cat), li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def vod_json_view():
+    """VOD DAZN: vod dal JSON (stesso funzionamento della sezione TEST)."""
+    back_button(BASE + '?action=events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    _, _, vod = _test_classified()
+    if not vod:
+        li = xbmcgui.ListItem(label=lbl('Nessun VOD nel JSON'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+    for cat, idx, it in vod:
+        _test_add_playable(cat, idx, it)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -3989,8 +4081,12 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'tv':
             tv_view()
-        elif action == 'test':
-            test_view()
+        elif action == 'dazn':
+            dazn_json_view()
+        elif action == 'eventi1':
+            eventi1_json_view()
+        elif action == 'voddazn':
+            vod_json_view()
         elif action == 'testcat':
             test_cat_view(query.get('cat', [''])[0])
         elif action == 'testplay':
