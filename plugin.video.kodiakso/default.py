@@ -3923,7 +3923,9 @@ def test_play(cat, idx):
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
-    if ADDON.getSetting('live_async') == 'true':
+    # live_stream_type raw solo per i live (URL con channel=); per i VOD va omesso
+    is_live = ('channel=' in mpd) or (it.get('end', '')[:4] >= '2999')
+    if ADDON.getSetting('live_async') == 'true' and is_live:
         li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
     bw = ADDON.getSetting('max_bandwidth').strip()
     if bw and bw != '0':
