@@ -994,6 +994,7 @@ _IPTV_LISTS = [
     {'type': 'm3u', 'name': 'FILM & SERIE TV FREE (internazionale)', 'url': 'https://iptv-org.github.io/iptv/categories/movies.m3u'},
     {'type': 'xtream', 'name': 'FXMAG1', 'host': 'http://fxmag1.com:8080', 'user': 'xsQPubvz', 'pass': 'nUwvSEkc'},
     {'type': 'xtream', 'name': 'FORYOU4K (IPTV Sport)', 'host': 'http://foryou4k.shop:80', 'user': '7V67W15L6V8QE5C', 'pass': 'mEgBBrYXiC'},
+    {'type': 'xtream', 'name': 'FORYOU4K (Backup 2)', 'host': 'http://foryou4k.shop:80', 'user': '3063A2A9818F832', 'pass': 'kW2zcvXUUB'},
 ]
 _IPTV7_CACHE = {}
 
