@@ -3843,7 +3843,7 @@ def _test_fetch():
         return _TEST_CACHE['data']
     r = requests.get(TEST_JSON_URL + '?_=' + str(int(now)), timeout=15)
     r.raise_for_status()
-    data = json.loads(r.text)
+    data = json.loads(r.content.decode('utf-8-sig'))
     _TEST_CACHE['data'] = data
     _TEST_CACHE['ts'] = now
     return data
