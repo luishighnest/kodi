@@ -3930,22 +3930,15 @@ def dazn_json_view():
 
 
 def eventi1_json_view():
-    """Eventi 1: eventi dal JSON (stesso funzionamento della sezione TEST)."""
+    """Eventi 1: eventi dal JSON direttamente riproducibili (stesso funzionamento della sezione TEST)."""
     back_button(BASE + '?action=events')
     xbmcplugin.setContent(HANDLE, 'videos')
     _, eventi, _ = _test_classified()
     if not eventi:
         li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
-    # raggruppa per competizione
-    cats = []
     for cat, idx, it in eventi:
-        if cat not in cats:
-            cats.append(cat)
-    for cat in cats:
-        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (cat, sum(1 for c, _, _ in eventi if c == cat))))
-        li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=testcat&cat=' + urllib.parse.quote(cat), li, isFolder=True)
+        _test_add_playable(cat, idx, it)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
