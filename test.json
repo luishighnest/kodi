@@ -80,17 +80,6 @@
          "type": "vod"
       },
       {
-         "name": "Fantacalcio",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=18mgw0vnlj1fifcs21vr7wsqh_image-header_pIt_1787147085000&quality=80&width=800&height=450",
-         "start": "2026-08-25T14:00:00Z",
-         "end": "2026-08-25T15:15:00Z",
-         "mpd": "https://dca-ac-live.cdn.indazn.com/1ue8q6qnhrqcj11sy15x9yww3u/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it",
-         "key": "383c545d68bc5cea8e37ed6cb92f0bcf:5f8ef327652f137db8926f55048a3822",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXVlOHE2cW5ocnFjajExc3kxNXg5eXd3M3UiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzY3ODU1MywiZXhwIjoxNzg3NzY0OTUzfQ.5xYb5MWoZslzuTsZ6CHOwklRdUKwHC2Woiq_s-h-MuA",
-         "type": "vod"
-      },
-      {
          "name": "News dai campi della Serie A",
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=8dkli4bzxesxbs2tx1tymikqi_image-header_pIt_1787147085000&quality=80&width=800&height=450",
          "start": "2026-08-25T16:00:00Z",
@@ -100,6 +89,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNzRqaWdtb21vMjlzMXVjd2VzdDBidHBnaiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJVajRwZ19VSUVZblVZVGRGUm5BYWtDUGJxSVdzbzFtR1FKVDF1QU1uRkRZIiwiaWF0IjoxNzg3Njc4NzM2LCJleHAiOjE3ODc3NjUxMzZ9.BiUHUtQPlhRQq-LQCfc3Zv-qikTHoDaj8qEnV4Qs3tM",
          "type": "evento"
+      },
+      {
+         "name": "Fantacalcio",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=18mgw0vnlj1fifcs21vr7wsqh_image-header_pIt_1787147085000&quality=80&width=800&height=450",
+         "start": "2026-08-25T14:00:00Z",
+         "end": "2026-08-25T15:15:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/1ue8q6qnhrqcj11sy15x9yww3u/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it",
+         "key": "383c545d68bc5cea8e37ed6cb92f0bcf:5f8ef327652f137db8926f55048a3822",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NjUxOTgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiOWNlZmRjMTk1OWIxZDA1MzcwOGViZjc2NDdlOTEwNDI5OThjNGEyYiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2Nzg3OTh9.JW6dbX_Ei3wxuFYM-DetyfXe02r7hcm1_kprR5tugAw",
+         "type": "vod"
       }
    ],
    "NFL Game Pass": [
