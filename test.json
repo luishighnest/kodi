@@ -67,6 +67,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZ3h4NDNwd3V3ZTFyMXB0eHNhOWhmb29wciJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY2MzA2LCJleHAiOjE3ODc3NTI3MDZ9.ZtjQkXw9tKUfQt0WWXEenSihAofpBXpyj-8tAj1KDPI",
          "type": "vod"
+      },
+      {
+         "name": "Fantacalcio",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=5vxq3idjhiel47nrcwca803jy_image-header_pIt_1787147085000&quality=80&width=800&height=450",
+         "start": "2026-08-25T14:00:00Z",
+         "end": "2026-08-25T15:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/1ue8q6qnhrqcj11sy15x9yww3u/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXVlOHE2cW5ocnFjajExc3kxNXg5eXd3M3UiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjQzMSwiZXhwIjoxNzg3NzUyODMxfQ.__uCIi1bIXbK6oNcTUYg2aB8jLTafnP0-GVJavV-SkU",
+         "key": "383c545d68bc5cea8e37ed6cb92f0bcf:5f8ef327652f137db8926f55048a3822",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXVlOHE2cW5ocnFjajExc3kxNXg5eXd3M3UiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjQzMSwiZXhwIjoxNzg3NzUyODMxfQ.__uCIi1bIXbK6oNcTUYg2aB8jLTafnP0-GVJavV-SkU",
+         "type": "evento"
       }
    ]
 }
