@@ -78,6 +78,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXVlOHE2cW5ocnFjajExc3kxNXg5eXd3M3UiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzY2ODYyNiwiZXhwIjoxNzg3NzU1MDI2fQ.EJeQefNjalzs6Cud5cIZvRj-ncn_Zy3JB2qoaWO5a5M",
          "type": "evento"
+      },
+      {
+         "name": "Serie A Live",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=3dx6u6he65iyg8rts5brtp94e_image-header_pIt_1770549500000&quality=80&width=800&height=450",
+         "start": "2026-08-24T16:00:00Z",
+         "end": "2026-08-24T22:10:00Z",
+         "mpd": "https://dca-de-voddazn.daznedge.net/10rbm86vczuz51lr3reva3tff4/web/stream.mpd?channel=5073&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "tend:1787758038~proto:dash~geo:IT~asn:30722_198471~path:1_1_84a6997e8f74abd36c3716460c3397da5e9a7867256f4ce3a021990accc191dc~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:b5b21cc986c7817e627082d6daf580f47501c256178e6c7f63b35f15074a2819",
+         "type": "vod"
       }
    ],
    "NFL Game Pass": [
