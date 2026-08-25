@@ -14,17 +14,6 @@
    ],
    "Radio TV Serie A": [
       {
-         "name": "Social Corner",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=8gyaedmcszvyuuvt9izhtk20e_image-header_pIt_1757509860000&quality=80&width=800&height=450",
-         "start": "2026-08-25T13:00:00Z",
-         "end": "2026-08-25T14:10:00Z",
-         "mpd": "https://dca-ac-live.cdn.indazn.com/1jydq7b2zfeprz9oril6fkzpv/web/stream.mpd?channel=5075&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWp5ZHE3YjJ6ZmVwcno5b3JpbDZma3pwdiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY1OTQyLCJleHAiOjE3ODc3NTIzNDJ9.ymljuvNCYjIxAvedb2_j2uqXYF8kN1rlLLUym5SWhbY",
-         "key": "83b0b22e469f543c95983b3089b26997:69ecb769379bc110139220a5868900cb",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWp5ZHE3YjJ6ZmVwcno5b3JpbDZma3pwdiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY1OTQyLCJleHAiOjE3ODc3NTIzNDJ9.ymljuvNCYjIxAvedb2_j2uqXYF8kN1rlLLUym5SWhbY",
-         "type": "evento"
-      },
-      {
          "name": "Buongiorno Serie A",
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=4wnzinqleppo0h4qmfngndyjg_image-header_pIt_1787142706000&quality=80&width=800&height=450",
          "start": "2026-08-25T06:00:00Z",
@@ -73,10 +62,21 @@
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=5vxq3idjhiel47nrcwca803jy_image-header_pIt_1787147085000&quality=80&width=800&height=450",
          "start": "2026-08-25T14:00:00Z",
          "end": "2026-08-25T15:15:00Z",
-         "mpd": "https://dca-ac-live.cdn.indazn.com/1ue8q6qnhrqcj11sy15x9yww3u/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXVlOHE2cW5ocnFjajExc3kxNXg5eXd3M3UiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjQzMSwiZXhwIjoxNzg3NzUyODMxfQ.__uCIi1bIXbK6oNcTUYg2aB8jLTafnP0-GVJavV-SkU",
+         "mpd": "https://dca-de-livedazn.daznedge.net/1ue8q6qnhrqcj11sy15x9yww3u/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it&dazn-token=tend%3A1787752856~proto%3Adash~geo%3AIT~asn%3A30722_198471~path%3A1_1_5fb930733b394fdbb5cafdc0ab696e19b2de62da0c2ed7b616ec1ce61f6de781~ua%3A2ce1fd67485cfe92adf700d716e9f29f~id%3Ab408d624b843~tk3%3A7d28f0701b3f36cc352ee9cbb80dc32351d2e3304c05aa59da00bb70e0e0134c",
          "key": "383c545d68bc5cea8e37ed6cb92f0bcf:5f8ef327652f137db8926f55048a3822",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXVlOHE2cW5ocnFjajExc3kxNXg5eXd3M3UiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjQzMSwiZXhwIjoxNzg3NzUyODMxfQ.__uCIi1bIXbK6oNcTUYg2aB8jLTafnP0-GVJavV-SkU",
+         "dazn_token": "tend:1787752856~proto:dash~geo:IT~asn:30722_198471~path:1_1_5fb930733b394fdbb5cafdc0ab696e19b2de62da0c2ed7b616ec1ce61f6de781~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:7d28f0701b3f36cc352ee9cbb80dc32351d2e3304c05aa59da00bb70e0e0134c",
+         "type": "evento"
+      },
+      {
+         "name": "Social Corner",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=8gyaedmcszvyuuvt9izhtk20e_image-header_pIt_1757509860000&quality=80&width=800&height=450",
+         "start": "2026-08-25T13:00:00Z",
+         "end": "2026-08-25T14:10:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/1jydq7b2zfeprz9oril6fkzpv/web/stream.mpd?channel=5075&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWp5ZHE3YjJ6ZmVwcno5b3JpbDZma3pwdiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY2NDU3LCJleHAiOjE3ODc3NTI4NTd9.FVzma08JKmg8aDL7BNOVMRRpxQFI2Wletk7WEnvHmmw",
+         "key": "83b0b22e469f543c95983b3089b26997:69ecb769379bc110139220a5868900cb",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWp5ZHE3YjJ6ZmVwcno5b3JpbDZma3pwdiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY2NDU3LCJleHAiOjE3ODc3NTI4NTd9.FVzma08JKmg8aDL7BNOVMRRpxQFI2Wletk7WEnvHmmw",
          "type": "evento"
       }
    ]
