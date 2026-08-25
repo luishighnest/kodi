@@ -89,6 +89,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "tend:1787758038~proto:dash~geo:IT~asn:30722_198471~path:1_1_84a6997e8f74abd36c3716460c3397da5e9a7867256f4ce3a021990accc191dc~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:b5b21cc986c7817e627082d6daf580f47501c256178e6c7f63b35f15074a2819",
          "type": "vod"
+      },
+      {
+         "name": "News dai campi della Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=8dkli4bzxesxbs2tx1tymikqi_image-header_pIt_1787147085000&quality=80&width=800&height=450",
+         "start": "2026-08-25T16:00:00Z",
+         "end": "2026-08-25T17:40:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/74jigmomo29s1ucwest0btpgj/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNzRqaWdtb21vMjlzMXVjd2VzdDBidHBnaiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjczNjgwLCJleHAiOjE3ODc3NjAwODB9.nPerxaTLuu65GIlk4pfBtjeN0dhesUS75ddjIKw0fNQ",
+         "key": "b6c7fcef87035fc898324b0e46ef06ec:a5c26b10eef92157557ce2ac3bfc1331",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNzRqaWdtb21vMjlzMXVjd2VzdDBidHBnaiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjczNjgwLCJleHAiOjE3ODc3NjAwODB9.nPerxaTLuu65GIlk4pfBtjeN0dhesUS75ddjIKw0fNQ",
+         "type": "evento"
       }
    ],
    "NFL Game Pass": [
