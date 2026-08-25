@@ -14,17 +14,6 @@
    ],
    "Radio TV Serie A": [
       {
-         "name": "Focus Serie A",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=1gllnfu5ssqinc9p71v72m7ls_image-header_pIt_1787145012000&quality=80&width=800&height=450",
-         "start": "2026-08-25T07:00:00Z",
-         "end": "2026-08-25T08:15:00Z",
-         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/gxx43pwuwe1r1ptxsa9hfoopr/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it",
-         "key": "2c6d1272be4d525ca62359d01ba111c6:3a0785e0c4694a6188ebe116c5fa611d",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3MzgwODAsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiMDhmNmYzYWVkMjQ3MjIyZTAyNmYyYTg3ODZkNGU5NTUyYjk3ZjNiYiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc2NTE2ODB9.7-EacBiqtuyjRMIxwgpxsX9B_BwLa8sBNdejsbAUzik",
-         "type": "vod"
-      },
-      {
          "name": "Social Corner",
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=8gyaedmcszvyuuvt9izhtk20e_image-header_pIt_1757509860000&quality=80&width=800&height=450",
          "start": "2026-08-25T13:00:00Z",
@@ -34,17 +23,6 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWp5ZHE3YjJ6ZmVwcno5b3JpbDZma3pwdiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY1OTQyLCJleHAiOjE3ODc3NTIzNDJ9.ymljuvNCYjIxAvedb2_j2uqXYF8kN1rlLLUym5SWhbY",
          "type": "evento"
-      },
-      {
-         "name": "Tatticamente",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=66vw3m0ipkrqzvjaoi5sb72wq_image-header_pIt_1787147085000&quality=80&width=800&height=450",
-         "start": "2026-08-25T12:30:00Z",
-         "end": "2026-08-25T13:15:00Z",
-         "mpd": "https://dca-ac-live.cdn.indazn.com/177uw7ne8g5ld1ettbx6n9f90u/web/stream.mpd?channel=5076&outlet=dazn-italy&plang=it",
-         "key": "7295ad9663e7581d87cf4139a54815ff:234418dc203fb3434ab53b40a790d6fc",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTc3dXc3bmU4ZzVsZDFldHRieDZuOWY5MHUiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjAxOSwiZXhwIjoxNzg3NzUyNDE5fQ.Am6IWyerSAOD171S9UNJpGoOlVqzb0QVESgCSvwCfm8",
-         "type": "vod"
       },
       {
          "name": "Buongiorno Serie A",
@@ -58,6 +36,17 @@
          "type": "vod"
       },
       {
+         "name": "Tatticamente",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=66vw3m0ipkrqzvjaoi5sb72wq_image-header_pIt_1787147085000&quality=80&width=800&height=450",
+         "start": "2026-08-25T12:30:00Z",
+         "end": "2026-08-25T13:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/177uw7ne8g5ld1ettbx6n9f90u/web/stream.mpd?channel=5076&outlet=dazn-italy&plang=it",
+         "key": "7295ad9663e7581d87cf4139a54815ff:234418dc203fb3434ab53b40a790d6fc",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTc3dXc3bmU4ZzVsZDFldHRieDZuOWY5MHUiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjI4MywiZXhwIjoxNzg3NzUyNjgzfQ.eHj0gAy5j9qWXcA10oUOzZnWBFEd48ED625U_iqmcFM",
+         "type": "vod"
+      },
+      {
          "name": "Obiettivo sulla Serie A",
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=7feh9y64hgin66bxxqzqa6nyk_image-header_pIt_1787143507000&quality=80&width=800&height=450",
          "start": "2026-08-25T11:00:00Z",
@@ -65,7 +54,18 @@
          "mpd": "https://dca-ac-live.cdn.indazn.com/1ncjbv4d4yd7v1p15ezrk6xko2/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
          "key": "7d586db63bdd53839b9e567413f9e1af:7e1f7cc521ea30bed901543740dc94ea",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMW5jamJ2NGQ0eWQ3djFwMTVlenJrNnhrbzIiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjIxNCwiZXhwIjoxNzg3NzUyNjE0fQ.Go2hCVjEEFA4NJLgirB-2k2w2eFv-CiA4eF4ietacas",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMW5jamJ2NGQ0eWQ3djFwMTVlenJrNnhrbzIiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjI5MywiZXhwIjoxNzg3NzUyNjkzfQ.OO722-JElt0bn6VOVcZ5aujfWo5wMW5hadgfy3NKbvk",
+         "type": "vod"
+      },
+      {
+         "name": "Focus Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=1gllnfu5ssqinc9p71v72m7ls_image-header_pIt_1787145012000&quality=80&width=800&height=450",
+         "start": "2026-08-25T07:00:00Z",
+         "end": "2026-08-25T08:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/gxx43pwuwe1r1ptxsa9hfoopr/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it",
+         "key": "2c6d1272be4d525ca62359d01ba111c6:3a0785e0c4694a6188ebe116c5fa611d",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZ3h4NDNwd3V3ZTFyMXB0eHNhOWhmb29wciJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY2MzA2LCJleHAiOjE3ODc3NTI3MDZ9.ZtjQkXw9tKUfQt0WWXEenSihAofpBXpyj-8tAj1KDPI",
          "type": "vod"
       }
    ]
