@@ -76,7 +76,20 @@
          "mpd": "https://dca-de-voddazn.daznedge.net/v7u0zn35gvv11mzeq9pb6owox/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "tend:1787753014~proto:dash~geo:IT~asn:30722_198471~path:1_1_fdee90715328c6d6f5f8ddef8966726dabd1a828cc5b119a7c52c91bc81a237d~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:1f52e763a1efc1cab4fb401998e1a2f291f55aecf8e448b60ce06a64b7100707",
+         "dazn_token": "tend:1787753047~proto:dash~geo:IT~asn:30722_198471~path:1_1_fdee90715328c6d6f5f8ddef8966726dabd1a828cc5b119a7c52c91bc81a237d~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:24807721f9817882e1323f9abb92cf402070c7ad9e2e9d9f118e0d9e49d61787",
+         "type": "vod"
+      }
+   ],
+   "NFL Game Pass": [
+      {
+         "name": "The Insiders",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=11rj8gf9iynd31b496sa9ry2er_image-header_pIt_1724920792000&quality=80&width=800&height=450",
+         "start": "2026-08-24T23:00:00Z",
+         "end": "2026-08-25T00:15:00Z",
+         "mpd": "https://dca-de-voddazn.daznedge.net/tgh2mq508bvh1lxt9uqwmigbi/web/stream.mpd?channel=7439&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "tend:1787753047~proto:dash~geo:IT~asn:30722_198471~path:1_1_08b403ccf6e2cada2b23091f96fa330d506976955514c0cfda6f1f8fa7cee293~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:21a80047c238dc704ff6783516ac4455a2135fbd02861910011c181650cb6c3a",
          "type": "vod"
       }
    ]
