@@ -102,6 +102,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "tend:1787753047~proto:dash~geo:IT~asn:30722_198471~path:1_1_08b403ccf6e2cada2b23091f96fa330d506976955514c0cfda6f1f8fa7cee293~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:21a80047c238dc704ff6783516ac4455a2135fbd02861910011c181650cb6c3a",
          "type": "vod"
+      },
+      {
+         "name": "Good Morning Football",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=1xxd08750mjh616xmoun4n2aps_image-header_pIt_1724920792000&quality=80&width=800&height=450",
+         "start": "2026-08-25T12:00:00Z",
+         "end": "2026-08-25T14:15:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/quegbx98ng4a1hnxnt08ydp1v/web/stream.mpd?channel=7440&outlet=dazn-italy&plang=it",
+         "key": "c1100023a59b54ada5045db3f69e5344:37e8b4379d4af15c6bc1d7685b180f1b",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTgxMDgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiMDU1M2Y1ZDU5NjFmMTZiYjcwODVkNzk3YzE1YzA4MmZkYzU2MjVlMyIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NzE3MDh9.zHPcbtQ7rvi_r5LAIgYA8yqXTYumaHdVwsnZ1WS4RGw",
+         "type": "vod"
       }
    ]
 }
