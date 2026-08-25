@@ -47,17 +47,6 @@
          "type": "vod"
       },
       {
-         "name": "Tatticamente",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=66vw3m0ipkrqzvjaoi5sb72wq_image-header_pIt_1787147085000&quality=80&width=800&height=450",
-         "start": "2026-08-25T12:30:00Z",
-         "end": "2026-08-25T13:15:00Z",
-         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/177uw7ne8g5ld1ettbx6n9f90u/web/stream.mpd?channel=5076&outlet=dazn-italy&plang=it",
-         "key": "7295ad9663e7581d87cf4139a54815ff:234418dc203fb3434ab53b40a790d6fc",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTAzMTEsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiYjU0MDVlNThiMjIwOTA3ZWQwYzFhMTVlNTFkOGY3YTZiNjQzOWM0MSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc2NjM5MTF9.uWW0_NPoDjOcFsrhIChGtSofYVh6iC-_vnnr7er7KCE",
-         "type": "vod"
-      },
-      {
          "name": "Social Corner",
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=8gyaedmcszvyuuvt9izhtk20e_image-header_pIt_1757509860000&quality=80&width=800&height=450",
          "start": "2026-08-25T13:00:00Z",
@@ -67,6 +56,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWp5ZHE3YjJ6ZmVwcno5b3JpbDZma3pwdiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NjY1OTQyLCJleHAiOjE3ODc3NTIzNDJ9.ymljuvNCYjIxAvedb2_j2uqXYF8kN1rlLLUym5SWhbY",
          "type": "evento"
+      },
+      {
+         "name": "Tatticamente",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=66vw3m0ipkrqzvjaoi5sb72wq_image-header_pIt_1787147085000&quality=80&width=800&height=450",
+         "start": "2026-08-25T12:30:00Z",
+         "end": "2026-08-25T13:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/177uw7ne8g5ld1ettbx6n9f90u/web/stream.mpd?channel=5076&outlet=dazn-italy&plang=it",
+         "key": "7295ad9663e7581d87cf4139a54815ff:234418dc203fb3434ab53b40a790d6fc",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTc3dXc3bmU4ZzVsZDFldHRieDZuOWY5MHUiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjAxOSwiZXhwIjoxNzg3NzUyNDE5fQ.Am6IWyerSAOD171S9UNJpGoOlVqzb0QVESgCSvwCfm8",
+         "type": "vod"
       }
    ]
 }
