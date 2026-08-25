@@ -25,17 +25,6 @@
          "type": "vod"
       },
       {
-         "name": "Focus Serie A",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=20j70n4p1f9zveditpnlfiqx1_image-header_pIt_1787145012000&quality=80&width=800&height=450",
-         "start": "2026-08-24T07:00:00Z",
-         "end": "2026-08-24T08:15:00Z",
-         "mpd": "https://dca-de-livedazn.daznedge.net/1qapgsesah59w11r1zc8bmqeq9/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it",
-         "key": "23f019be004656b1919ef52eb24a0c0e:c046fd13d641222cfa23ba66d8c0ec69",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "tend:1787653914~proto:dash~geo:IT~asn:30722_198471~path:1_1_e320e51ce4b354d49af0d4fef7f97839e90459d3edb7763d569356593009f5e6~ua:946a2be79aba51bac7fe2e3ef60b90e7~id:b408d624b843~tk3:3d9a615e76891c3e9b3aee0fd53e36bda610ea00985f1708323a41e1b7ef87bb",
-         "type": "vod"
-      },
-      {
          "name": "Obiettivo sulla Serie A",
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=b5zj1zwps54hlvlfckzs81kf0_image-header_pIt_1787143507000&quality=80&width=800&height=450",
          "start": "2026-08-24T11:00:00Z",
@@ -56,6 +45,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWQ5djkyeDNyazA0ZjE3MXF4OGVhbXNmZjUiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzU3NzIxMiwiZXhwIjoxNzg3NjYzNjEyfQ.Fw8RlsK428huV_skk_p2EnenUfNYUrMfsaPNU1oVaSA",
          "type": "evento"
+      },
+      {
+         "name": "Focus Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=1gllnfu5ssqinc9p71v72m7ls_image-header_pIt_1787145012000&quality=80&width=800&height=450",
+         "start": "2026-08-25T07:00:00Z",
+         "end": "2026-08-25T08:15:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/gxx43pwuwe1r1ptxsa9hfoopr/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it",
+         "key": "2c6d1272be4d525ca62359d01ba111c6:3a0785e0c4694a6188ebe116c5fa611d",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3MzgwODAsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiMDhmNmYzYWVkMjQ3MjIyZTAyNmYyYTg3ODZkNGU5NTUyYjk3ZjNiYiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjIxNmExM2Y2MWUzZTQ2ODYxMTExNjJmMGRkZWE0ODk5OWEwOTM0ZmQiLCJpYXQiOjE3ODc2NTE2ODB9.7-EacBiqtuyjRMIxwgpxsX9B_BwLa8sBNdejsbAUzik",
+         "type": "vod"
       }
    ]
 }
