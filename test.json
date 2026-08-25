@@ -95,10 +95,10 @@
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=8dkli4bzxesxbs2tx1tymikqi_image-header_pIt_1787147085000&quality=80&width=800&height=450",
          "start": "2026-08-25T16:00:00Z",
          "end": "2026-08-25T17:40:00Z",
-         "mpd": "https://dca-de-livedazn.daznedge.net/74jigmomo29s1ucwest0btpgj/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it&dazn-token=tend:1787764366~proto:dash~geo:IT~asn:30722_198471~path:1_1_44a5c67fbadb7fcac49a941c287c9541cc44131c69c610f72ce01e65e84f7776~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:8e302059bc0adab073b684697492ce2f8ca1838ddf9e5571f9ed78b49e177ff6",
+         "mpd": "https://dca-de-livedazn.daznedge.net/74jigmomo29s1ucwest0btpgj/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it&dazn-token=tend:1787764526~proto:dash~geo:IT~asn:30722_198471~path:1_1_44a5c67fbadb7fcac49a941c287c9541cc44131c69c610f72ce01e65e84f7776~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:0e58d50d5cc3a98d364fc34424ad774f499b05814232dc87ce0b3766464ceaa4",
          "key": "b6c7fcef87035fc898324b0e46ef06ec:a5c26b10eef92157557ce2ac3bfc1331",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "tend:1787764366~proto:dash~geo:IT~asn:30722_198471~path:1_1_44a5c67fbadb7fcac49a941c287c9541cc44131c69c610f72ce01e65e84f7776~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:8e302059bc0adab073b684697492ce2f8ca1838ddf9e5571f9ed78b49e177ff6",
+         "dazn_token": "tend:1787764526~proto:dash~geo:IT~asn:30722_198471~path:1_1_44a5c67fbadb7fcac49a941c287c9541cc44131c69c610f72ce01e65e84f7776~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:0e58d50d5cc3a98d364fc34424ad774f499b05814232dc87ce0b3766464ceaa4",
          "type": "evento"
       }
    ],
