@@ -5,10 +5,10 @@
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000&quality=80&width=800&height=450",
          "start": "2024-05-23T10:00:00Z",
          "end": "3000-01-01T00:00:00Z",
-         "mpd": "https://dcs-fs-live-dazn-cdn.dazn.com/dash/dazn-linear-206/stream.mpd?p=web",
+         "mpd": "https://dct-fs-live-dazn-cdn.dazn.com/dash/dazn-linear-206/stream.mpd?p=web",
          "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTgyODcsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NzE4ODd9.jORrFsy9Y21zfdcZV7aZ1Hr6YUAD2QUKf8h8HovqW88",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTkwNTIsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NzI2NTJ9.BP6ZO72hT57tMl4c2633SHcb4TUz7wJhVrpWe9BemQo",
          "type": "evento"
       }
    ],
