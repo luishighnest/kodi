@@ -111,7 +111,7 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/quegbx98ng4a1hnxnt08ydp1v/web/stream.mpd?channel=7440&outlet=dazn-italy&plang=it",
          "key": "c1100023a59b54ada5045db3f69e5344:37e8b4379d4af15c6bc1d7685b180f1b",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTgxMTksImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiMDU1M2Y1ZDU5NjFmMTZiYjcwODVkNzk3YzE1YzA4MmZkYzU2MjVlMyIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NzE3MTl9.pnWY2IWE8Ra_99G1-dYliz92RPoxZh0QF8lv9tB1Q2g",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTgxMjcsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiMDU1M2Y1ZDU5NjFmMTZiYjcwODVkNzk3YzE1YzA4MmZkYzU2MjVlMyIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NzE3Mjd9.A1wWw5hl6ZjqTs1xuO24cvKZ45AQol8-VAWNCmYv9fs",
          "type": "vod"
       }
    ]
