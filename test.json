@@ -43,7 +43,7 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/177uw7ne8g5ld1ettbx6n9f90u/web/stream.mpd?channel=5076&outlet=dazn-italy&plang=it",
          "key": "7295ad9663e7581d87cf4139a54815ff:234418dc203fb3434ab53b40a790d6fc",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTI5NTcsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiYjU0MDVlNThiMjIwOTA3ZWQwYzFhMTVlNTFkOGY3YTZiNjQzOWM0MSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NjY1NTd9._BqiZRdw4EcnvET5FyibibV6exVWvUtq26ZZlLS7Tio",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTMwMTIsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiYjU0MDVlNThiMjIwOTA3ZWQwYzFhMTVlNTFkOGY3YTZiNjQzOWM0MSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NjY2MTJ9.bZiZZmYmznxl5fsVXIqRU3bTxHAmK9j8wH5A8SsLQ7A",
          "type": "vod"
       },
       {
@@ -54,7 +54,7 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/1ncjbv4d4yd7v1p15ezrk6xko2/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
          "key": "7d586db63bdd53839b9e567413f9e1af:7e1f7cc521ea30bed901543740dc94ea",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTI5NTgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiYmU3YzU5NDhmZTMxNDIwMDVlZDRmMDYwZmJhNTJiZGFlZDMxZjJhOCIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NjY1NTh9.FgUSjsRnJgFGwU9lOAOVdY_Suw58fokTgl1bzIPK2dk",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTMwMTMsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiYmU3YzU5NDhmZTMxNDIwMDVlZDRmMDYwZmJhNTJiZGFlZDMxZjJhOCIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NjY2MTN9.BNxpmnMSRGTGmE0ezL5yI77GFkpZwVKykVQhxbQ9Gsw",
          "type": "vod"
       },
       {
@@ -65,7 +65,7 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/gxx43pwuwe1r1ptxsa9hfoopr/web/stream.mpd?channel=5063&outlet=dazn-italy&plang=it",
          "key": "2c6d1272be4d525ca62359d01ba111c6:3a0785e0c4694a6188ebe116c5fa611d",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTI5NTgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiMDhmNmYzYWVkMjQ3MjIyZTAyNmYyYTg3ODZkNGU5NTUyYjk3ZjNiYiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NjY1NTh9.hRx7Xu_Onmdcjle7iICsQRdg0N9RcJL1m0uPoiG10s8",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc3NTMwMTMsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiMDhmNmYzYWVkMjQ3MjIyZTAyNmYyYTg3ODZkNGU5NTUyYjk3ZjNiYiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc2NjY2MTN9.c6nt7hn61bO9_Dar_7sKXZbpTQeKXoPBX4K60M7dBdI",
          "type": "vod"
       },
       {
@@ -76,7 +76,7 @@
          "mpd": "https://dca-de-voddazn.daznedge.net/v7u0zn35gvv11mzeq9pb6owox/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "tend:1787752959~proto:dash~geo:IT~asn:30722_198471~path:1_1_fdee90715328c6d6f5f8ddef8966726dabd1a828cc5b119a7c52c91bc81a237d~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:0a4ab125bd4d6166dee6e330dbcc594c7f1807acfd64969b12604e67f44ef179",
+         "dazn_token": "tend:1787753014~proto:dash~geo:IT~asn:30722_198471~path:1_1_fdee90715328c6d6f5f8ddef8966726dabd1a828cc5b119a7c52c91bc81a237d~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:1f52e763a1efc1cab4fb401998e1a2f291f55aecf8e448b60ce06a64b7100707",
          "type": "vod"
       }
    ]
