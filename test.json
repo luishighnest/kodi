@@ -11,5 +11,18 @@
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzY3ODg1MCwiZXhwIjoxNzg3NzY1MjUwfQ.Uze-B2MmL-JTzmyslDhNx-goHcdjY_3LeYoGClzn4DA",
          "type": "evento"
       }
+   ],
+   "Radio TV Serie A": [
+      {
+         "name": "Fantacalcio",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=18mgw0vnlj1fifcs21vr7wsqh_image-header_pIt_1787147085000&quality=80&width=800&height=450",
+         "start": "2026-08-25T14:00:00Z",
+         "end": "2026-08-25T15:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/1ue8q6qnhrqcj11sy15x9yww3u/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it",
+         "key": "383c545d68bc5cea8e37ed6cb92f0bcf:5f8ef327652f137db8926f55048a3822",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXVlOHE2cW5ocnFjajExc3kxNXg5eXd3M3UiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzY3OTA0MywiZXhwIjoxNzg3NzY1NDQzfQ.yKrhU79Nhi--jL3Xf__o8xx3LL5UF6MXD5lVNyB0cVM",
+         "type": "vod"
+      }
    ]
 }
