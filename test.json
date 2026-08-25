@@ -14,17 +14,6 @@
    ],
    "Radio TV Serie A": [
       {
-         "name": "Obiettivo sulla Serie A",
-         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=b5zj1zwps54hlvlfckzs81kf0_image-header_pIt_1787143507000&quality=80&width=800&height=450",
-         "start": "2026-08-24T11:00:00Z",
-         "end": "2026-08-24T12:10:00Z",
-         "mpd": "https://dca-ac-live.cdn.indazn.com/135cs8npe6aek1os5jn1vvia3f/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTM1Y3M4bnBlNmFlazFvczVqbjF2dmlhM2YiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzU2OTI5MSwiZXhwIjoxNzg3NjU1NjkxfQ.yc9zdqFmrHipQ-g6NKKPOINExYpGEDmqHWniErN-5KE",
-         "key": "45c2001ca73c5aea9b744391816fff5f:2fc9da5ccec7d13a7665e25b92f93844",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
-         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTM1Y3M4bnBlNmFlazFvczVqbjF2dmlhM2YiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiQzRoZGROYzVEdkRudEp2cHJydTNDNWlOWmZqcUN3NVhyQldkV1lEOXJOOCIsImlhdCI6MTc4NzU2OTI5MSwiZXhwIjoxNzg3NjU1NjkxfQ.yc9zdqFmrHipQ-g6NKKPOINExYpGEDmqHWniErN-5KE",
-         "type": "evento"
-      },
-      {
          "name": "Focus Serie A",
          "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=1gllnfu5ssqinc9p71v72m7ls_image-header_pIt_1787145012000&quality=80&width=800&height=450",
          "start": "2026-08-25T07:00:00Z",
@@ -66,6 +55,17 @@
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
          "dazn_token": "tend:1787752455~proto:dash~geo:IT~asn:30722_198471~path:1_1_fdee90715328c6d6f5f8ddef8966726dabd1a828cc5b119a7c52c91bc81a237d~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:5a66439b967f60921ba2c3bc2f86abf5c0d59bb7ba6de8ed9f7805169ad56919",
+         "type": "vod"
+      },
+      {
+         "name": "Obiettivo sulla Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=7feh9y64hgin66bxxqzqa6nyk_image-header_pIt_1787143507000&quality=80&width=800&height=450",
+         "start": "2026-08-25T11:00:00Z",
+         "end": "2026-08-25T12:10:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/1ncjbv4d4yd7v1p15ezrk6xko2/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
+         "key": "7d586db63bdd53839b9e567413f9e1af:7e1f7cc521ea30bed901543740dc94ea",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMW5jamJ2NGQ0eWQ3djFwMTVlenJrNnhrbzIiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzY2NjIxNCwiZXhwIjoxNzg3NzUyNjE0fQ.Go2hCVjEEFA4NJLgirB-2k2w2eFv-CiA4eF4ietacas",
          "type": "vod"
       }
    ]
