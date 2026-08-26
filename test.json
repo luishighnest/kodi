@@ -15,6 +15,15 @@
          "end": "2026-08-26T07:15:00Z",
          "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1787823752~proto:dash~geo:IT~asn:13335~path:1_1_e1258f69133e2ec35c473dfbcb60c37ca84c154e3d075041d4b5caee68b2e105~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:70dd22375a0c1bc3a81b99c539149bdac1053e1ffb55face9fb55df27ca591f5/vbqqkq2u0phc1gacjchood9c4/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it",
          "key": "2b35cbfbd503552a91cffdaa593e0755:09699bf18847ca07fb04ecd2b7557567"
+      },
+      {
+         "name": "News dai campi della Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/cooyynfz850obc7a1uppirppd_image-header_pIt_1787147085000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-26T16:00:00Z",
+         "end": "2026-08-26T17:40:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvaGg0MWQwMzdlOXB0MWZ4NmdrOHB6a3ljZSJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NzYwMDcwLCJleHAiOjE3ODc4NDY0NzB9.eri1JW_xJrjRAz5SwlgQA4DWjEOCXZi7wbnnLEyz8zU/hh41d037e9pt1fx6gk8pzkyce/web/stream.mpd?channel=5070&outlet=dazn-italy&plang=it",
+         "key": "a1d18f5fb14c5e0293502a9e17b76332:8aae7bfbc9f0cb392117e11267b476ce",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
    "Live TV": [
