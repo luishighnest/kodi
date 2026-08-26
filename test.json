@@ -55,6 +55,15 @@
          "mpd": "https://dca-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTd6cTNycjI3d2thZDE3Y3J4bWRtdHU0dGwiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4Nzc2MDA4OSwiZXhwIjoxNzg3ODQ2NDg5fQ.WsD0gaeXOMn93bk1ChAumdsIEibo6OMQgTAy0977-5g/17zq3rr27wkad17crxmdmtu4tl/web/stream.mpd?channel=3931&outlet=dazn-italy&plang=it",
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Real Madrid - Real Sociedad",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/ak7iavklxiya9e10kho08jb4x_image-header_pIt_1787736019000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-26T19:00:00Z",
+         "end": "2026-08-26T21:04:41Z",
+         "mpd": "https://dca-deit-livedazn.daznedge.net/@tend:1787868076~proto:dash~geo:IT~asn:30722_198471~path:1_1_71efa40950080406ac847b9c874479433b838651c032e78b2e3fe6231d40b751~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:a0cc9ccdd7f985bbd3076f97221eaa73cf4e3f0fcce09c29acfda0489194add3/1ve9cc7wutes6165imashc9ddt/web/stream.mpd?channel=3943&outlet=dazn-italy&plang=it&static=1787778282",
+         "key": "e4e30f134a2a501dad61e5809e1d4b51:a46757b3f1a7211c03f3d4c3fc0f17a5",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ]
 }
