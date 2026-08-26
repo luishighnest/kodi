@@ -24,6 +24,15 @@
          "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvaGg0MWQwMzdlOXB0MWZ4NmdrOHB6a3ljZSJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3NzYwMDcwLCJleHAiOjE3ODc4NDY0NzB9.eri1JW_xJrjRAz5SwlgQA4DWjEOCXZi7wbnnLEyz8zU/hh41d037e9pt1fx6gk8pzkyce/web/stream.mpd?channel=5070&outlet=dazn-italy&plang=it",
          "key": "a1d18f5fb14c5e0293502a9e17b76332:8aae7bfbc9f0cb392117e11267b476ce",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Fantacalcio",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/dm0d7ebwqz4ohvzw02qjl1um2_image-header_pIt_1787147085000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-26T14:00:00Z",
+         "end": "2026-08-26T15:15:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc4NDY0ODgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNmI0YjM3Y2UxZWYzZmRiYWI3NDE2ZjZlMTRhNjZkZWUzODI0MjNhMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc3NjAwODh9.6kw5fF6EhglYqNaSSMu9GHcW0ogqdbSn0Ip7yOZwcAY/1oaffb2lqj3o21goa6zwkqrqqb/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
+         "key": "cad855887f505c0e82016a2cff0cbe68:ecab92aea8abd97e189634816c3aa433",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
    "Live TV": [
@@ -43,8 +52,9 @@
          "image": "https://image.discovery.indazn.com/eu/v3/eu/none/a2anrvlok62hz8wa8nwrdtdn0_image-header_pIt_1787724947000/fill/none/top/none/100/1280/720/png/image",
          "start": "2026-08-25T19:00:00Z",
          "end": "2026-08-25T21:11:21Z",
-         "mpd": "https://dcb-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTd6cTNycjI3d2thZDE3Y3J4bWRtdHU0dGwiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzczMjY1MCwiZXhwIjoxNzg3ODE5MDUwfQ.hcM91uXlErQLARYzvwiIi-QDy529H_ddAzrLmNMbLaE/17zq3rr27wkad17crxmdmtu4tl/web/stream.mpd?channel=3931&outlet=dazn-italy&plang=it",
-         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec"
+         "mpd": "https://dca-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTd6cTNycjI3d2thZDE3Y3J4bWRtdHU0dGwiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4Nzc2MDA4OSwiZXhwIjoxNzg3ODQ2NDg5fQ.WsD0gaeXOMn93bk1ChAumdsIEibo6OMQgTAy0977-5g/17zq3rr27wkad17crxmdmtu4tl/web/stream.mpd?channel=3931&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ]
 }
