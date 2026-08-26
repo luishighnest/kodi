@@ -18,5 +18,15 @@
          "mpd": "https://dcs-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc4MTc2NzQsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc3MzEyNzR9.fCfxUqo_cT9rNFpK9MSDlD02Fy9KvaSpbRWvy6MDhpk/dash/dazn-linear-206/stream.mpd?p=web",
          "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb"
       }
+   ],
+   "LALIGA EA SPORTS": [
+      {
+         "name": "Valencia - Betis",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/a2anrvlok62hz8wa8nwrdtdn0_image-header_pIt_1787724947000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-25T19:00:00Z",
+         "end": "2026-08-25T21:11:21Z",
+         "mpd": "https://dcb-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTd6cTNycjI3d2thZDE3Y3J4bWRtdHU0dGwiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzczMjY1MCwiZXhwIjoxNzg3ODE5MDUwfQ.hcM91uXlErQLARYzvwiIi-QDy529H_ddAzrLmNMbLaE/17zq3rr27wkad17crxmdmtu4tl/web/stream.mpd?channel=3931&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec"
+      }
    ]
 }
