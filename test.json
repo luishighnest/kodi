@@ -39,7 +39,7 @@
          "image": "https://image.discovery.indazn.com/eu/v3/eu/none/7egbt0r368mrozbvrknsn2zzs_image-header_pIt_1757509860000/fill/none/top/none/100/1280/720/png/image",
          "start": "2026-08-26T13:00:00Z",
          "end": "2026-08-26T14:10:00Z",
-         "mpd": "https://dca-de-voddazn.daznedge.net/@tend:1787870935~proto:dash~geo:IT~asn:30722_198471~path:1_1_f8b96e6add08a75632f385b2a62a178910564ea1f5c50f8b94d0fbac2aace30e~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:8dbae29787aad423c43b13d6cefd965ae5a5a4629787d495c2967f8de9d7e184/juoxm3o3r6li16hq4uloaazp7/web/stream.mpd?channel=5064&outlet=dazn-italy&plang=it",
+         "mpd": "https://dca-de-voddazn.daznedge.net/@tend:1787871105~proto:dash~geo:IT~asn:30722_198471~path:1_1_f8b96e6add08a75632f385b2a62a178910564ea1f5c50f8b94d0fbac2aace30e~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:76309bf5e0a13baa2f84106294fba57aa07010ebfd7596b5c7ad237734f8f496/juoxm3o3r6li16hq4uloaazp7/web/stream.mpd?channel=5064&outlet=dazn-italy&plang=it",
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
