@@ -7,6 +7,14 @@
          "end": "2026-08-26T08:15:00Z",
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc4MTY5MzUsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNDcyNDA2N2RkN2YxNjZlMjliMzNmZWMxMWM5ZDgwNGFkNGY0MzljNCIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc3MzA1MzV9.4peMhgsfAHTHGLzUWyUrVur4Ow79ZL84PETDH-RVOMQ/i47cqxkwt7261mxheuegiwzu2/web/stream.mpd?channel=5064&outlet=dazn-italy&plang=it",
          "key": "4f6a9624fe9c5ba59c40cbec5c6d9061:5c33d1adcc27aa50868c099b75a26b5a"
+      },
+      {
+         "name": "Buongiorno Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/1v0toabyfq4bdwc4vfqrhwaw6_image-header_pIt_1787142706000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-26T06:00:00Z",
+         "end": "2026-08-26T07:15:00Z",
+         "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1787823752~proto:dash~geo:IT~asn:13335~path:1_1_e1258f69133e2ec35c473dfbcb60c37ca84c154e3d075041d4b5caee68b2e105~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:70dd22375a0c1bc3a81b99c539149bdac1053e1ffb55face9fb55df27ca591f5/vbqqkq2u0phc1gacjchood9c4/web/stream.mpd?channel=5067&outlet=dazn-italy&plang=it",
+         "key": "2b35cbfbd503552a91cffdaa593e0755:09699bf18847ca07fb04ecd2b7557567"
       }
    ],
    "Live TV": [
