@@ -34,6 +34,17 @@
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
          "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNzRqaWdtb21vMjlzMXVjd2VzdDBidHBnaiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJVajRwZ19VSUVZblVZVGRGUm5BYWtDUGJxSVdzbzFtR1FKVDF1QU1uRkRZIiwiaWF0IjoxNzg3Njc5MDc2LCJleHAiOjE3ODc3NjU0NzZ9.gzfrw10Vh1ouf1yJ-T2qJTC9sQR-QSSY8SjgRn4xr8w",
          "type": "evento"
+      },
+      {
+         "name": "Focus Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v2/eu/image?id=apyq4nq3jz7dtgzg945w9hktc_image-header_pIt_1787145012000&quality=80&width=800&height=450",
+         "start": "2026-08-26T07:00:00Z",
+         "end": "2026-08-26T08:15:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/i47cqxkwt7261mxheuegiwzu2/web/stream.mpd?channel=5064&outlet=dazn-italy&plang=it&dazn-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc4MTY2OTcsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNDcyNDA2N2RkN2YxNjZlMjliMzNmZWMxMWM5ZDgwNGFkNGY0MzljNCIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc3MzAyOTd9.4OAR4k8SLvwc7DzZckQrN2gJns4-Vr-lQH7oXN5y_Vc",
+         "key": "4f6a9624fe9c5ba59c40cbec5c6d9061:5c33d1adcc27aa50868c099b75a26b5a",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "dazn_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc4MTY2OTcsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNDcyNDA2N2RkN2YxNjZlMjliMzNmZWMxMWM5ZDgwNGFkNGY0MzljNCIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc3MzAyOTd9.4OAR4k8SLvwc7DzZckQrN2gJns4-Vr-lQH7oXN5y_Vc",
+         "type": "evento"
       }
    ]
 }
