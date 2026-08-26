@@ -30,8 +30,8 @@
          "image": "https://image.discovery.indazn.com/eu/v3/eu/none/dm0d7ebwqz4ohvzw02qjl1um2_image-header_pIt_1787147085000/fill/none/top/none/100/1280/720/png/image",
          "start": "2026-08-26T14:00:00Z",
          "end": "2026-08-26T15:15:00Z",
-         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc4NDY0ODgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNmI0YjM3Y2UxZWYzZmRiYWI3NDE2ZjZlMTRhNjZkZWUzODI0MjNhMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc3NjAwODh9.6kw5fF6EhglYqNaSSMu9GHcW0ogqdbSn0Ip7yOZwcAY/1oaffb2lqj3o21goa6zwkqrqqb/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
-         "key": "cad855887f505c0e82016a2cff0cbe68:ecab92aea8abd97e189634816c3aa433",
+         "mpd": "https://dca-de-voddazn.daznedge.net/@tend:1787870106~proto:dash~geo:IT~asn:30722_198471~path:1_1_34d91360de803c35e664a2e6f77fb28b50015c75482f7bb7f95bc86c5b7e2224~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:d8efd83679d702e8e70c64d1100b13a85076a114f9f06a4c2c85dcf99a443509/1oaffb2lqj3o21goa6zwkqrqqb/web/stream.mpd?channel=5062&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
