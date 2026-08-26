@@ -74,5 +74,16 @@
          "key": "e4e30f134a2a501dad61e5809e1d4b51:a46757b3f1a7211c03f3d4c3fc0f17a5",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "NFL Game Pass": [
+      {
+         "name": "NFL Fantasy Live",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/198nbhdgzzncj1xe8y3qa6pbwz_image-header_pIt_1787409163000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-26T21:00:00Z",
+         "end": "2026-08-26T22:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvbDdwOWVsNzRrZDIwMWZ4Z3UwOHZraGI3OCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3Nzg0ODU3LCJleHAiOjE3ODc4NzEyNTd9.CUHr7hWwxmHoO8Enl_9SrBr9m8Ml1YMnExDMfFXHUZU/l7p9el74kd201fxgu08vkhb78/web/stream.mpd?channel=7440&outlet=dazn-italy&plang=it",
+         "key": "a73bbb40abf75053ba9a5faf123bffe9:5cea861a96be1458f1bf7febf8cb73dc",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
    ]
 }
