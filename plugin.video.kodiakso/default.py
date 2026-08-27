@@ -4392,6 +4392,7 @@ def _test_classified():
     """Ritorna (canali, eventi, vod): liste di (cat, idx, entry) dal JSON.
 
     Usa il campo 'type' dichiarato da dazn2 (100% affidabile); se assente, euristica sull'URL.
+    Le voci della categoria EVENTI (aggiunte dal tasto 10 di dazn2) finiscono SEMPRE in Eventi 1.
     """
     canali, eventi, vod = [], [], []
     try:
@@ -4400,7 +4401,11 @@ def _test_classified():
         log('test fetch ERR: %s' % e)
         return canali, eventi, vod
     for cat, items in data.items():
+        cat_is_eventi = (cat or '').strip().upper() == 'EVENTI'
         for idx, it in enumerate(items or []):
+            if cat_is_eventi:
+                eventi.append((cat, idx, it))
+                continue
             t = (it.get('type') or '').lower()
             if t == 'vod':
                 vod.append((cat, idx, it))
