@@ -9,5 +9,16 @@
          "key": "bf10b50a3bae5de68e232950f2afe946:f20c7fa8f6fab523f3ae62520d56f1e9",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "LALIGA EA SPORTS": [
+      {
+         "name": "Real Madrid - Real Sociedad",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/ak7iavklxiya9e10kho08jb4x_image-header_pIt_1787815351000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-26T19:00:00Z",
+         "end": "2026-08-26T21:04:41Z",
+         "mpd": "https://dca-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXZlOWNjN3d1dGVzNjE2NWltYXNoYzlkZHQiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4NzgxNzcwMCwiZXhwIjoxNzg3OTA0MTAwfQ.YAqhsuvgvp4U2z6IEUtMLu2dxxzkT-bgNLJfdfgpYTw/1ve9cc7wutes6165imashc9ddt/web/stream.mpd?channel=3943&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
    ]
 }
