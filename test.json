@@ -42,6 +42,16 @@
          "key": "",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
          "dazn_token": ""
+      },
+      {
+         "name": "Sorteggio Champions",
+         "image": "",
+         "start": "",
+         "end": "",
+         "mpd": "https://g006-lin-it-cmaf-prd-ak.pcdn07.cssott02",
+         "key": "",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "dazn_token": ""
       }
    ]
 }
