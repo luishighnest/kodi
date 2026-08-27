@@ -3257,6 +3257,17 @@ def _sz6_ordered(chs):
     return out
 
 
+def _sz6_thumb(url):
+    if not isinstance(url, str) or not url.startswith('http'):
+        return ''
+    low = url.lower().split('?')[0]
+    if not re.search(r'\.(png|jpe?g|webp|gif)$', low):
+        return ''
+    if 'enc_avif' in url.lower() or '.svg' in low:
+        return ''
+    return url
+
+
 def _sz6_parse_start(st):
     """'YYYY/MM/DD HH:MM:SS +ZZZZ' (UTC) -> (sort_key, local '%d/%m %H:%M').
     Ritorna (None, '') se non parsabile."""
@@ -3300,8 +3311,8 @@ def sz6_view():
         ei = ev.get('eventInfo') or {}
         label = ('%s  [%s - %s]' % (title, time_str, cat)) if time_str else ('%s  [%s]' % (title, cat))
         li = xbmcgui.ListItem(label=lbl(label))
-        thumb = ei.get('teamAFlag') or ei.get('teamBFlag') or ''
-        if isinstance(thumb, str) and thumb.startswith('http'):
+        thumb = _sz6_thumb(ei.get('teamAFlag') or ei.get('teamBFlag') or '')
+        if thumb:
             li.setArt({'thumb': thumb})
         li.setInfo('video', {'title': title, 'plot': '%s%s' % (cat, ('  %s' % time_str) if time_str else '')})
         xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sz6_ev', e=eid), li, isFolder=True)
@@ -3331,8 +3342,8 @@ def sz6_ev_view(e):
         if t == 1:
             title += '  (MPD)'
         li = xbmcgui.ListItem(label=lbl(title))
-        thumb = ch.get('logo') or ''
-        if isinstance(thumb, str) and thumb.startswith('http'):
+        thumb = _sz6_thumb(ch.get('logo') or '')
+        if thumb:
             li.setArt({'thumb': thumb})
         li.setProperty('isPlayable', 'true')
         li.setInfo('video', {'title': title})
