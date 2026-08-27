@@ -4388,6 +4388,26 @@ def _test_is_channel(it):
     return ('dazn-linear' in mpd) or (name == 'dazn 1') or name.startswith('dazn ') and 'channel=' not in mpd and '/vod' not in mpd
 
 
+def _test_sky_logo(it):
+    """Ritorna il logo (URL) del canale Sky se l'MPD contiene nel percorso 'channel(<cid>)' (es. skysport24).
+
+    Gestisce anche i wrapper glitch con url= percent-encoded. Ritorna '' se non è un canale Sky noto.
+    """
+    mpd = (it.get('mpd') or it.get('url') or '')
+    if not mpd:
+        return ''
+    try:
+        mpd_raw = urllib.parse.unquote(mpd)
+    except Exception:
+        mpd_raw = mpd
+    m = re.search(r'channel\(([a-z0-9_]+)\)', mpd_raw, re.I)
+    if not m:
+        return ''
+    cid = m.group(1).lower()
+    logo = LOGOS.get(cid, '')
+    return (LOGO_BASE + logo) if logo else ''
+
+
 def _test_classified():
     """Ritorna (canali, eventi, vod): liste di (cat, idx, entry) dal JSON.
 
@@ -4438,7 +4458,10 @@ def _test_add_playable(cat, idx, it):
         except Exception:
             label = name
     li = xbmcgui.ListItem(label=lbl(label))
-    if it.get('image'):
+    sky_logo = _test_sky_logo(it)
+    if sky_logo:
+        li.setArt({'thumb': sky_logo, 'icon': sky_logo, 'poster': sky_logo})
+    elif it.get('image'):
         li.setArt({'thumb': it['image']})
     li.setProperty('isPlayable', 'true')
     li.setInfo('video', {'title': name})
@@ -4502,7 +4525,10 @@ def test_cat_view(cat):
         end = (it.get('end') or '').replace('T', ' ')[:16]
         label = '%s  [%s - %s]' % (name, start, end) if start else name
         li = xbmcgui.ListItem(label=lbl(label))
-        if it.get('image'):
+        sky_logo = _test_sky_logo(it)
+        if sky_logo:
+            li.setArt({'thumb': sky_logo, 'icon': sky_logo, 'poster': sky_logo})
+        elif it.get('image'):
             li.setArt({'thumb': it['image']})
         li.setProperty('isPlayable', 'true')
         li.setInfo('video', {'title': name})
