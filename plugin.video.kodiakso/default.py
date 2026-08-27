@@ -15,7 +15,7 @@ import html
 import uuid
 import threading
 import urllib.parse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from xml.etree import ElementTree as ET
 import xbmcgui
 import xbmcplugin
@@ -3236,6 +3236,22 @@ def _sz6_channels(eid, force=False):
     return val
 
 
+def _sz6_parse_start(st):
+    """'YYYY/MM/DD HH:MM:SS +ZZZZ' (UTC) -> (sort_key, local '%d/%m %H:%M').
+    Ritorna (None, '') se non parsabile."""
+    try:
+        m = re.match(r'^(\d{4})/(\d{2})/(\d{2})[ T](\d{2}):(\d{2}):(\d{2})\s*([+-]\d{4})?$', (st or '').strip())
+        if not m:
+            return None, ''
+        y, mo, dd = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        h, mi, se = int(m.group(4)), int(m.group(5)), int(m.group(6))
+        dt = datetime(y, mo, dd, h, mi, se, tzinfo=timezone.utc)
+        local = dt.astimezone()
+        return dt.timestamp(), local.strftime('%d/%m %H:%M')
+    except Exception:
+        return None, ''
+
+
 def sz6_view():
     back_button(BASE + '?action=events')
     xbmcplugin.setContent(HANDLE, 'videos')
@@ -3248,8 +3264,15 @@ def sz6_view():
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
         xbmcplugin.endOfDirectory(HANDLE)
         return
-    ordered = sorted(events, key=lambda e: ((e.get('cat') or ''), (e.get('title') or '')))
-    for ev in ordered:
+    sortable = []
+    for ev in events:
+        ei = ev.get('eventInfo') or {}
+        ts, tstr = _sz6_parse_start(ei.get('startTime') or '')
+        if ts is None:
+            ts = float('inf')
+        sortable.append((ts, ev, tstr))
+    sortable.sort(key=lambda x: (x[0], (x[1].get('title') or '').lower()))
+    for ts, ev, time_str in sortable:
         eid = str(ev.get('id') or '')
         title = ev.get('title') or ''
         cat = ev.get('cat') or ''
@@ -3259,8 +3282,6 @@ def sz6_view():
             teams.append(ei['teamA'])
         if ei.get('teamB') and ei['teamB'] != ei.get('teamA'):
             teams.append(ei['teamB'])
-        st = ei.get('startTime') or ''
-        time_str = st[5:16] if st and len(st) >= 16 else ''
         label = ('%s  [%s - %s]' % (title, time_str, cat)) if time_str else ('%s  [%s]' % (title, cat))
         if teams:
             label += '  (%s)' % ' - '.join(teams)
@@ -3302,7 +3323,7 @@ def sz6_ev_view(e):
             continue
         title = ch.get('title') or ('Canale %d' % idx)
         if t == 1:
-            title += '  [DRM MPD]'
+            title += '  (MPD)'
         li = xbmcgui.ListItem(label=lbl(title))
         thumb = ch.get('logo') or ''
         if isinstance(thumb, str) and thumb.startswith('http'):
