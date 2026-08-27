@@ -62,6 +62,16 @@
          "key": "",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
          "dazn_token": ""
+      },
+      {
+         "name": "k",
+         "image": "",
+         "start": "",
+         "end": "",
+         "mpd": "https://g006-lin-it-cmaf-prd-ak.pcdn07.cssott02.com/v~a-0-0_e~1787929571_s~a4600184-38a8-4c97-841e-0a031d7da93e_u~c0712fe81439b039492d5b58a626d540e0f19c1da6e63a813cb8c4d6f65e95b309ba4ab0223c0a47120cc0d2625c6b24_l~56_x~e8ae14046895d0813a01df0638f318ad41869abf56104dd43ae5379805536872/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skysport24)/master_2hr-all.mpd",
+         "key": "111818c434b48263e6fed0d62a0bc01a:6ac97ddc137ad88f151bd6a2151d6b29",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "dazn_token": ""
       }
    ]
 }
