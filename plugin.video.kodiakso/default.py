@@ -3236,6 +3236,27 @@ def _sz6_channels(eid, force=False):
     return val
 
 
+def _sz6_sortkey(c):
+    try:
+        t = int(c.get('type') or '0')
+    except Exception:
+        t = 0
+    return (1 if t == 1 else 0, (c.get('title') or '').lower())
+
+
+def _sz6_ordered(chs):
+    out = []
+    for c in sorted(chs, key=_sz6_sortkey):
+        try:
+            t = int(c.get('type') or '0')
+        except Exception:
+            t = 0
+        if t == 2:
+            continue
+        out.append(c)
+    return out
+
+
 def _sz6_parse_start(st):
     """'YYYY/MM/DD HH:MM:SS +ZZZZ' (UTC) -> (sort_key, local '%d/%m %H:%M').
     Ritorna (None, '') se non parsabile."""
@@ -3295,25 +3316,17 @@ def sz6_refresh():
 def sz6_ev_view(e):
     back_button(BASE + '?action=sz6')
     xbmcplugin.setContent(HANDLE, 'videos')
-    chs = _sz6_channels(e)
+    chs = _sz6_ordered(_sz6_channels(e))
     if not chs:
         li = xbmcgui.ListItem(label=lbl('Nessun flusso per questo evento'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sz6', li, isFolder=False)
         xbmcplugin.endOfDirectory(HANDLE)
         return
-    def _sortkey(c):
-        try:
-            t = int(c.get('type') or '0')
-        except Exception:
-            t = 0
-        return (1 if t == 1 else 0, (c.get('title') or '').lower())
-    for idx, ch in enumerate(sorted(chs, key=_sortkey)):
+    for idx, ch in enumerate(chs):
         try:
             t = int(ch.get('type') or '0')
         except Exception:
             t = 0
-        if t == 2:
-            continue
         title = ch.get('title') or ('Canale %d' % idx)
         if t == 1:
             title += '  (MPD)'
@@ -3377,7 +3390,7 @@ def _resolve_channel_list(chs, idx, name):
 
 
 def play_sz6(e, i):
-    li = _resolve_channel_list(_sz6_channels(e), i, 'Eventi 6 (SportzX)')
+    li = _resolve_channel_list(_sz6_ordered(_sz6_channels(e)), i, 'Eventi 6 (SportzX)')
     xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
