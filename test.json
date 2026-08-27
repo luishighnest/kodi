@@ -31,5 +31,17 @@
          "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "EVENTI": [
+      {
+         "name": "Sorteggi",
+         "image": "",
+         "start": "",
+         "end": "",
+         "mpd": "https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1787840173_f~0_g~1_s~4b957809-0b0e-4925-bde5-3c83724d9c26_u~f67a647e4e553b91b895defd31fe4145d268f61e271cba8420fbe70061a6a88d_k~A_l~56_x~20f83103c5e95cacad44964f047a496a/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skysport24)/master_2hr-all.mpd",
+         "key": "111818c434b48263e6fed0d62a0bc01a:6ac97ddc137ad88f151bd6a2151d6b29",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "dazn_token": ""
+      }
    ]
 }
