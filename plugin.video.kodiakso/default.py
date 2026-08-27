@@ -3431,12 +3431,20 @@ def htsport_view():
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
         xbmcplugin.endOfDirectory(HANDLE)
         return
+    li = xbmcgui.ListItem(label=lbl('Aggiorna eventi'))
+    li.setInfo('video', {'title': 'Aggiorna eventi', 'plot': 'Scarica di nuovo gli eventi dal sito'})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('htsport_refresh'), li, isFolder=True)
     for di, d in enumerate(days):
         n = sum(len(c['matches']) for c in d['comps'])
         li = xbmcgui.ListItem(label=lbl(d['label']))
         li.setInfo('video', {'title': d['label'], 'plot': '%d eventi' % n})
         xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('htsport_day', di=str(di)), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+def htsport_refresh():
+    _ht_fetch(force=True)
+    xbmc.executebuiltin('Container.Refresh()')
 
 
 def htsport_day_view(di):
@@ -4454,6 +4462,8 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'htsport':
             htsport_view()
+        elif action == 'htsport_refresh':
+            htsport_refresh()
         elif action == 'htsport_day':
             htsport_day_view(query.get('di', ['0'])[0])
         elif action == 'htsport_comp':
