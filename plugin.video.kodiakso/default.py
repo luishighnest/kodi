@@ -2858,6 +2858,10 @@ SZX_FIREBASE_PROJECT = 'sportzx-afe67'
 SZX_FIREBASE_APP_ID = '1:234785582029:android:f5f9299eaa7a0d73'
 SZX_FIREBASE_CERT = 'A0047CD121AE5F71048D41854702C52814E2AE2B'
 SZX_FIREBASE_NUM = '234785582029'
+SZX6_MIRROR = 'https://raw.githubusercontent.com/mdjamsad9/dudetvapi/main/public_decrypted/'
+_SZ6 = {}
+_SZ6_TS = {}
+_SZ6_TTL = {'events': 900, 'channels': 1800}
 _DDY = {'data': None, 'ts': 0}
 _DDY_TTL = 1800
 
@@ -3197,6 +3201,172 @@ def _szx_load(key, name, eid=''):
     return val
 
 
+def _sz6_fetch(name):
+    last = None
+    for attempt in range(2):
+        try:
+            r = requests.get(SZX6_MIRROR + name, timeout=20, headers={'User-Agent': UA})
+            r.raise_for_status()
+            return r.json()
+        except Exception as e:
+            last = e
+            time.sleep(1)
+    log('sz6 fetch %s: %s' % (name, last))
+    return None
+
+
+def _sz6_events(force=False):
+    if not force and _SZ6.get('events') is not None and (time.time() - _SZ6_TS.get('events', 0)) < _SZ6_TTL['events']:
+        return _SZ6['events']
+    data = _sz6_fetch('events.json')
+    val = data if isinstance(data, list) else []
+    _SZ6['events'] = val
+    _SZ6_TS['events'] = time.time()
+    return val
+
+
+def _sz6_channels(eid, force=False):
+    key = 'ch_%s' % eid
+    if not force and key in _SZ6 and (time.time() - _SZ6_TS.get(key, 0)) < _SZ6_TTL['channels']:
+        return _SZ6[key]
+    data = _sz6_fetch('channels/%s.json' % eid)
+    val = data if isinstance(data, list) else []
+    _SZ6[key] = val
+    _SZ6_TS[key] = time.time()
+    return val
+
+
+def sz6_view():
+    back_button(BASE + '?action=events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    events = _sz6_events()
+    li = xbmcgui.ListItem(label=lbl('Aggiorna eventi'))
+    li.setInfo('video', {'title': 'Aggiorna eventi', 'plot': 'Ricarica gli eventi SportzX dal mirror'})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sz6_refresh'), li, isFolder=True)
+    if not events:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento (mirror non raggiungibile)'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    ordered = sorted(events, key=lambda e: ((e.get('cat') or ''), (e.get('title') or '')))
+    for ev in ordered:
+        eid = str(ev.get('id') or '')
+        title = ev.get('title') or ''
+        cat = ev.get('cat') or ''
+        ei = ev.get('eventInfo') or {}
+        teams = []
+        if ei.get('teamA'):
+            teams.append(ei['teamA'])
+        if ei.get('teamB') and ei['teamB'] != ei.get('teamA'):
+            teams.append(ei['teamB'])
+        st = ei.get('startTime') or ''
+        time_str = st[5:16] if st and len(st) >= 16 else ''
+        label = ('%s  [%s - %s]' % (title, time_str, cat)) if time_str else ('%s  [%s]' % (title, cat))
+        if teams:
+            label += '  (%s)' % ' - '.join(teams)
+        li = xbmcgui.ListItem(label=lbl(label))
+        thumb = ei.get('teamAFlag') or ei.get('teamBFlag') or ''
+        if isinstance(thumb, str) and thumb.startswith('http'):
+            li.setArt({'thumb': thumb})
+        li.setInfo('video', {'title': title, 'plot': '%s%s' % (cat, ('  %s' % time_str) if time_str else '')})
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sz6_ev', e=eid), li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sz6_refresh():
+    _sz6_events(force=True)
+    xbmc.executebuiltin('Container.Refresh()')
+
+
+def sz6_ev_view(e):
+    back_button(BASE + '?action=sz6')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    chs = _sz6_channels(e)
+    if not chs:
+        li = xbmcgui.ListItem(label=lbl('Nessun flusso per questo evento'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sz6', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    def _sortkey(c):
+        try:
+            t = int(c.get('type') or '0')
+        except Exception:
+            t = 0
+        return (1 if t == 1 else 0, (c.get('title') or '').lower())
+    for idx, ch in enumerate(sorted(chs, key=_sortkey)):
+        try:
+            t = int(ch.get('type') or '0')
+        except Exception:
+            t = 0
+        if t == 2:
+            continue
+        title = ch.get('title') or ('Canale %d' % idx)
+        if t == 1:
+            title += '  [DRM MPD]'
+        li = xbmcgui.ListItem(label=lbl(title))
+        thumb = ch.get('logo') or ''
+        if isinstance(thumb, str) and thumb.startswith('http'):
+            li.setArt({'thumb': thumb})
+        li.setProperty('isPlayable', 'true')
+        li.setInfo('video', {'title': title})
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sz6_play', e=e, i=str(idx)), li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def _resolve_channel_list(chs, idx, name):
+    try:
+        ch = chs[int(idx)]
+    except Exception:
+        notify(name, 'Canale non disponibile', True)
+        return xbmcgui.ListItem()
+    link = ch.get('link') or ''
+    if not link:
+        notify(name, 'Nessun link per questo canale', True)
+        return xbmcgui.ListItem()
+    url = link
+    hdrstr = ''
+    if '|' in link:
+        url, _, hdrstr = link.partition('|')
+    hdrs = ''
+    if hdrstr:
+        parts = []
+        for kv in hdrstr.split('&'):
+            k, _, v = kv.partition('=')
+            if not k:
+                continue
+            k = '-'.join(p.capitalize() for p in k.replace('_', '-').split('-'))
+            parts.append(k + '=' + v)
+        hdrs = '&'.join(parts)
+    is_mpd = str(ch.get('type', '0')) == '1' or url.lower().endswith('.mpd')
+    li = xbmcgui.ListItem(path=url, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'mpd' if is_mpd else 'hls')
+    api = ch.get('api') or ''
+    if api:
+        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + api)
+    if hdrs:
+        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+        if not is_mpd:
+            li.setProperty('inputstream.adaptive.license_key', '|' + hdrs)
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    if ADDON.getSetting('manifest_upd') == 'true':
+        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    return li
+
+
+def play_sz6(e, i):
+    li = _resolve_channel_list(_sz6_channels(e), i, 'Eventi 6 (SportzX)')
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
+
+
 def events_view():
     home_button()
     li = xbmcgui.ListItem(label=lbl('Eventi 1'))
@@ -3211,6 +3381,9 @@ def events_view():
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('htsport'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 5 (Canali Sport)'))
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sports'), li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Eventi 6 (SportzX)'))
+    li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sz6'), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -3809,52 +3982,7 @@ def _szx_channels(eid):
 
 
 def resolve_sportzx(eid, idx):
-    try:
-        ch = _szx_channels(eid)[int(idx)]
-    except Exception:
-        notify('Sportzx', 'Canale non disponibile', True)
-        return xbmcgui.ListItem()
-    link = ch.get('link') or ''
-    if not link:
-        notify('Sportzx', 'Nessun link per questo canale', True)
-        return xbmcgui.ListItem()
-    url = link
-    hdrstr = ''
-    if '|' in link:
-        url, _, hdrstr = link.partition('|')
-    hdrs = ''
-    if hdrstr:
-        parts = []
-        for kv in hdrstr.split('&'):
-            k, _, v = kv.partition('=')
-            if not k:
-                continue
-            k = '-'.join(p.capitalize() for p in k.replace('_', '-').split('-'))
-            parts.append(k + '=' + v)
-        hdrs = '&'.join(parts)
-    is_mpd = str(ch.get('type', '0')) == '1' or url.lower().endswith('.mpd')
-    li = xbmcgui.ListItem(path=url, offscreen=True)
-    li.setContentLookup(False)
-    li.setProperty('inputstream', 'inputstream.adaptive')
-    li.setProperty('inputstream.adaptive.manifest_type', 'mpd' if is_mpd else 'hls')
-    api = ch.get('api') or ''
-    if api:
-        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + api)
-    if hdrs:
-        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
-        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
-        if not is_mpd:
-            li.setProperty('inputstream.adaptive.license_key', '|' + hdrs)
-    if ADDON.getSetting('buffer_enabled') == 'true':
-        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
-    if ADDON.getSetting('live_async') == 'true':
-        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
-    if ADDON.getSetting('manifest_upd') == 'true':
-        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
-    bw = ADDON.getSetting('max_bandwidth').strip()
-    if bw and bw != '0':
-        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
-    return li
+    return _resolve_channel_list(_szx_channels(eid), idx, 'Sportzx')
 
 
 def guida_view():
@@ -4571,6 +4699,14 @@ def main():
             sports_refresh()
         elif action == 'sports_play':
             play_sports(query.get('u', [''])[0])
+        elif action == 'sz6':
+            sz6_view()
+        elif action == 'sz6_refresh':
+            sz6_refresh()
+        elif action == 'sz6_ev':
+            sz6_ev_view(query.get('e', [''])[0])
+        elif action == 'sz6_play':
+            play_sz6(query.get('e', [''])[0], query.get('i', [''])[0])
     elif 'group' in query:
         group_view(query['group'][0], query.get('deep', [''])[0] == '1',
                    query.get('back', [''])[0])
