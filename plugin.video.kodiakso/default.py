@@ -3362,7 +3362,7 @@ def _ht_fetch(force=False):
                     continue
                 content = m.group(0)
                 tm = re.search(r'<strong>([^<]+)</strong>', content)
-                time = _ht_clean(tm.group(1)) if tm else ''
+                mtime = _ht_clean(tm.group(1)) if tm else ''
                 tbox = re.search(r'class="teams-box"[^>]*>(.*?)</div>', content, re.S)
                 teams = re.sub(r'<[^>]+>', '', tbox.group(1)).strip() if tbox else ''
                 teams = html.unescape(teams).strip()
@@ -3373,7 +3373,7 @@ def _ht_fetch(force=False):
                     if href and name:
                         chs.append({'name': name, 'page': href})
                 cur_day['comps'][-1]['matches'].append(
-                    {'time': time, 'teams': teams, 'channels': chs})
+                    {'time': mtime, 'teams': teams, 'channels': chs})
         days = [d for d in days if d['comps']]
     except Exception as e:
         log('htsport fetch: %s' % e)
