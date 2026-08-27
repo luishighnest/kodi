@@ -78,6 +78,14 @@ _VAVOO_CAT_TTL = 1800
 _VAVOO_RESOLVE_CACHE = {}
 _VAVOO_RESOLVE_TTL = 300
 
+# === HTSPORT (Hattrick Sport) eventi ===
+HTSPORT_BASE = 'https://htsport.org'
+HTSPORT_INDEX = 'https://htsport.org/index.htm'
+HTSPORT_TTL = 600
+_HT = {'data': None, 'ts': 0}
+_HT_RES = {'data': {}, 'ts': {}}
+_HT_RES_TTL = 300
+
 
 def _vavoo_rewrite_sig_ip(sig):
     try:
@@ -3194,6 +3202,8 @@ def events_view():
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sportzx'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 3 (Daddy)'))
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy'), li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Eventi 4 (HTSport)'))
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('htsport'), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -3308,6 +3318,231 @@ def resolve_daddy(code):
     if bw and bw != '0':
         li.setProperty('inputstream.adaptive.max_bandwidth', bw)
     return li
+
+
+def _ht_clean(s):
+    return html.unescape(re.sub(r'<[^>]+>', '', s or '')).strip()
+
+
+def _ht_fetch(force=False):
+    if not force and _HT['data'] is not None and (time.time() - _HT['ts']) < HTSPORT_TTL:
+        return _HT['data']
+    days = []
+    try:
+        r = requests.get(HTSPORT_INDEX, timeout=25, headers={'User-Agent': UA})
+        r.raise_for_status()
+        text = r.text
+        day_re = re.compile(r'<div class="date-header"><span[^>]*>(.*?)</span>\s*(.*?)</div>', re.S)
+        lab_re = re.compile(r'<span class="category-label">(.*?)</span>', re.S)
+        card_re = re.compile(r'<div class="match-card\b.*?</div>\s*</div>', re.S)
+        tokens = []
+        for m in day_re.finditer(text):
+            tokens.append((m.start(), 'day', m))
+        for m in lab_re.finditer(text):
+            tokens.append((m.start(), 'lab', m))
+        for m in card_re.finditer(text):
+            tokens.append((m.start(), 'card', m))
+        tokens.sort(key=lambda x: x[0])
+        cur_day = None
+        cur_comp = None
+        for _pos, kind, m in tokens:
+            if kind == 'day':
+                name = _ht_clean(m.group(1))
+                date = _ht_clean(m.group(2))
+                cur_day = {'label': (name + ' ' + date).strip(), 'comps': []}
+                cur_comp = None
+                days.append(cur_day)
+            elif kind == 'lab':
+                if cur_day is None:
+                    continue
+                cur_comp = _ht_clean(m.group(1))
+                cur_day['comps'].append({'comp': cur_comp, 'matches': []})
+            elif kind == 'card':
+                if cur_day is None or cur_comp is None or not cur_day['comps']:
+                    continue
+                content = m.group(0)
+                tm = re.search(r'<strong>([^<]+)</strong>', content)
+                time = _ht_clean(tm.group(1)) if tm else ''
+                tbox = re.search(r'class="teams-box"[^>]*>(.*?)</div>', content, re.S)
+                teams = re.sub(r'<[^>]+>', '', tbox.group(1)).strip() if tbox else ''
+                teams = html.unescape(teams).strip()
+                chs = []
+                for a in re.finditer(r'<a href="([^"]+)"[^>]*class="btn[^"]*"[^>]*>(.*?)</a>', content, re.S):
+                    href = a.group(1)
+                    name = _ht_clean(a.group(2))
+                    if href and name:
+                        chs.append({'name': name, 'page': href})
+                cur_day['comps'][-1]['matches'].append(
+                    {'time': time, 'teams': teams, 'channels': chs})
+        days = [d for d in days if d['comps']]
+    except Exception as e:
+        log('htsport fetch: %s' % e)
+        days = []
+    _HT['data'] = days
+    _HT['ts'] = time.time()
+    return days
+
+
+def _ht_decode_obf(page):
+    m = re.search(r'var ([A-Za-z0-9_]+)=\[([0-9,]+)\],([A-Za-z0-9_]+)=(\d+),([A-Za-z0-9_]+)=(\d+),[A-Za-z0-9_]+=""', page)
+    if not m:
+        return ''
+    try:
+        nums = [int(x) for x in m.group(2).split(',')]
+        k1 = int(m.group(4))
+        k2 = int(m.group(6))
+        out = ''
+        for v in nums:
+            out += chr(((v ^ k1) - k2 + 256) % 256)
+        m3 = re.search(r'https?://[^\s"\\]+\.m3u8', out)
+        return m3.group(0) if m3 else ''
+    except Exception:
+        return ''
+
+
+def resolve_htsport(page):
+    now = time.time()
+    if page in _HT_RES['data'] and (now - _HT_RES['ts'].get(page, 0)) < _HT_RES_TTL:
+        return _HT_RES['data'][page]
+    url = ''
+    try:
+        page_url = urllib.parse.urljoin(HTSPORT_BASE, page) if not page.startswith('http') else page
+        p = requests.get(page_url, timeout=25, headers={'User-Agent': UA})
+        p.raise_for_status()
+        m = re.search(r'<iframe[^>]+src="([^"]+)"', p.text)
+        if m:
+            fr = m.group(1)
+            po = requests.get(fr, timeout=25, headers={'User-Agent': UA, 'Referer': HTSPORT_BASE + '/'})
+            po.raise_for_status()
+            url = _ht_decode_obf(po.text)
+    except Exception as e:
+        log('htsport resolve %s: %s' % (page, e))
+        url = ''
+    _HT_RES['data'][page] = url
+    _HT_RES['ts'][page] = now
+    return url
+
+
+def htsport_view():
+    back_button(BASE + '?action=events')
+    days = _ht_fetch()
+    if not days:
+        li = xbmcgui.ListItem(label=lbl('Nessuna lista eventi (sito non raggiungibile)'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for di, d in enumerate(days):
+        n = sum(len(c['matches']) for c in d['comps'])
+        li = xbmcgui.ListItem(label=lbl(d['label']))
+        li.setInfo('video', {'title': d['label'], 'plot': '%d eventi' % n})
+        xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('htsport_day', di=str(di)), li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def htsport_day_view(di):
+    back_button(BASE + '?action=htsport')
+    days = _ht_fetch()
+    try:
+        day = days[int(di)]
+    except Exception:
+        days = _ht_fetch(force=True)
+        try:
+            day = days[int(di)]
+        except Exception:
+            day = None
+    if not day:
+        li = xbmcgui.ListItem(label=lbl('Lista eventi non disponibile'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=htsport', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for ci, c in enumerate(day['comps']):
+        title = c['comp']
+        n = len(c['matches'])
+        li = xbmcgui.ListItem(label=lbl(title))
+        li.setInfo('video', {'title': title, 'plot': '%d eventi' % n})
+        url = _tmdb_url('htsport_comp', di=str(di), ci=str(ci))
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def htsport_comp_view(di, ci):
+    back_button(BASE + '?action=htsport_day&di=' + str(di))
+    days = _ht_fetch()
+    try:
+        comp = days[int(di)]['comps'][int(ci)]
+    except Exception:
+        comp = None
+    if not comp:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento disponibile'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=htsport_day&di=' + str(di), li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for mi, mt in enumerate(comp['matches']):
+        nch = len(mt['channels'])
+        label = ('[%s]  %s' % (mt['time'], mt['teams'])) if mt['time'] else mt['teams']
+        plot = mt['teams']
+        if nch:
+            plot += ' | Canali: ' + ', '.join(c['name'] for c in mt['channels'])
+        li = xbmcgui.ListItem(label=lbl(label))
+        li.setInfo('video', {'title': mt['teams'], 'plot': plot})
+        url = _tmdb_url('htsport_match', di=str(di), ci=str(ci), mi=str(mi))
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def htsport_match_view(di, ci, mi):
+    back_button(BASE + '?action=htsport_comp&di=' + str(di) + '&ci=' + str(ci))
+    days = _ht_fetch()
+    try:
+        match = days[int(di)]['comps'][int(ci)]['matches'][int(mi)]
+    except Exception:
+        match = None
+    if not match or not match['channels']:
+        li = xbmcgui.ListItem(label=lbl('Nessun canale disponibile'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=htsport_comp&di=' + str(di) + '&ci=' + str(ci), li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    title = match['teams']
+    if match['time']:
+        title = '%s  [%s]' % (match['teams'], match['time'])
+    for ch in match['channels']:
+        name = ch['name'] or 'Canale'
+        li = xbmcgui.ListItem(label=lbl(name))
+        li.setInfo('video', {'title': name, 'plot': title})
+        li.setProperty('isPlayable', 'true')
+        url = _tmdb_url('htsport_play', page=ch['page'])
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def play_htsport(page):
+    url = resolve_htsport(page)
+    if not url:
+        notify('HTSport', 'Risoluzione link non riuscita', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    li = xbmcgui.ListItem(path=url, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    try:
+        host = 'https://' + url.split('/')[2]
+    except Exception:
+        host = url
+    hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, host, host)
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    if ADDON.getSetting('manifest_upd') == 'true':
+        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    li.setProperty('inputstream.adaptive.license_key', '|User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, host, host))
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
 def sportzx_view():
@@ -4217,6 +4452,16 @@ def main():
         elif action == 'szx_play':
             li = resolve_sportzx(query.get('id', [''])[0], query.get('i', ['0'])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
+        elif action == 'htsport':
+            htsport_view()
+        elif action == 'htsport_day':
+            htsport_day_view(query.get('di', ['0'])[0])
+        elif action == 'htsport_comp':
+            htsport_comp_view(query.get('di', ['0'])[0], query.get('ci', ['0'])[0])
+        elif action == 'htsport_match':
+            htsport_match_view(query.get('di', ['0'])[0], query.get('ci', ['0'])[0], query.get('mi', ['0'])[0])
+        elif action == 'htsport_play':
+            play_htsport(query.get('page', [''])[0])
     elif 'group' in query:
         group_view(query['group'][0], query.get('deep', [''])[0] == '1',
                    query.get('back', [''])[0])
