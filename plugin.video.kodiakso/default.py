@@ -3500,6 +3500,7 @@ def htsport_comp_view(di, ci):
 
 def htsport_match_view(di, ci, mi):
     back_button(BASE + '?action=htsport_comp&di=' + str(di) + '&ci=' + str(ci))
+    xbmcplugin.setContent(HANDLE, 'videos')
     days = _ht_fetch()
     try:
         match = days[int(di)]['comps'][int(ci)]['matches'][int(mi)]
