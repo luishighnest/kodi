@@ -3277,14 +3277,7 @@ def sz6_view():
         title = ev.get('title') or ''
         cat = ev.get('cat') or ''
         ei = ev.get('eventInfo') or {}
-        teams = []
-        if ei.get('teamA'):
-            teams.append(ei['teamA'])
-        if ei.get('teamB') and ei['teamB'] != ei.get('teamA'):
-            teams.append(ei['teamB'])
         label = ('%s  [%s - %s]' % (title, time_str, cat)) if time_str else ('%s  [%s]' % (title, cat))
-        if teams:
-            label += '  (%s)' % ' - '.join(teams)
         li = xbmcgui.ListItem(label=lbl(label))
         thumb = ei.get('teamAFlag') or ei.get('teamBFlag') or ''
         if isinstance(thumb, str) and thumb.startswith('http'):
