@@ -31,5 +31,17 @@
          "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "EVENTI": [
+      {
+         "name": "Sorteggi Champions",
+         "image": "",
+         "start": "",
+         "end": "",
+         "mpd": "https://g006-lin-it-cmaf-prd-ak.pcdn07.cssott02.com/v~a-0-0_e~1787929571_",
+         "key": "",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "dazn_token": ""
+      }
    ]
 }
