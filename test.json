@@ -1,1 +1,13 @@
-{}
+{
+   "Radio TV Serie A": [
+      {
+         "name": "Focus Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/epranp9w5b1h5jqm004ae7uf3_image-header_pIt_1787145012000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-27T07:00:00Z",
+         "end": "2026-08-27T08:15:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvdWIwb2Vkano4NWp3MTdnemx2eW0xYmMxYiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJqMmRaQ29kT1Fsa1k3Q0RTSlJCT1pqd19UWXRwczRpMWY5WENKX3NtTEcwIiwiaWF0IjoxNzg3ODE3NjQ3LCJleHAiOjE3ODc5MDQwNDd9.lc5B5fzHNSI6t3BaLNl-LTIk5NIJFXOlN46nXpVmF3o/ub0oedjz85jw17gzlvym1bc1b/web/stream.mpd?channel=5070&outlet=dazn-italy&plang=it",
+         "key": "bf10b50a3bae5de68e232950f2afe946:f20c7fa8f6fab523f3ae62520d56f1e9",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
+   ]
+}
