@@ -3260,12 +3260,16 @@ def _sz6_ordered(chs):
 def _sz6_thumb(url):
     if not isinstance(url, str) or not url.startswith('http'):
         return ''
-    low = url.lower().split('?')[0]
-    if not re.search(r'\.(png|jpe?g|webp|gif)$', low):
+    u = url.lower().split('?')[0]
+    if 'enc_avif' in url.lower() or '.svg' in u:
         return ''
-    if 'enc_avif' in url.lower() or '.svg' in low:
-        return ''
-    return url
+    if re.search(r'\.(png|jpe?g|webp|gif)$', u):
+        return url
+    for dom in ('play-lh.googleusercontent.com', 'encrypted-tbn0.gstatic.com',
+                'lh3.googleusercontent.com', 'yt3.ggpht.com'):
+        if dom in u:
+            return url
+    return ''
 
 
 def _sz6_parse_start(st):
