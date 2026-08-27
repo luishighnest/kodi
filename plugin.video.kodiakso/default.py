@@ -86,6 +86,11 @@ _HT = {'data': None, 'ts': 0}
 _HT_RES = {'data': {}, 'ts': {}}
 _HT_RES_TTL = 300
 
+# === EVENTI 5 (Canali Sport 24/7 da iptv-org) ===
+SPORTS_PLAYLIST_URL = 'https://iptv-org.github.io/iptv/categories/sports.m3u'
+SPORTS_TTL = 21600
+_SPORTS = {'data': None, 'ts': 0}
+
 
 def _vavoo_rewrite_sig_ip(sig):
     try:
@@ -3204,6 +3209,8 @@ def events_view():
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 4 (HTSport)'))
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('htsport'), li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Eventi 5 (Canali Sport)'))
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sports'), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -3536,6 +3543,91 @@ def play_htsport(page):
     li.setProperty('inputstream.adaptive.manifest_type', 'hls')
     try:
         host = 'https://' + url.split('/')[2]
+    except Exception:
+        host = url
+    hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, host, host)
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    if ADDON.getSetting('manifest_upd') == 'true':
+        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    li.setProperty('inputstream.adaptive.license_key', '|User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, host, host))
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
+
+
+def _sports_fetch(force=False):
+    if not force and _SPORTS['data'] is not None and (time.time() - _SPORTS['ts']) < SPORTS_TTL:
+        return _SPORTS['data']
+    chans = []
+    try:
+        r = requests.get(SPORTS_PLAYLIST_URL, timeout=30, headers={'User-Agent': UA})
+        r.raise_for_status()
+        name = None
+        for ln in r.text.splitlines():
+            ln = ln.strip()
+            if ln.startswith('#EXTINF'):
+                if 'group-title' in ln:
+                    m = ln.rsplit('",', 1)
+                    name = m[-1].strip() if len(m) == 2 else ln.split(',', 1)[-1].strip()
+                else:
+                    name = ln.split(',', 1)[-1].strip()
+                name = re.sub(r'[\[\]\(\)]', '', name).strip()
+            elif ln.startswith('http') and name:
+                chans.append({'name': name, 'url': ln})
+                name = None
+    except Exception as e:
+        log('sports fetch: %s' % e)
+        chans = []
+    _SPORTS['data'] = chans
+    _SPORTS['ts'] = time.time()
+    return chans
+
+
+def sports_view():
+    back_button(BASE + '?action=events')
+    chans = _sports_fetch()
+    if not chans:
+        li = xbmcgui.ListItem(label=lbl('Nessun canale (playlist non raggiungibile)'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    li = xbmcgui.ListItem(label=lbl('Aggiorna canali'))
+    li.setInfo('video', {'title': 'Aggiorna canali', 'plot': 'Scarica di nuovo la playlist dei canali'})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sports_refresh'), li, isFolder=True)
+    xbmcplugin.setContent(HANDLE, 'videos')
+    for ch in sorted(chans, key=lambda c: c['name'].lower()):
+        title = ch['name'] or 'Canale'
+        li = xbmcgui.ListItem(label=lbl(title))
+        li.setInfo('video', {'title': title, 'plot': 'Canale sportivo'})
+        li.setProperty('isPlayable', 'true')
+        url = _tmdb_url('sports_play', u=ch['url'])
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sports_refresh():
+    _sports_fetch(force=True)
+    xbmc.executebuiltin('Container.Refresh()')
+
+
+def play_sports(u):
+    url = u or ''
+    if not url:
+        notify('Canali Sport', 'Nessun flusso disponibile', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    li = xbmcgui.ListItem(path=url, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    try:
+        host = ('https://' if not url.startswith('http://') else 'http://') + url.split('/')[2]
     except Exception:
         host = url
     hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, host, host)
@@ -4473,6 +4565,12 @@ def main():
             htsport_match_view(query.get('di', ['0'])[0], query.get('ci', ['0'])[0], query.get('mi', ['0'])[0])
         elif action == 'htsport_play':
             play_htsport(query.get('page', [''])[0])
+        elif action == 'sports':
+            sports_view()
+        elif action == 'sports_refresh':
+            sports_refresh()
+        elif action == 'sports_play':
+            play_sports(query.get('u', [''])[0])
     elif 'group' in query:
         group_view(query['group'][0], query.get('deep', [''])[0] == '1',
                    query.get('back', [''])[0])
