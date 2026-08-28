@@ -8,6 +8,15 @@
          "mpd": "https://dcb-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTI1NzNzdW5mbGVxYTExbzRpbHc1b2hqYmQiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzkyMjk1MywiZXhwIjoxNzg4MDA5MzUzfQ.kB1LhS8Zc-UzRDBQOKiq6wVBeqjyGfbCXhHU38_c5Ac/12573sunfleqa11o4ilw5ohjbd/web/stream.mpd?channel=3955&outlet=dazn-italy&plang=it",
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Celta Vigo - Osasuna",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/5m6i00uii2oss85g35l6voru1_image-header_pIt_1787859447000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-27T18:30:00Z",
+         "end": "2026-08-27T20:42:05Z",
+         "mpd": "https://dcb-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvOXAzNnZ1d2xsbW1rMWd4bTZ4MXY4a3Y4aiJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJVajRwZ19VSUVZblVZVGRGUm5BYWtDUGJxSVdzbzFtR1FKVDF1QU1uRkRZIiwiaWF0IjoxNzg3OTIyOTk3LCJleHAiOjE3ODgwMDkzOTd9.GT-iGbIiTdT0YTwpQb1oyHXV2EH4nC7GUiaeoLJtCPM/9p36vuwllmmk1gxm6x1v8kv8j/web/stream.mpd?channel=3936&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
    "Live TV": [
