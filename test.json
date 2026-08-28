@@ -108,6 +108,15 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwNDQxNzQsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ2MTBlNWFkNmZjMmJjMGEyODNmZDBhNjEwMTk1YmM5ZDQxYjRmYiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5NTc3NzR9.Ls2N_2HZ0E4pJyqHGkg-wc04LvF052rPioxHxkblrUM/1s29lpp8b5e2i1w1w9nsatdlq6/web/stream.mpd?channel=1837&outlet=dazn-italy&plang=it",
          "key": "14f25ad6f53c5a0791e805ba14220dfe:61319c7b23084e67332acca08ef6171f",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Falcons @ Dolphins",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/r7ykgi5ww1cx1tot7qhzgpndj_image-header_pIt_1782996027000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-28T23:00:00Z",
+         "end": "2026-08-29T03:00:00Z",
+         "mpd": "https://dcb-deit-livedazn.daznedge.net/@tend:1788044251~proto:dash~geo:IT~asn:30722_198471~path:1_1_b0433db197183f6c57a56e6c50925b82ac7e5230c5152be766ea1d28d7a44af1~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:5083a26a7604d4da2c576a564a41f604624aee67d1d5d4434d2b942c6bc3055c/1s29lpp8b5e2i1w1w9nsatdlq6/web/stream.mpd?channel=1837&outlet=dazn-italy&plang=it",
+         "key": "14f25ad6f53c5a0791e805ba14220dfe:61319c7b23084e67332acca08ef6171f",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ]
 }
