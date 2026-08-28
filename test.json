@@ -58,5 +58,16 @@
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "Frauen Bundesliga": [
+      {
+         "name": "Colonia - Hoffenheim (WARP)",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/cc0tg7nthffwbc55mw0x6gb8q_image-header_pIt_1785404540000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-28T16:30:00Z",
+         "end": "2026-08-28T19:00:00Z",
+         "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788025308~proto:dash~geo:IT~asn:13335~path:1_1_6a5da4b0876996ed28670f54600ab3ad8609a13b644309517e4e1dd381d336b1~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:fc90a2a621a522c238f8d2a90dd767067530e39f1ee6f66ea1d146944827ef28/1e7j15lov4l1a1bpporgjsesw0/web/stream.mpd?channel=7067&outlet=dazn-italy&plang=it",
+         "key": "1cfc194fdd0351a1b1588269cdb01e31:01d498d7a11848b456bb7abf8c22ccd2",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
    ]
 }
