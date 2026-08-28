@@ -39,6 +39,15 @@
          "mpd": "https://dca-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTI1NzNzdW5mbGVxYTExbzRpbHc1b2hqYmQiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzkzNjc5MywiZXhwIjoxNzg4MDIzMTkzfQ.eANv2fvpCjPTbERqjlkEiqQIbg43uDhVAzD6Fb1OIY4/12573sunfleqa11o4ilw5ohjbd/web/stream.mpd?channel=3955&outlet=dazn-italy&plang=it",
          "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Barcellona - Athletic Bilbao",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/3dhbsndrp7b418a2oaq9ikqpi_image-header_pIt_1787859684000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-27T19:00:00Z",
+         "end": "2026-08-27T21:11:08Z",
+         "mpd": "https://dcb-de-voddazn.daznedge.net/@tend:1788023347~proto:dash~geo:IT~asn:30722_198471~path:1_1_6d9b8274f1e4d09f1c2debe4356807a72b4004b67e96a6c73dfd22f24537ad51~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:3bdf1cb8b77ce9f4f0a25c8403267b0f26931fbfd8b878a200c211c2616e81a1/12573sunfleqa11o4ilw5ohjbd/web/stream.mpd?channel=3955&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ]
 }
