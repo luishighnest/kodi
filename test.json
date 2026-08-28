@@ -2,11 +2,11 @@
    "LALIGA EA SPORTS": [
       {
          "name": "Barcellona - Athletic Bilbao",
-         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/3dhbsndrp7b418a2oaq9ikqpi_image-header_pIt_1787849828000/fill/none/top/none/100/1280/720/png/image",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/3dhbsndrp7b418a2oaq9ikqpi_image-header_pIt_1787859684000/fill/none/top/none/100/1280/720/png/image",
          "start": "2026-08-27T19:00:00Z",
          "end": "2026-08-27T21:11:08Z",
-         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODc5NTc2MTksImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiM2YyODkxOTNlMWVmZTY4OWRhNWI2MWZlMGQzZDk1Y2I1NDE4N2U5ZiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc4NzEyMTl9.U3iRhQgNjQ5pU_CB_oXJtVjbGuk2vGS4wg2wy47KaAE/12573sunfleqa11o4ilw5ohjbd/web/stream.mpd?channel=3955&outlet=dazn-italy&plang=it&static=1787865069",
-         "key": "8789efad04d0541ea4e8be1b0bb46579:1c4d715dbb0263fed5c9f2c4d3b83893",
+         "mpd": "https://dcb-ac-vod.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTI1NzNzdW5mbGVxYTExbzRpbHc1b2hqYmQiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4NzkyMjk1MywiZXhwIjoxNzg4MDA5MzUzfQ.kB1LhS8Zc-UzRDBQOKiq6wVBeqjyGfbCXhHU38_c5Ac/12573sunfleqa11o4ilw5ohjbd/web/stream.mpd?channel=3955&outlet=dazn-italy&plang=it",
+         "key": "cfb5e2b73bef4f3c878f25ab86a7451f:0d6712bf2a84edcc93d001a9613f6fec",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
