@@ -78,5 +78,16 @@
          "key": "1cfc194fdd0351a1b1588269cdb01e31:01d498d7a11848b456bb7abf8c22ccd2",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "Serie BKT": [
+      {
+         "name": "Cremonese - Modena (WARP)",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/co2xialrewfoaaipnk83me63n_image-header_pIt_1787748320000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-28T18:30:00Z",
+         "end": "2026-08-28T21:00:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwMzQ0OTEsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNzcyMTQ0YTVkMTViZDQ0NTM0ZDRhZmVjZGM4ZjdkNTJkZTJhMjRjOSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5NDgwOTF9.6N_LRfq-T9tH4Uui1kfvHJKJvolQqpnB1ZoMvESs_rI/18sc3hkfr1o491tfkppw4jh4ig/web/stream.mpd?channel=3953&outlet=dazn-italy&plang=it",
+         "key": "a63130c1851755d29849e43feadda4bd:3f13773ad54786762d660d17f83bb27a",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
    ]
 }
