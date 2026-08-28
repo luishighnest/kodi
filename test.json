@@ -126,6 +126,15 @@
          "mpd": "https://dcb-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwNDQyNjksImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiZDZlMTlhMWMyY2YyODIxNTVhMjM3YTc0NjBlNjU1OWUwY2M5NTUxNyIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5NTc4Njl9.Uw_rnP8sMYU417t9gOcs03oE_ecFBe63bzNpC4v-r_k/rvvk7wu903vl1xmysafk3qf60/web/stream.mpd?channel=1835&outlet=dazn-italy&plang=it",
          "key": "f95b6a56628f53a396c9ec64e4b1c498:f163610d8a729bbf305ad0f9860214e4",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Texans @ Panthers",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/1jvcj1ho9fdmj17oslnmk13h01_image-header_pIt_1782995485000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-28T23:00:00Z",
+         "end": "2026-08-29T03:00:00Z",
+         "mpd": "https://dcb-deit-livedazn.daznedge.net/@tend:1788044282~proto:dash~geo:IT~asn:30722_198471~path:1_1_dafe6afdcc0c572d454b913fc43c8c30a9f5e25572587ddc8a6ed83c80a0449e~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:70d4c1e191e93d62d5b33cfb13722d85e5ffb67389571bb201cecb190e1019fa/rvvk7wu903vl1xmysafk3qf60/web/stream.mpd?channel=1835&outlet=dazn-italy&plang=it",
+         "key": "f95b6a56628f53a396c9ec64e4b1c498:f163610d8a729bbf305ad0f9860214e4",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ]
 }
