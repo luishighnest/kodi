@@ -60,5 +60,16 @@
          "key": "485697cf1079581d8af1476ba0903cdd:c37684a246ae0e60bdf8a290d10e6f6c",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "TAIF Racing ": [
+      {
+         "name": "TAIF Racing Season 2026 - Week 6, Day 1",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/1mmkcuog58aoe16rbn1e7vj9v2_image-header_pIt_1786457364000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-28T13:05:00Z",
+         "end": "2026-08-28T18:20:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvN2syeml4cHNxdWc2MW9raWUxejJlMmNiOSJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJVajRwZ19VSUVZblVZVGRGUm5BYWtDUGJxSVdzbzFtR1FKVDF1QU1uRkRZIiwiaWF0IjoxNzg3OTMwMTcwLCJleHAiOjE3ODgwMTY1NzB9.sMlXYuso8KEgBPIGPPC4ABwqgNdaxMcFPi0Syt6dSc4/7k2zixpsqug61okie1z2e2cb9/web/stream.mpd?channel=7611&outlet=dazn-italy&plang=it",
+         "key": "52d32e537bce55be82ef8c87ab9735dc:3b344cf019ef2d9bfebd0b330f703ec6",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
    ]
 }
