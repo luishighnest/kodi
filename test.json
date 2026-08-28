@@ -98,5 +98,16 @@
          "key": "a63130c1851755d29849e43feadda4bd:3f13773ad54786762d660d17f83bb27a",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "NFL Game Pass": [
+      {
+         "name": "Falcons @ Dolphins (WARP)",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/r7ykgi5ww1cx1tot7qhzgpndj_image-header_pIt_1782996027000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-28T23:00:00Z",
+         "end": "2026-08-29T03:00:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwNDQxNzQsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNWQ2MTBlNWFkNmZjMmJjMGEyODNmZDBhNjEwMTk1YmM5ZDQxYjRmYiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5NTc3NzR9.Ls2N_2HZ0E4pJyqHGkg-wc04LvF052rPioxHxkblrUM/1s29lpp8b5e2i1w1w9nsatdlq6/web/stream.mpd?channel=1837&outlet=dazn-italy&plang=it",
+         "key": "14f25ad6f53c5a0791e805ba14220dfe:61319c7b23084e67332acca08ef6171f",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
    ]
 }
