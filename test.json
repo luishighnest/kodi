@@ -88,6 +88,15 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwMzQ0OTEsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNzcyMTQ0YTVkMTViZDQ0NTM0ZDRhZmVjZGM4ZjdkNTJkZTJhMjRjOSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5NDgwOTF9.6N_LRfq-T9tH4Uui1kfvHJKJvolQqpnB1ZoMvESs_rI/18sc3hkfr1o491tfkppw4jh4ig/web/stream.mpd?channel=3953&outlet=dazn-italy&plang=it",
          "key": "a63130c1851755d29849e43feadda4bd:3f13773ad54786762d660d17f83bb27a",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Cremonese - Modena",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/co2xialrewfoaaipnk83me63n_image-header_pIt_1787748320000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-28T18:30:00Z",
+         "end": "2026-08-28T21:00:00Z",
+         "mpd": "https://dca-deit-livedazn.daznedge.net/@tend:1788034530~proto:dash~geo:IT~asn:30722_198471~path:1_1_71d845ec6221a1f388a0064b712d3f7c0e7f4ea151fc6932588ea2fe3130e3e2~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:1202119f73b3610c7d3a1183cde1c57726f27c594e5c7d9d45bd97e8ebd501d4/18sc3hkfr1o491tfkppw4jh4ig/web/stream.mpd?channel=3953&outlet=dazn-italy&plang=it",
+         "key": "a63130c1851755d29849e43feadda4bd:3f13773ad54786762d660d17f83bb27a",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ]
 }
