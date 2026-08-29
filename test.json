@@ -214,5 +214,17 @@
          "key": "f2362e687ae3551598faab170eb82eaf:ade1746ca8e339ba1e41bc6ca13eb25f",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "EVENTI": [
+      {
+         "name": "Liverpool - Forest",
+         "image": "",
+         "start": "",
+         "end": "",
+         "mpd": "https://g006-lin-it-cmaf-prd-cf.pcdn07.cssott02.com/v~1-0-0_e~1788039920_f~0_g~1_s~8574e3d0-917e-4e14-92df-dfc26a740fd4_u~f67a647e4e553b91b895defd31fe4145d268f61e271cba8420fbe70061a6a88d_k~A_l~60_x~978862fd88f160c479f95902190db3df/nowitlin2/Content/CMAF_CTR_H1/Live/channel(skysportcalcio)/master_2hr-all.mpd?t=v1&c3.original=%5BXrom-ITA%5D&ck=eyIxMTE4NDYyMzVjMDQ3ODZkYjEzZjk0NWM0ZjJkMWVjMCI6ImIzOWFjNDM4Y2QxNDljYTg2MDk2ZTU4NmIxZjE2NjliIn0%3D",
+         "key": "",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "type": "evento"
+      }
    ]
 }
