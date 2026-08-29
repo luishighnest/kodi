@@ -1347,9 +1347,16 @@ def _guida_sky_now(channel_name):
         return None, None
 
 
-def _sky2_resolve_logo(logo_path):
+def _sky2_resolve_logo(logo_path, ch_name=''):
+    c_clean = re.sub(r'[^a-zA-Z0-9]', '', (ch_name or '').lower())
+    if c_clean in LOGOS:
+        return LOGO_BASE + LOGOS[c_clean]
+    if ch_name:
+        for k, v in LOGOS.items():
+            if k in c_clean or c_clean in k:
+                return LOGO_BASE + v
     if not logo_path:
-        return SQUARE_ICON
+        return LOGO_BASE + 'skyhd.png'
     if logo_path.startswith('http://') or logo_path.startswith('https://'):
         return logo_path
     if logo_path.startswith('logos/'):
@@ -1438,7 +1445,7 @@ def sky2_cat_view(cat, back=''):
     for idx, it in enumerate(items):
         name = it.get('name') or it.get('title') or 'Canale'
         mpd_url = it.get('mpd') or it.get('url') or ''
-        logo_url = _sky2_resolve_logo(it.get('logo'))
+        logo_url = _sky2_resolve_logo(it.get('logo'), name)
         
         # Scadenza stream dall'URL _e~<ts>_
         exp = _sky2_url_expiry(mpd_url)
