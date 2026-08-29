@@ -1462,8 +1462,14 @@ def sky2_cat_view(cat, back=''):
         if l2:
             li.setLabel2(l2)
             
-        thumb = cur.get('immagine') if (cur and cur.get('immagine')) else logo_url
-        li.setArt({'thumb': thumb, 'icon': logo_url, 'poster': thumb or logo_url})
+        cur_img = cur.get('immagine') if (cur and cur.get('immagine')) else ''
+        art = {
+            'thumb': logo_url,
+            'icon': logo_url,
+            'poster': cur_img if cur_img else logo_url,
+            'fanart': cur_img if cur_img else logo_url
+        }
+        li.setArt(art)
         li.setProperty('isPlayable', 'true')
         
         plot_lines = []
@@ -2174,10 +2180,13 @@ def sky_cat_view(cat, back=''):
                     li.setLabel2(l2)
                 logo = LOGOS.get(cid, '')
                 logo_art = (LOGO_BASE + logo) if logo else SQUARE_ICON
-                thumb_art = cur_img if cur_img else logo_art
-                li.setArt({'thumb': thumb_art,
-                           'icon': logo_art,
-                           'poster': thumb_art})
+                art = {
+                    'thumb': logo_art,
+                    'icon': logo_art,
+                    'poster': cur_img if cur_img else logo_art,
+                    'fanart': cur_img if cur_img else logo_art
+                }
+                li.setArt(art)
                 li.setProperty('isPlayable', 'true')
                 if exp:
                     lines.insert(0, 'Scadenza %s' % exp.strftime('%d/%m/%Y %H:%M'))
