@@ -241,21 +241,15 @@ def lbl(txt):
 
 
 def _top_button(label, icon, url):
-    li = xbmcgui.ListItem(label=lbl(label))
-    li.setArt({'thumb': icon})
-    li.setProperty('IsPlayable', 'false')
-    nav = BASE + '?action=nav&url=' + urllib.parse.quote(url, safe='')
-    xbmcplugin.addDirectoryItem(HANDLE, nav, li, isFolder=False)
+    pass
 
 
 def home_button():
-    _top_button('Home', HOME_ICON, BASE + '?action=root')
+    pass
 
 
 def back_button(url=''):
-    if not url:
-        url = BASE + '?action=root'
-    _top_button('Indietro', BACK_ICON, url)
+    pass
 
 LOGOS = {
     'tg24': 'skytg24.png',
