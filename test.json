@@ -35,6 +35,15 @@
          "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvNHk2MHZtbzJvbjl2MTN0emxkdTdhZnhkcSJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJVajRwZ19VSUVZblVZVGRGUm5BYWtDUGJxSVdzbzFtR1FKVDF1QU1uRkRZIiwiaWF0IjoxNzg3OTkzMzIxLCJleHAiOjE3ODgwNzk3MjF9.GhVEnt_DSgae0wIYze-cLOOClwckkD8yaomesi2EhZw/4y60vmo2on9v13tzldu7afxdq/web/stream.mpd?channel=5061&outlet=dazn-italy&plang=it",
          "key": "977738a9da775e36a8855045b39dae66:b3bb0f0ea4e837b9cdb870784f569b1c",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Il Sabato della Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/8gucpds3t07kbwaulprvlxmx_image-header_pIt_1787147085000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-29T12:30:00Z",
+         "end": "2026-08-29T15:10:00Z",
+         "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788095131~proto:dash~geo:IT~asn:30722_198471~path:1_1_9e12bc4d0970d3b171bdf8e221b5af499e72662dfebac745868c3a9cbe63ffbe~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:f40e026815cab3f0b0c23e483702f9348ce3091af92509509130e9992644982f/xs1ydqj43ut111hgo3gimr56g/web/stream.mpd?channel=5066&outlet=dazn-italy&plang=it",
+         "key": "604bb1990d1a5cc0847e146668f9a4a0:7aa549414cba7536f6555a685953dcfc",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
    "Live TV": [
