@@ -48,20 +48,20 @@
    ],
    "Live TV": [
       {
-         "name": "DAZN 1 (WARP)",
-         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000/fill/none/top/none/100/1280/720/png/image",
-         "start": "2024-05-23T10:00:00Z",
-         "end": "3000-01-01T00:00:00Z",
-         "mpd": "https://dcs-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwMjMxNTcsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5MzY3NTd9.lqsZ9DsAbWuWpBeZvGwD6YFGfObazVlIxcttDE4YF_k/dash/dazn-linear-206/stream.mpd?p=web",
-         "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
-         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
-      },
-      {
          "name": "DAZN 1",
          "image": "https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000/fill/none/top/none/100/1280/720/png/image",
          "start": "2024-05-23T10:00:00Z",
          "end": "3000-01-01T00:00:00Z",
          "mpd": "https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgxMDI3NzMsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODgwMTYzNzN9.gOFWF5CVbIbpEOBx-Vbwd12EM2m2BmegSUTFEjm-lYM/dash/dazn-linear-206/stream.mpd?p=web",
+         "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "DAZN 1 (WARP)",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1754467959000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2024-05-23T10:00:00Z",
+         "end": "3000-01-01T00:00:00Z",
+         "mpd": "https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvZGFzaC9kYXpuLWxpbmVhci0yMDYiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiVWo0cGdfVUlFWW5VWVRkRlJuQWFrQ1BicUlXc28xbUdRSlQxdUFNbkZEWSIsImlhdCI6MTc4ODAxNjM5MiwiZXhwIjoxNzg4MTAyNzkyfQ.tInHFcpapjDPtwUovfdVTY03anPUVDLvXMljbT8ElMU/dash/dazn-linear-206/stream.mpd?p=web",
          "key": "6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
