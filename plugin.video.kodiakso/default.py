@@ -1443,27 +1443,36 @@ def sky2_cat_view(cat, back=''):
         items = []
 
     for idx, it in enumerate(items):
-        name = it.get('name') or it.get('title') or 'Canale'
+        raw_name = it.get('name') or it.get('title') or 'Canale'
+        cid = re.sub(r'[^a-zA-Z0-9]', '', raw_name).lower()
+        if 'skysport' in cid:
+            rest = cid.replace('skysport', '')
+            ch_title = ('SPORT ' + rest).upper()
+        else:
+            ch_title = raw_name.upper()
         mpd_url = it.get('mpd') or it.get('url') or ''
-        logo_url = _sky2_resolve_logo(it.get('logo'), name)
+        logo_url = _sky2_resolve_logo(it.get('logo'), raw_name)
         
         # Scadenza stream dall'URL _e~<ts>_
         exp = _sky2_url_expiry(mpd_url)
         
         # EPG
-        cur, nxt = _guida_sky_now(name)
+        cur, nxt = _guida_sky_now(raw_name)
+        if not cur:
+            cur, nxt = _guida_sky_now(ch_title)
         prog = ''
+        cur_img = ''
         if cur and cur.get('titolo'):
             prog = '%s %s' % (cur.get('ora', ''), cur.get('titolo', ''))
+            cur_img = cur.get('immagine', '')
         
         # Formattazione parti, label, label2 e title identica a Lista 1
-        label, l2, tname = _sky_parts(name, exp, prog)
+        label, l2, tname = _sky_parts(ch_title, exp, prog)
         
-        li = xbmcgui.ListItem(label=lbl(label))
+        li = xbmcgui.ListItem(label=label)
         if l2:
             li.setLabel2(l2)
             
-        cur_img = cur.get('immagine') if (cur and cur.get('immagine')) else ''
         art = {
             'thumb': logo_url,
             'icon': logo_url,
@@ -1481,7 +1490,7 @@ def sky2_cat_view(cat, back=''):
         if nxt and nxt.get('titolo'):
             plot_lines.append('Successivo: %s %s' % (nxt.get('ora', ''), nxt.get('titolo', '')))
             
-        li.setInfo('video', {'title': tname, 'plot': ' | '.join(plot_lines) if plot_lines else name, 'mediatype': 'video'})
+        li.setInfo('video', {'title': tname, 'plot': ' | '.join(plot_lines) if plot_lines else ch_title, 'mediatype': 'video'})
         url = BASE + '?action=sky2play&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
 
