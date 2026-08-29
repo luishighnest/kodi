@@ -146,6 +146,15 @@
          "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788078839~proto:dash~geo:IT~asn:13335~path:1_1_d67b1e239a66fb6877bf7e40fb2adcdec69f75fc9711cd3b10f749e3ce8aa776~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:064738d113109bfad85ffd60cd0f796f4399b2c51b28f8311aa8492259f63f0a/k8rmgz9nmv911g5cxah3izmwh/web/stream.mpd?channel=5677&outlet=dazn-italy&plang=it",
          "key": "640b1908883755bb9dd7a051ff1443c5:ecd43dcbbbae9052447e08e07981cabd",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "NASCAR GP Czech Republic - NASCAR Pro & Open Qualifying",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/1tqc6cqqku38p1o3lfx6rksoo1_image-header_pIt_1787572383000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-29T07:45:00Z",
+         "end": "2026-08-29T09:30:00Z",
+         "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788078858~proto:dash~geo:IT~asn:30722_198471~path:1_1_d67b1e239a66fb6877bf7e40fb2adcdec69f75fc9711cd3b10f749e3ce8aa776~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:074d6f347a0d4a354522e12a48ce390cbe6f4b27e99adb179d4c2bd8f11699e5/k8rmgz9nmv911g5cxah3izmwh/web/stream.mpd?channel=5677&outlet=dazn-italy&plang=it",
+         "key": "640b1908883755bb9dd7a051ff1443c5:ecd43dcbbbae9052447e08e07981cabd",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
    "UTMB World Series": [
@@ -155,6 +164,15 @@
          "start": "2026-08-29T00:30:00Z",
          "end": "2026-08-29T10:45:00Z",
          "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788078842~proto:dash~geo:IT~asn:13335~path:1_1_331703ab1c90e881012ad5ec04dfeb28cca7075498b5589f15b6ef193d1dc176~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:f0773639476a25db4f4ac727144d1a975794351581c89bd902424a8a3723eb49/3j0u7dr770ij1kpwielq40pkk/web/stream.mpd?channel=5072&outlet=dazn-italy&plang=it",
+         "key": "ecbd2e31006252fdb98acb3da0319652:368f25d6fa78307ca62fec61aafaac8f",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "HOKA UTMB Mont-Blanc - Day 3, Part 1",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/12qspbrebs0em1xdls2t387t7u_image-header_pIt_1787744398000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-29T00:30:00Z",
+         "end": "2026-08-29T10:45:00Z",
+         "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788078859~proto:dash~geo:IT~asn:30722_198471~path:1_1_331703ab1c90e881012ad5ec04dfeb28cca7075498b5589f15b6ef193d1dc176~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:413ea749351f3c328b09940d2468065bac80a110f787801a6df444fc95ebe4a6/3j0u7dr770ij1kpwielq40pkk/web/stream.mpd?channel=5072&outlet=dazn-italy&plang=it",
          "key": "ecbd2e31006252fdb98acb3da0319652:368f25d6fa78307ca62fec61aafaac8f",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
