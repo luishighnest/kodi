@@ -17,6 +17,15 @@
          "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwMjMzMTgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiYzdkNGQxNDJmMzA5OWU4ODcxNzA5ZGRlNjhkY2M4YmMxYTliYTdjNiIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5MzY5MTh9.6zeDm0bVt_4Uv-QcAWcsdjkUIJAPPP9zyai_5pp3AIY/5ps68cymqjgy1sxa04zvrp0rf/web/stream.mpd?channel=7009&outlet=dazn-italy&plang=it",
          "key": "1a6f94e5811a534f83b9bc59426efbde:e8ca688ff63e619a10f15596b08efa5b",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Focus Serie A",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/3w42dxv4g2n9p5uvdxhnlegz9_image-header_pIt_1787145012000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-29T07:00:00Z",
+         "end": "2026-08-29T08:15:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwNzk2NzgsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNzU3YTJiMzM5YjYzMWJiN2ExMWNkZjNkZGRjOTA2YmI0ODJiNWU0OCIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODc5OTMyNzh9.RBiFv8mUo9IZl3HhvcOIreGj5kfq_WQPps7lpxV204g/4y60vmo2on9v13tzldu7afxdq/web/stream.mpd?channel=5061&outlet=dazn-italy&plang=it",
+         "key": "977738a9da775e36a8855045b39dae66:b3bb0f0ea4e837b9cdb870784f569b1c",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
    "Live TV": [
