@@ -44,6 +44,15 @@
          "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788095131~proto:dash~geo:IT~asn:30722_198471~path:1_1_9e12bc4d0970d3b171bdf8e221b5af499e72662dfebac745868c3a9cbe63ffbe~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:f40e026815cab3f0b0c23e483702f9348ce3091af92509509130e9992644982f/xs1ydqj43ut111hgo3gimr56g/web/stream.mpd?channel=5066&outlet=dazn-italy&plang=it",
          "key": "604bb1990d1a5cc0847e146668f9a4a0:7aa549414cba7536f6555a685953dcfc",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      },
+      {
+         "name": "Serie A Live",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/82540rg5nrmrwac1jgv0cu9ec_image-header_pIt_1770549500000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-29T15:05:00Z",
+         "end": "2026-08-29T22:10:00Z",
+         "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXhkb3I1ZHJtdm8wbTFvcWRwZHFxOWtwc3YiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4ODAzNTU3NCwiZXhwIjoxNzg4MTIxOTc0fQ.u7FrStIAIYwBzDCrJMktnBKJI99QhEOQdb3__j6rQaY/1xdor5drmvo0m1oqdpdqq9kpsv/web/stream.mpd?channel=5064&outlet=dazn-italy&plang=it",
+         "key": "9d1cd39a34ad5021b16c46febee6ceed:743c3772d45eb70fa2588370b950638d",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
    ],
    "Live TV": [
