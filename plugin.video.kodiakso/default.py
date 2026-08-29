@@ -30,6 +30,11 @@ NAME = ADDON.getAddonInfo('name')
 
 DEFAULT_URL = 'https://luishighnest.github.io/kodi/playlist.m3u'
 REPO_BASE = 'https://luishighnest.github.io/kodi'
+ZADONKAIS_BASE = 'https://luishighnest.github.io/zadonkais'
+SKY2_JSON_URL = ZADONKAIS_BASE + '/sky2.json'
+GUIDA_TV_SKY_URL = ZADONKAIS_BASE + '/guida_tv_sky.json'
+_SKY2_CACHE = {'data': None, 'ts': 0}
+_GUIDA_SKY_CACHE = {'data': None, 'ts': 0}
 PLAYLIST_URL = ADDON.getSetting('playlist_url').strip() or DEFAULT_URL
 PLAYLIST_TS = ADDON.getSetting('playlist_timestamp') == 'true'
 
@@ -1278,66 +1283,170 @@ def sky1_view(back=''):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def sky2_view(back=''):
-    back_button(back or (BASE + '?action=sky'))
-    epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
+def _sky2_fetch():
+    now = time.time()
+    if _SKY2_CACHE['data'] is not None and (now - _SKY2_CACHE['ts'] < 120):
+        return _SKY2_CACHE['data']
+    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
+    r = requests.get(SKY2_JSON_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
+    r.raise_for_status()
+    data = json.loads(r.content.decode('utf-8-sig'))
+    _SKY2_CACHE['data'] = data
+    _SKY2_CACHE['ts'] = now
+    return data
+
+
+def _guida_sky_fetch():
+    now = time.time()
+    if _GUIDA_SKY_CACHE['data'] is not None and (now - _GUIDA_SKY_CACHE['ts'] < 300):
+        return _GUIDA_SKY_CACHE['data']
+    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
+    r = requests.get(GUIDA_TV_SKY_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
+    r.raise_for_status()
+    data = json.loads(r.content.decode('utf-8-sig'))
+    _GUIDA_SKY_CACHE['data'] = data
+    _GUIDA_SKY_CACHE['ts'] = now
+    return data
+
+
+def _guida_sky_now(channel_name):
+    """Cerca il programma corrente e successivo in guida_tv_sky.json per il nome del canale."""
     try:
-        catalog = _vavoo_catalog()
-        # filtra Italy + sky, deduplica per nome base (rimuove .c/.s e backup)
-        seen = {}
-        for it in catalog:
-            grp = it.get('group', '')
-            if 'Italy' not in grp:
+        data = _guida_sky_fetch()
+        if not isinstance(data, list):
+            return None, None
+        c_clean = re.sub(r'[^a-zA-Z0-9]', '', (channel_name or '').lower())
+        group = None
+        for g in data:
+            if not g or not g.get('canale'):
                 continue
-            name = (it.get('name') or '').strip()
-            if 'sky' not in name.lower():
-                continue
-            play_url = it.get('url', '')
-            if not play_url:
-                continue
-            # normalizza: toglie suffissi .c/.s, (BACKUP), spazi doppi, (7)
-            base = re.sub(r'\s*\.(c|s)\s*$', '', name, flags=re.IGNORECASE).strip()
-            base = re.sub(r'\s*\(BACKUP\)\s*', ' ', base, flags=re.IGNORECASE).strip()
-            base = re.sub(r'\s*\(\d+\)\s*$', '', base).strip()
-            base = re.sub(r'\s+', ' ', base)
-            key = base.lower()
-            # preferisci .c (cloud) al .s, e la prima occorrenza vince
-            if key not in seen:
-                seen[key] = (base, play_url, it.get('logo') or '')
-            elif '.c' in name.lower() and '.s' in seen[key][0].lower():
-                seen[key] = (base, play_url, it.get('logo') or seen[key][2])
-
-        if not seen:
-            raise Exception('catalogo Vavoo vuoto')
-
-        sky_list = sorted(seen.values(), key=lambda x: x[0].lower())
-
-        xbmcplugin.setContent(HANDLE, 'videos')
-        for cname, ch_url, logo in sky_list:
-            cur, nxt = _epg_now(cname, epg)
-            cur_prog = str(cur[2]).strip() if (cur and len(cur) >= 3 and cur[2]) else ''
-            lines = []
-            if cur:
-                lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
-            if nxt:
-                lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
-            # logo mappato o da catalog
-            lkey = cname.lower().replace('sky ', '').replace(' ', '')
-            mapped = LOGOS.get(lkey, '')
-            thumb = (LOGO_BASE + mapped) if mapped else (logo or SQUARE_ICON)
-            li = xbmcgui.ListItem(label=lbl(cname))
-            li.setArt({'thumb': thumb, 'icon': thumb, 'poster': thumb})
-            li.setProperty('isPlayable', 'true')
-            li.setInfo('video', {'title': cname, 'plot': ' | '.join(lines), 'mediatype': 'video'})
-            url = BASE + '?action=vavooplay&url=' + urllib.parse.quote(ch_url) + '&t=' + urllib.parse.quote(cname) + '&p=' + urllib.parse.quote(cur_prog)
-            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+            gn_clean = re.sub(r'[^a-zA-Z0-9]', '', g['canale'].lower())
+            if gn_clean == c_clean or gn_clean in c_clean or c_clean in gn_clean:
+                group = g
+                break
+        if not group or not group.get('programmi'):
+            return None, None
+        progs = group['programmi']
+        now_dt = datetime.now()
+        now_min = now_dt.hour * 60 + now_dt.minute
+        cur_idx = -1
+        for i, p in enumerate(progs):
+            ora_str = p.get('ora', '0:00')
+            parts = ora_str.split(':')
+            pm = int(parts[0]) * 60 + int(parts[1]) if len(parts) == 2 else 0
+            if pm > now_min:
+                cur_idx = i - 1
+                break
+        if cur_idx == -1:
+            cur_idx = len(progs) - 1
+        cur_prog = progs[cur_idx] if cur_idx >= 0 else None
+        nxt_prog = progs[cur_idx + 1] if cur_idx + 1 < len(progs) else None
+        return cur_prog, nxt_prog
     except Exception as e:
-        xbmc.log('KODIAKSO sky2_view ERR: ' + str(e), xbmc.LOGERROR)
-        import traceback
-        xbmc.log('KODIAKSO sky2_view TB: ' + traceback.format_exc(), xbmc.LOGERROR)
-        notify('SKY 2', 'Errore caricamento canali (Vavoo auth)', True)
+        log('guida_sky_now err: %s' % e)
+        return None, None
+
+
+def _sky2_resolve_logo(logo_path):
+    if not logo_path:
+        return SQUARE_ICON
+    if logo_path.startswith('http://') or logo_path.startswith('https://'):
+        return logo_path
+    if logo_path.startswith('logos/'):
+        return ZADONKAIS_BASE + '/' + logo_path
+    return ZADONKAIS_BASE + '/logos/' + logo_path
+
+
+def sky2_view(back=''):
+    """Nuova vista principale SKY 2: mostra le categorie da sky2.json."""
+    back_button(back or (BASE + '?action=root'))
+    xbmcplugin.setContent(HANDLE, 'videos')
+    try:
+        data = _sky2_fetch()
+    except Exception as e:
+        log('sky2 fetch ERR: %s' % e)
+        li = xbmcgui.ListItem(label=lbl('Impossibile scaricare sky2.json'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    for cat in data.keys():
+        items = data[cat] or []
+        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (cat, len(items))))
+        li.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png', 'poster': LOGO_BASE + 'skyhd.png'})
+        li.setInfo('video', {'title': cat, 'plot': '%d canali' % len(items)})
+        url = BASE + '?action=sky2cat&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky2')
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky2_cat_view(cat, back=''):
+    """Mostra i canali della categoria scelta da sky2.json con EPG da guida_tv_sky.json."""
+    back_button(back or (BASE + '?action=sky2'))
+    xbmcplugin.setContent(HANDLE, 'videos')
+    try:
+        data = _sky2_fetch()
+        items = data.get(cat) or []
+    except Exception as e:
+        log('sky2 cat fetch ERR: %s' % e)
+        items = []
+
+    for idx, it in enumerate(items):
+        name = it.get('name') or it.get('title') or 'Canale'
+        logo_url = _sky2_resolve_logo(it.get('logo'))
+        cur, nxt = _guida_sky_now(name)
+        
+        plot_lines = []
+        label = name
+        if cur and cur.get('titolo'):
+            label = '%s • %s' % (name, cur['titolo'])
+            plot_lines.append('In onda: %s %s' % (cur.get('ora', ''), cur.get('titolo', '')))
+        if nxt and nxt.get('titolo'):
+            plot_lines.append('Successivo: %s %s' % (nxt.get('ora', ''), nxt.get('titolo', '')))
+
+        li = xbmcgui.ListItem(label=lbl(label))
+        thumb = cur.get('immagine') if (cur and cur.get('immagine')) else logo_url
+        li.setArt({'thumb': thumb, 'icon': logo_url, 'poster': thumb or logo_url})
+        li.setProperty('isPlayable', 'true')
+        li.setInfo('video', {'title': name, 'plot': ' | '.join(plot_lines) if plot_lines else name, 'mediatype': 'video'})
+        url = BASE + '?action=sky2play&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
 
     xbmcplugin.endOfDirectory(HANDLE)
+
+
+def sky2_play(cat, idx):
+    """Riproduzione diretta MPD ClearKey con DRM di sky2.json."""
+    try:
+        data = _sky2_fetch()
+        it = (data.get(cat) or [])[int(idx)]
+    except Exception as e:
+        log('sky2 play ERR: %s' % e)
+        notify(NAME, 'Errore lettura canale Sky 2', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+
+    mpd = it.get('mpd') or it.get('url') or ''
+    key = it.get('key') or it.get('kid_key') or ''
+    name = it.get('name') or 'Sky 2'
+
+    hdrs = 'User-Agent=' + UA + '&Referer=' + HOST + '/&Origin=' + HOST + '&verifypeer=false'
+    li = xbmcgui.ListItem(path=mpd, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+    if ':' in key:
+        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key)
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    li.setLabel(lbl(name))
+    li.setInfo('video', {'title': name})
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
 def sky3_view(back=''):
@@ -4230,6 +4339,7 @@ def root_view():
         ('GUIDA TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=guida'),
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
         ('SPORT', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
+        ('SKY 2', LOGO_BASE + 'skyhd.png', BASE + '?action=sky2'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?action=dazn'),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
@@ -4604,6 +4714,10 @@ def main():
             sky1_view(query.get('back', [''])[0])
         elif action == 'sky2':
             sky2_view(query.get('back', [''])[0])
+        elif action == 'sky2cat':
+            sky2_cat_view(query.get('cat', [''])[0], query.get('back', [''])[0])
+        elif action == 'sky2play':
+            sky2_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'sky3':
             sky3_view(query.get('back', [''])[0])
         elif action == 'sky4':
