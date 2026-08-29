@@ -194,5 +194,16 @@
          "key": "ecbd2e31006252fdb98acb3da0319652:368f25d6fa78307ca62fec61aafaac8f",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
+   ],
+   "FIA European Truck Racing Championship": [
+      {
+         "name": "Most | Gara 1 (WARP)",
+         "image": "https://image.discovery.indazn.com/eu/v3/eu/none/57urnkp6c9q4rspcjvl6umhkf_image-header_pIt_1787614554000/fill/none/top/none/100/1280/720/png/image",
+         "start": "2026-08-29T10:35:00Z",
+         "end": "2026-08-29T11:40:00Z",
+         "mpd": "https://dca-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODgwODcxNjQsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiNGQwNTI0ZGEzNTBhM2FmZDI3M2Y0ZWNlZWRhNDU4OWExMWEwODExMyIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6ImQyMWU4ZWU4ODdmMjYzMjhkZTdkNWI1ODZlMDI0MmUwNWFhYjY0ZWYiLCJpYXQiOjE3ODgwMDA3NjR9.RbTS51bIIENT_8MhsM6mkjXHruo24xqvrLOeY8U6Qgw/qmhdu6p5sfoi1c685okf2bdrn/web/stream.mpd?channel=5074&outlet=dazn-italy&plang=it",
+         "key": "f2362e687ae3551598faab170eb82eaf:ade1746ca8e339ba1e41bc6ca13eb25f",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+      }
    ]
 }
