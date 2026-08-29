@@ -254,6 +254,16 @@
          "key": "",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
          "type": "evento"
+      },
+      {
+         "name": "Sassuolo - Torino",
+         "image": "",
+         "start": "",
+         "end": "",
+         "mpd": "https://swisslau1-3-dash-pvr.zahs.tv/HD_dazn_event_8_ch/1788011880000/1788029100800/f_track_audio_ts_9222400_nd_1600_mbr_8000_bw_128000_mvbr_7800_d_1600_num_0_tid_2_p_10_l_qae.m4s?z32=MNZWSZB5GE4EIMBUII3DGMBTGNCDMQZTGMWTCQSFIM3DOOBYGA3DMRJUGFCTAJTEOJWT2ZLYOBUXEYLUNFXW4ORRG44DQNRRGY3TIMBGOVZWK4S7NFSD243LPFPWG2B2HI2TAMZQHA2SM5R5GATHG2LHHU2DQXZVGZSGGNBSG4YTKNJTGYZTKYRSGJQTMODCMM3TSODGHFRGIMJSGI",
+         "key": "",
+         "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
+         "type": "evento"
       }
    ]
 }
