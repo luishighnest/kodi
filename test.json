@@ -50,7 +50,7 @@
          "image": "https://image.discovery.indazn.com/eu/v3/eu/none/82540rg5nrmrwac1jgv0cu9ec_image-header_pIt_1770549500000/fill/none/top/none/100/1280/720/png/image",
          "start": "2026-08-29T15:05:00Z",
          "end": "2026-08-29T22:10:00Z",
-         "mpd": "https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMXhkb3I1ZHJtdm8wbTFvcWRwZHFxOWtwc3YiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiajJkWkNvZE9RbGtZN0NEU0pSQk9aandfVFl0cHM0aTFmOVhDSl9zbUxHMCIsImlhdCI6MTc4ODAzNTU3NCwiZXhwIjoxNzg4MTIxOTc0fQ.u7FrStIAIYwBzDCrJMktnBKJI99QhEOQdb3__j6rQaY/1xdor5drmvo0m1oqdpdqq9kpsv/web/stream.mpd?channel=5064&outlet=dazn-italy&plang=it",
+         "mpd": "https://dca-de-livedazn.daznedge.net/@tend:1788122217~proto:dash~geo:IT~asn:30722_198471~path:1_1_26f6881c48edf4cd6eeb6fa6995ab0ad40793c88ab4bf9dce107ac5364cbd4bb~ua:2ce1fd67485cfe92adf700d716e9f29f~id:b408d624b843~tk3:29d5d20d607494863e5b7f95613bc53110e3045f5e710940f463a0bc18931711/1xdor5drmvo0m1oqdpdqq9kpsv/web/stream.mpd?channel=5064&outlet=dazn-italy&plang=it",
          "key": "9d1cd39a34ad5021b16c46febee6ceed:743c3772d45eb70fa2588370b950638d",
          "ua": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
       }
