@@ -882,16 +882,22 @@ def sky_view():
     url0 = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_SPORT) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
     xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
 
+    # Lista Canali 2 - SKY (da sky2.json con conteggi e scadenze)
+    try:
+        c2 = _sky2_counts()
+        label_sky2 = lbl('Lista Canali 2 - SKY') + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c2.get('ok', 0), c2.get('soon', 0), c2.get('exp', 0))
+    except Exception:
+        label_sky2 = lbl('Lista Canali 2 - SKY')
     sky2_url = BASE + '?action=sky2'
-    li2 = xbmcgui.ListItem(label=lbl('Lista Canali 2'))
+    li2 = xbmcgui.ListItem(label=label_sky2)
     li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li2.setInfo('video', {'title': 'Lista Canali 2', 'plot': 'Canali Sky Italia 24/7'})
+    li2.setInfo('video', {'title': 'Lista Canali 2 - SKY', 'plot': 'Canali Sky Italia 24/7 con scadenze ed EPG'})
     xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
 
     sky3_url = BASE + '?action=sky3'
-    li3 = xbmcgui.ListItem(label=lbl('Lista Canali 3'))
+    li3 = xbmcgui.ListItem(label=lbl('Lista Canali 3 (Eventi Live)'))
     li3.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li3.setInfo('video', {'title': 'Lista Canali 3', 'plot': 'Eventi live esclusivamente Sky Sport Italia'})
+    li3.setInfo('video', {'title': 'Lista Canali 3 (Eventi Live)', 'plot': 'Eventi live esclusivamente Sky Sport Italia'})
     xbmcplugin.addDirectoryItem(HANDLE, sky3_url, li3, isFolder=True)
 
     sky4_url = BASE + '?action=sky4'
@@ -1357,22 +1363,66 @@ def _sky2_resolve_logo(logo_path):
     return ZADONKAIS_BASE + '/logos/' + logo_path
 
 
+def _sky2_url_expiry(url):
+    """Estrae la data/ora di scadenza dal parametro _e~<ts>_ dell'URL."""
+    if not url:
+        return None
+    m = re.search(r'_e~([0-9]+)_', url)
+    if not m:
+        return None
+    try:
+        ts = int(m.group(1))
+        return datetime.fromtimestamp(ts)
+    except Exception:
+        return None
+
+
+def _sky2_cat_counts(cat_name):
+    counts = {'ok': 0, 'soon': 0, 'exp': 0}
+    try:
+        data = _sky2_fetch()
+        items = data.get(cat_name) or []
+        for it in items:
+            exp = _sky2_url_expiry(it.get('mpd') or it.get('url'))
+            st = _exp_status(exp) or 'ok'
+            counts[st] = counts.get(st, 0) + 1
+    except Exception:
+        pass
+    return counts
+
+
+def _sky2_counts():
+    counts = {'ok': 0, 'soon': 0, 'exp': 0}
+    try:
+        data = _sky2_fetch()
+        for cat, items in data.items():
+            for it in (items or []):
+                exp = _sky2_url_expiry(it.get('mpd') or it.get('url'))
+                st = _exp_status(exp) or 'ok'
+                counts[st] = counts.get(st, 0) + 1
+    except Exception:
+        pass
+    return counts
+
+
 def sky2_view(back=''):
-    """Nuova vista principale SKY 2: mostra le categorie da sky2.json."""
-    back_button(back or (BASE + '?action=root'))
+    """Vista principale SKY 2: mostra le categorie di sky2.json con conteggi canali attivi/in scadenza/scaduti."""
+    back_button(back or (BASE + '?action=sky'))
     xbmcplugin.setContent(HANDLE, 'videos')
     try:
         data = _sky2_fetch()
     except Exception as e:
         log('sky2 fetch ERR: %s' % e)
         li = xbmcgui.ListItem(label=lbl('Impossibile scaricare sky2.json'))
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=sky', li, isFolder=False)
         xbmcplugin.endOfDirectory(HANDLE)
         return
 
     for cat in data.keys():
         items = data[cat] or []
-        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (cat, len(items))))
+        c = _sky2_cat_counts(cat)
+        label = lbl(cat) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+        li = xbmcgui.ListItem(label=label)
         li.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png', 'poster': LOGO_BASE + 'skyhd.png'})
         li.setInfo('video', {'title': cat, 'plot': '%d canali' % len(items)})
         url = BASE + '?action=sky2cat&cat=' + urllib.parse.quote(cat) + '&back=' + urllib.parse.quote(BASE + '?action=sky2')
@@ -1381,7 +1431,7 @@ def sky2_view(back=''):
 
 
 def sky2_cat_view(cat, back=''):
-    """Mostra i canali della categoria scelta da sky2.json con EPG da guida_tv_sky.json."""
+    """Mostra i canali della categoria scelta da sky2.json con EPG e scadenza identica a Lista 1."""
     back_button(back or (BASE + '?action=sky2'))
     xbmcplugin.setContent(HANDLE, 'videos')
     try:
@@ -1393,22 +1443,38 @@ def sky2_cat_view(cat, back=''):
 
     for idx, it in enumerate(items):
         name = it.get('name') or it.get('title') or 'Canale'
+        mpd_url = it.get('mpd') or it.get('url') or ''
         logo_url = _sky2_resolve_logo(it.get('logo'))
-        cur, nxt = _guida_sky_now(name)
         
-        plot_lines = []
-        label = name
+        # Scadenza stream dall'URL _e~<ts>_
+        exp = _sky2_url_expiry(mpd_url)
+        
+        # EPG
+        cur, nxt = _guida_sky_now(name)
+        prog = ''
         if cur and cur.get('titolo'):
-            label = '%s • %s' % (name, cur['titolo'])
-            plot_lines.append('In onda: %s %s' % (cur.get('ora', ''), cur.get('titolo', '')))
-        if nxt and nxt.get('titolo'):
-            plot_lines.append('Successivo: %s %s' % (nxt.get('ora', ''), nxt.get('titolo', '')))
-
+            prog = '%s %s' % (cur.get('ora', ''), cur.get('titolo', ''))
+        
+        # Formattazione parti, label, label2 e title identica a Lista 1
+        label, l2, tname = _sky_parts(name, exp, prog)
+        
         li = xbmcgui.ListItem(label=lbl(label))
+        if l2:
+            li.setLabel2(l2)
+            
         thumb = cur.get('immagine') if (cur and cur.get('immagine')) else logo_url
         li.setArt({'thumb': thumb, 'icon': logo_url, 'poster': thumb or logo_url})
         li.setProperty('isPlayable', 'true')
-        li.setInfo('video', {'title': name, 'plot': ' | '.join(plot_lines) if plot_lines else name, 'mediatype': 'video'})
+        
+        plot_lines = []
+        if exp:
+            plot_lines.append('Scadenza %s' % exp.strftime('%d/%m/%Y %H:%M'))
+        if cur and cur.get('titolo'):
+            plot_lines.append('In onda: %s %s' % (cur.get('ora', ''), cur.get('titolo', '')))
+        if nxt and nxt.get('titolo'):
+            plot_lines.append('Successivo: %s %s' % (nxt.get('ora', ''), nxt.get('titolo', '')))
+            
+        li.setInfo('video', {'title': tname, 'plot': ' | '.join(plot_lines) if plot_lines else name, 'mediatype': 'video'})
         url = BASE + '?action=sky2play&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx)
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
 
@@ -2084,28 +2150,39 @@ def sky_cat_view(cat, back=''):
         for title, cid in sky_channels().get(cat, []):
             try:
                 exp = _sky_expiry(cid)
-                cur, nxt = _epg_now(cid, epg)
+                cur_sky, nxt_sky = _guida_sky_now(title)
                 prog = ''
-                if cur:
-                    prog = _sky_epg_label(cur)
+                cur_img = ''
+                lines = []
+                if cur_sky and cur_sky.get('titolo'):
+                    prog = '%s %s' % (cur_sky.get('ora', ''), cur_sky.get('titolo', ''))
+                    cur_img = cur_sky.get('immagine', '')
+                    lines.append('In onda: %s %s' % (cur_sky.get('ora', ''), cur_sky.get('titolo', '')))
+                    if nxt_sky and nxt_sky.get('titolo'):
+                        lines.append('Successivo: %s %s' % (nxt_sky.get('ora', ''), nxt_sky.get('titolo', '')))
+                else:
+                    cur, nxt = _epg_now(cid, epg)
+                    if cur:
+                        prog = _sky_epg_label(cur)
+                        lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
+                    if nxt:
+                        lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
+                
                 label, l2, tname = _sky_parts(title, exp, prog)
                 li = xbmcgui.ListItem(label=label)
                 if l2:
                     li.setLabel2(l2)
                 logo = LOGOS.get(cid, '')
-                li.setArt({'thumb': (LOGO_BASE + logo) if logo else SQUARE_ICON,
-                           'icon': (LOGO_BASE + logo) if logo else SQUARE_ICON,
-                           'poster': (LOGO_BASE + logo) if logo else SQUARE_ICON})
+                logo_art = (LOGO_BASE + logo) if logo else SQUARE_ICON
+                thumb_art = cur_img if cur_img else logo_art
+                li.setArt({'thumb': thumb_art,
+                           'icon': logo_art,
+                           'poster': thumb_art})
                 li.setProperty('isPlayable', 'true')
-                lines = []
                 if exp:
-                    lines.append('Scadenza %s' % exp.strftime('%d/%m/%Y %H:%M'))
-                if cur:
-                    lines.append('Ora %02d:%02d %s' % (cur[0].hour, cur[0].minute, _epg_short(cur[2], 60)))
-                if nxt:
-                    lines.append('%02d:%02d %s' % (nxt[0].hour, nxt[0].minute, _epg_short(nxt[2], 60)))
+                    lines.insert(0, 'Scadenza %s' % exp.strftime('%d/%m/%Y %H:%M'))
                 li.setInfo('video', {'title': tname, 'plot': ' | '.join(lines)})
-                cur_p = (cur[2].strip() if cur and cur[2] else '')
+                cur_p = prog
                 url = BASE + '?action=skyplay&id=' + urllib.parse.quote(cid) + '&t=' + urllib.parse.quote(title) + '&p=' + urllib.parse.quote(cur_p)
                 xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
             except Exception as e:
@@ -4339,7 +4416,6 @@ def root_view():
         ('GUIDA TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=guida'),
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
         ('SPORT', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
-        ('SKY 2', LOGO_BASE + 'skyhd.png', BASE + '?action=sky2'),
         ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?action=dazn'),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
