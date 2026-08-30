@@ -4,6 +4,7 @@ import sys
 import re
 import json
 import base64
+import struct
 import gzip
 import io
 import zipfile
