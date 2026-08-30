@@ -23,6 +23,28 @@ import xbmcaddon
 import xbmc
 import requests
 
+
+# === ZADONKAIS / KODIAKSO AES-256 DECRYPT HELPER ===
+ZADONKAIS_MASTER_PW = "2941"
+ZADONKAIS_SALT = b"zadonkais_secure_salt_2026"
+
+def _zadonkais_decrypt(enc_b64, pw=ZADONKAIS_MASTER_PW):
+    try:
+        from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.backends import default_backend
+        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=ZADONKAIS_SALT, iterations=100000, backend=default_backend())
+        key = kdf.derive(pw.encode('utf-8'))
+        raw = base64.b64decode(enc_b64)
+        iv = raw[:12]
+        ct = raw[12:]
+        pt = AESGCM(key).decrypt(iv, ct, None)
+        return json.loads(pt.decode('utf-8'))
+    except Exception as e:
+        log('_zadonkais_decrypt ERR: %s' % e)
+        return {}
+
 ADDON = xbmcaddon.Addon()
 HANDLE = int(sys.argv[1])
 BASE = sys.argv[0]
@@ -1291,6 +1313,8 @@ def _sky2_fetch():
     r = requests.get(SKY2_JSON_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
     r.raise_for_status()
     data = json.loads(r.content.decode('utf-8-sig'))
+    if isinstance(data, dict) and 'enc' in data:
+        data = _zadonkais_decrypt(data['enc'])
     _SKY2_CACHE['data'] = data
     _SKY2_CACHE['ts'] = now
     return data
@@ -4556,6 +4580,8 @@ def _test_fetch():
     r = requests.get(TEST_JSON_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
     r.raise_for_status()
     data = json.loads(r.content.decode('utf-8-sig'))
+    if isinstance(data, dict) and 'enc' in data:
+        data = _zadonkais_decrypt(data['enc'])
     _TEST_CACHE['data'] = data
     _TEST_CACHE['ts'] = now
     return data
