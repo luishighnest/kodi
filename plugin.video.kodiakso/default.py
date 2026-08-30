@@ -1465,18 +1465,32 @@ def sky1_view(back=''):
 
 def _sky2_fetch():
     now = time.time()
-    if _SKY2_CACHE['data'] is not None and (now - _SKY2_CACHE['ts'] < 120):
+    if _SKY2_CACHE['data'] is not None and (now - _SKY2_CACHE['ts'] < 60):
         return _SKY2_CACHE['data']
-    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
-    r = requests.get(SKY2_JSON_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
-    r.raise_for_status()
-    data = json.loads(r.content.decode('utf-8-sig'))
-    if isinstance(data, dict) and 'enc' in data:
-        data = _zadonkais_decrypt(data['enc'])
-    _SKY2_CACHE['data'] = data
-    _SKY2_CACHE['ts'] = now
-    return data
-
+    
+    endpoints = [
+        'https://raw.githubusercontent.com/luishighnest/zadonkais/main/sky2.json',
+        SKY2_JSON_URL,
+        'https://cdn.jsdelivr.net/gh/luishighnest/zadonkais@main/sky2.json'
+    ]
+    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
+    for ep in endpoints:
+        try:
+            r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=10)
+            if r.status_code == 200 and r.text.strip():
+                data = json.loads(r.content.decode('utf-8-sig'))
+                if isinstance(data, dict) and 'enc' in data:
+                    data = _zadonkais_decrypt(data['enc'])
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _SKY2_CACHE['data'] = data
+                    _SKY2_CACHE['ts'] = now
+                    return data
+        except Exception as e:
+            log('sky2 fetch %s ERR: %s' % (ep, e))
+            
+    if _SKY2_CACHE['data']:
+        return _SKY2_CACHE['data']
+    return {}
 
 def _guida_sky_fetch():
     now = time.time()
@@ -4732,18 +4746,33 @@ _TEST_CACHE = {'data': None, 'ts': 0}
 
 def _test_fetch():
     now = time.time()
-    if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 120):
+    if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
-    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
-    r = requests.get(TEST_JSON_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
-    r.raise_for_status()
-    data = json.loads(r.content.decode('utf-8-sig'))
-    if isinstance(data, dict) and 'enc' in data:
-        data = _zadonkais_decrypt(data['enc'])
-    _TEST_CACHE['data'] = data
-    _TEST_CACHE['ts'] = now
-    return data
+    
+    endpoints = [
+        'https://raw.githubusercontent.com/luishighnest/kodi/main/test.json',
+        'https://raw.githubusercontent.com/luishighnest/zadonkais/main/test.json',
+        TEST_JSON_URL,
+        'https://cdn.jsdelivr.net/gh/luishighnest/kodi@main/test.json'
+    ]
+    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
+    for ep in endpoints:
+        try:
+            r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=10)
+            if r.status_code == 200 and r.text.strip():
+                data = json.loads(r.content.decode('utf-8-sig'))
+                if isinstance(data, dict) and 'enc' in data:
+                    data = _zadonkais_decrypt(data['enc'])
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _TEST_CACHE['data'] = data
+                    _TEST_CACHE['ts'] = now
+                    return data
+        except Exception as e:
+            log('test fetch %s ERR: %s' % (ep, e))
 
+    if _TEST_CACHE['data']:
+        return _TEST_CACHE['data']
+    return {}
 
 def test_view(back=''):
     back_button(BASE + '?action=root')
