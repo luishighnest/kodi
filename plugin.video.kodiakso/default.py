@@ -1735,8 +1735,6 @@ def sky2_play(cat, idx):
     li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
     if ':' in key:
         clean_key = key.replace('|', ',')
-        li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
-        li.setProperty('inputstream.adaptive.license_key', clean_key)
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
