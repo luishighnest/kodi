@@ -22,6 +22,17 @@ https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6
 #EXTVLCOPT:http-origin=https://www.dazn.com
 https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvM296MWpybjNrazB3MTFpZTNodndhZjZ0bCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjMwNzIyIiwiMTk4NDcxIl0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJfeHhkX1pCSHh2cERMNWd4alZhOUwya0lndXZ4SUJldTNhYURnU0pCclNvIiwiaWF0IjoxNzg4NTI4MzkyLCJleHAiOjE3ODg2MTQ3OTJ9.MG_iiWeDpH5nwvV8um6KDM8c-JSOTYc7_6gqnCGwHjw/3oz1jrn3kk0w11ie3hvwaf6tl/web/stream.mpd?channel=7013&outlet=dazn-italy&plang=it
 
+#EXTINF:-1 tvg-id="dazn_social corner (warp)" tvg-name="Social Corner (WARP)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/9hg47c4vutaillhykm85mad4m_image-header_pIt_1757509860000/fill/none/top/none/100/1280/720/png/image" group-title="Radio TV Serie A",Social Corner (WARP)
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
+#KODIPROP:inputstream.adaptive.license_key=6c519cfd4d955591b7fbcc63803cf0dd:69696a96ffdc5c960663a23989833fd7
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|6c519cfd4d955591b7fbcc63803cf0dd:69696a96ffdc5c960663a23989833fd7
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://www.dazn.com/
+#EXTVLCOPT:http-origin=https://www.dazn.com
+https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvM296MWpybjNrazB3MTFpZTNodndhZjZ0bCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJZWG45TXdCMFRIMHZmUGsyZGJjRU02TzB3ajZzLUNDbjJZY1ZQQXVVQUNVIiwiaWF0IjoxNzg4NTI4NDIyLCJleHAiOjE3ODg2MTQ4MjJ9.Av_LBF50zbB1sr67ln9C-PqzIvRV3QBrdplEWlcyCAs/3oz1jrn3kk0w11ie3hvwaf6tl/web/stream.mpd?channel=7013&outlet=dazn-italy&plang=it
+
 #EXTINF:-1 tvg-id="sky2_sky sport 24" tvg-name="Sky Sport 24" tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_35_darknow/LOGO_CHANNEL_LIGHT/4000?language=it-IT&proposition=NOWOTT" group-title="Sky Sport",Sky Sport 24
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
