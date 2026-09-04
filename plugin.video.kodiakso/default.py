@@ -178,8 +178,8 @@ NAME = ADDON.getAddonInfo('name')
 DEFAULT_URL = 'https://luishighnest.github.io/kodi/playlist.m3u'
 REPO_BASE = 'https://luishighnest.github.io/kodi'
 ZADONKAIS_BASE = 'https://luishighnest.github.io/zadonkais'
-SKY2_JSON_URL = ZADONKAIS_BASE + '/sky2.json'
-GUIDA_TV_SKY_URL = ZADONKAIS_BASE + '/guida_tv_sky.json'
+SKY2_JSON_URL = REPO_BASE + '/sky2.json'
+GUIDA_TV_SKY_URL = REPO_BASE + '/guida_tv_sky.json'
 _SKY2_CACHE = {'data': None, 'ts': 0}
 _GUIDA_SKY_CACHE = {'data': None, 'ts': 0}
 PLAYLIST_URL = ADDON.getSetting('playlist_url').strip() or DEFAULT_URL
@@ -1436,9 +1436,11 @@ def _sky2_fetch():
         return _SKY2_CACHE['data']
     
     endpoints = [
+        'https://raw.githubusercontent.com/luishighnest/kodi/main/sky2.json',
+        REPO_BASE + '/sky2.json',
+        'https://cdn.jsdelivr.net/gh/luishighnest/kodi@main/sky2.json',
         'https://raw.githubusercontent.com/luishighnest/zadonkais/main/sky2.json',
-        SKY2_JSON_URL,
-        'https://cdn.jsdelivr.net/gh/luishighnest/zadonkais@main/sky2.json'
+        ZADONKAIS_BASE + '/sky2.json'
     ]
     headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
     for ep in endpoints:
@@ -1454,6 +1456,26 @@ def _sky2_fetch():
                     return data
         except Exception as e:
             log('sky2 fetch %s ERR: %s' % (ep, e))
+
+    # Fallback locale se presente nella cartella repo
+    local_candidates = [
+        os.path.join(r'C:\Users\alecl\Desktop\kodi_repo', 'sky2.json'),
+        os.path.join(r'C:\Users\alecl\Desktop\htdocs', 'sky2.json'),
+        os.path.join(ADDON.getAddonInfo('path'), 'sky2.json')
+    ]
+    for lp in local_candidates:
+        if os.path.exists(lp):
+            try:
+                with open(lp, 'r', encoding='utf-8-sig') as f:
+                    data = json.load(f)
+                if isinstance(data, dict) and 'enc' in data:
+                    data = _zadonkais_decrypt(data['enc'])
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _SKY2_CACHE['data'] = data
+                    _SKY2_CACHE['ts'] = now
+                    return data
+            except Exception as e:
+                log('sky2 local fetch %s ERR: %s' % (lp, e))
             
     if _SKY2_CACHE['data']:
         return _SKY2_CACHE['data']
@@ -1463,13 +1485,44 @@ def _guida_sky_fetch():
     now = time.time()
     if _GUIDA_SKY_CACHE['data'] is not None and (now - _GUIDA_SKY_CACHE['ts'] < 300):
         return _GUIDA_SKY_CACHE['data']
-    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
-    r = requests.get(GUIDA_TV_SKY_URL + '?_=' + str(int(now)), headers=headers, timeout=15)
-    r.raise_for_status()
-    data = json.loads(r.content.decode('utf-8-sig'))
-    _GUIDA_SKY_CACHE['data'] = data
-    _GUIDA_SKY_CACHE['ts'] = now
-    return data
+    
+    endpoints = [
+        'https://raw.githubusercontent.com/luishighnest/kodi/main/guida_tv_sky.json',
+        REPO_BASE + '/guida_tv_sky.json',
+        'https://cdn.jsdelivr.net/gh/luishighnest/kodi@main/guida_tv_sky.json',
+        ZADONKAIS_BASE + '/guida_tv_sky.json'
+    ]
+    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
+    for ep in endpoints:
+        try:
+            r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=15)
+            if r.status_code == 200 and r.text.strip():
+                data = json.loads(r.content.decode('utf-8-sig'))
+                if isinstance(data, list) and len(data) > 0:
+                    _GUIDA_SKY_CACHE['data'] = data
+                    _GUIDA_SKY_CACHE['ts'] = now
+                    return data
+        except Exception:
+            pass
+
+    # Fallback locale
+    local_candidates = [
+        os.path.join(r'C:\Users\alecl\Desktop\kodi_repo', 'guida_tv_sky.json'),
+        os.path.join(r'C:\Users\alecl\Desktop\htdocs', 'guida_tv_sky.json')
+    ]
+    for lp in local_candidates:
+        if os.path.exists(lp):
+            try:
+                with open(lp, 'r', encoding='utf-8-sig') as f:
+                    data = json.load(f)
+                if isinstance(data, list) and len(data) > 0:
+                    _GUIDA_SKY_CACHE['data'] = data
+                    _GUIDA_SKY_CACHE['ts'] = now
+                    return data
+            except Exception:
+                pass
+
+    return []
 
 
 def _guida_sky_now(channel_name):
@@ -1681,7 +1734,10 @@ def sky2_play(cat, idx):
     li.setProperty('inputstream', 'inputstream.adaptive')
     li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
     if ':' in key:
-        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key)
+        clean_key = key.replace('|', ',')
+        li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
+        li.setProperty('inputstream.adaptive.license_key', clean_key)
+        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
     if ADDON.getSetting('live_async') == 'true':
