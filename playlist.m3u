@@ -33,6 +33,17 @@ https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6
 #EXTVLCOPT:http-origin=https://www.dazn.com
 https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvM296MWpybjNrazB3MTFpZTNodndhZjZ0bCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJZWG45TXdCMFRIMHZmUGsyZGJjRU02TzB3ajZzLUNDbjJZY1ZQQXVVQUNVIiwiaWF0IjoxNzg4NTI4NDIyLCJleHAiOjE3ODg2MTQ4MjJ9.Av_LBF50zbB1sr67ln9C-PqzIvRV3QBrdplEWlcyCAs/3oz1jrn3kk0w11ie3hvwaf6tl/web/stream.mpd?channel=7013&outlet=dazn-italy&plang=it
 
+#EXTINF:-1 tvg-id="dazn_dazn 1 (warp)" tvg-name="DAZN 1 (WARP)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1788259786000/fill/none/top/none/100/1280/720/png/image" group-title="Live TV",DAZN 1 (WARP)
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
+#KODIPROP:inputstream.adaptive.license_key=6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|6164a0abaa7c53c6875fa1e7fe0bb463:271510d3e1259571dcc568a232e397eb
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://www.dazn.com/
+#EXTVLCOPT:http-origin=https://www.dazn.com
+https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODg2MTQ4NjUsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJ1YSI6IjczNGI2ZWFkNzU5YjQ3OWE0MjkyYWE5MjQ5NGMxMTc3MjM0YmRjYzkiLCJpYXQiOjE3ODg1Mjg0NjV9.q7DK4AbUZ4e3hyxfd--4kt8HU8kNtvnob9-O_xXO_tY/dash/dazn-linear-206/stream.mpd?p=web
+
 #EXTINF:-1 tvg-id="sky2_sky sport 24" tvg-name="Sky Sport 24" tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_35_darknow/LOGO_CHANNEL_LIGHT/4000?language=it-IT&proposition=NOWOTT" group-title="Sky Sport",Sky Sport 24
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
