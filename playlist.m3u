@@ -33,6 +33,17 @@ https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6
 #EXTVLCOPT:http-origin=https://www.dazn.com
 https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvM296MWpybjNrazB3MTFpZTNodndhZjZ0bCJdLCJleGMiOltdLCJoZWFkZXJzIjpbInVzZXItYWdlbnQiXSwiY28iOnRydWUsImlwIjpmYWxzZSwiYXNuIjpbIjEzMzM1Il0sInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJpbnRzaWciOiJZWG45TXdCMFRIMHZmUGsyZGJjRU02TzB3ajZzLUNDbjJZY1ZQQXVVQUNVIiwiaWF0IjoxNzg4NTI4NDIyLCJleHAiOjE3ODg2MTQ4MjJ9.Av_LBF50zbB1sr67ln9C-PqzIvRV3QBrdplEWlcyCAs/3oz1jrn3kk0w11ie3hvwaf6tl/web/stream.mpd?channel=7013&outlet=dazn-italy&plang=it
 
+#EXTINF:-1 tvg-id="dazn_il sabato della serie a (warp)" tvg-name="Il Sabato Della Serie A (WARP)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/vrm0bqbftvuzmysos5lcxijp_image-header_pIt_1787147085000/fill/none/top/none/100/1280/720/png/image" group-title="Radio TV Serie A",Il Sabato Della Serie A (WARP)
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
+#KODIPROP:inputstream.adaptive.license_key=cb5eab8b13d1560394e8a165ff48d082:e5f9763d64128cb0becac1e8ab301f16
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|cb5eab8b13d1560394e8a165ff48d082:e5f9763d64128cb0becac1e8ab301f16
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://www.dazn.com/
+#EXTVLCOPT:http-origin=https://www.dazn.com
+https://dca-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMTBibnd6bWhpd3VuYzFqb3gyZGFuNjBvejEiXSwiZXhjIjpbXSwiaGVhZGVycyI6WyJ1c2VyLWFnZW50Il0sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiYjQwOGQ2MjRiODQzIiwiaW50c2lnIjoiWVhuOU13QjBUSDB2ZlBrMmRiY0VNNk8wd2o2cy1DQ24yWWNWUEF1VUFDVSIsImlhdCI6MTc4ODYxOTU1MiwiZXhwIjoxNzg4NzA1OTUyfQ.y8pfNWsEl_otYjKWUYXjzcxMiVb-d9_8hUZNIIfQbj0/10bnwzmhiwunc1jox2dan60oz1/web/stream.mpd?channel=7087&outlet=dazn-italy&plang=it
+
 #EXTINF:-1 tvg-id="dazn_dazn 1 (warp)" tvg-name="DAZN 1 (WARP)" tvg-logo="https://image.discovery.indazn.com/eu/v3/eu/none/sxq07q8rseju1j7chnfc7w3if_image-header_pIt_1788259786000/fill/none/top/none/100/1280/720/png/image" group-title="Live TV",DAZN 1 (WARP)
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
