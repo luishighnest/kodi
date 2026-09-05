@@ -77,17 +77,6 @@ https://dct-ac-live.cdn.indazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6
 #EXTVLCOPT:http-origin=https://www.dazn.com
 https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODg2ODg1ODMsImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoyLCJwYXRoIjoiOGViOTUwYjA5YmIxZjMzOTBlZDQ4ODgzN2VhZjk5ODY3MDc2OTRkMSIsInNzaWQiOiJiNDA4ZDYyNGI4NDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIzMDcyMiIsIjE5ODQ3MSJdLCJ1YSI6IjczNGI2ZWFkNzU5YjQ3OWE0MjkyYWE5MjQ5NGMxMTc3MjM0YmRjYzkiLCJpYXQiOjE3ODg2MDIxODN9.p7nGEvffSt5W2aTGkOa3jSYJXFtXYFrXppnzREy6GkE/dash/dazn-linear-206/stream.mpd?p=web
 
-#EXTINF:-1 tvg-id="dazn_fiorentina - torino" tvg-name="Fiorentina - Torino" tvg-logo="" group-title="EVENTI",Fiorentina - Torino
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=mpd
-#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
-#KODIPROP:inputstream.adaptive.license_key=7c4e606598c55157ab20e017afb618d6:5a811d07b6fabc14412c130c5980f958
-#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|7c4e606598c55157ab20e017afb618d6:5a811d07b6fabc14412c130c5980f958
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36
-#EXTVLCOPT:http-referrer=https://www.dazn.com/
-#EXTVLCOPT:http-origin=https://www.dazn.com
-https://dcb-rw-livedazn.cdn.netrw.it/@st%3D1788611706~exp%3D1788698106~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23asn%3D13335%23path%3D1s%2C1d%23hashp%3D43dbd6e54961bd9abe9489501afccb99966eaf97dfe6428da234ef8e828df906%23wm%3D0~hmac%3D201503b9e3f35415fb4ae9197345518b38a12a3b04f32489210f197489e4a571/i1ritw9ztunw1ukr9g6is5yxa/web/stream.mpd?channel=1657&mta=it&outlet=dazn-italy&plang=it
-
 #EXTINF:-1 tvg-id="sky2_sky sport 24" tvg-name="Sky Sport 24" tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_35_darknow/LOGO_CHANNEL_LIGHT/4000?language=it-IT&proposition=NOWOTT" group-title="Sky Sport",Sky Sport 24
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
