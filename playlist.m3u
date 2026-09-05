@@ -88,6 +88,39 @@ https://dct-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJl
 #EXTVLCOPT:http-origin=https://www.dazn.com
 https://dcb-rw-livedazn.cdn.netrw.it/@st%3D1788611706~exp%3D1788698106~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23asn%3D13335%23path%3D1s%2C1d%23hashp%3D43dbd6e54961bd9abe9489501afccb99966eaf97dfe6428da234ef8e828df906%23wm%3D0~hmac%3D201503b9e3f35415fb4ae9197345518b38a12a3b04f32489210f197489e4a571/i1ritw9ztunw1ukr9g6is5yxa/web/stream.mpd?channel=1657&mta=it&outlet=dazn-italy&plang=it
 
+#EXTINF:-1 tvg-id="dazn_14:56 vamos! | inter-napoli" tvg-name="14:56 Vamos! | Inter-Napoli" tvg-logo="" group-title="EVENTI",14:56 Vamos! | Inter-Napoli
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
+#KODIPROP:inputstream.adaptive.license_key=241363909e4551b58d3d87d64a8c2c75:a1dbd993a19fe003080f5c62953cec20
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|241363909e4551b58d3d87d64a8c2c75:a1dbd993a19fe003080f5c62953cec20
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://www.dazn.com/
+#EXTVLCOPT:http-origin=https://www.dazn.com
+https://dcb-deit-livedazn.daznedge.net/@tend%3A1788708306~proto%3Adash~geo%3AIT~asn%3A13335~path%3A1_1_84f7e6d577dba98ad931794ff3c741b3732688f06231c007ce77b9b1da91f05b~id%3A9827c3cf91d3~wmver%3A2~wmidfmt%3Aascii~wmidtyp%3A1~wmidlen%3A512~wmopid%3A36~wmid%3A29ce4820-8b55-5ac6-8c7a-5a820e51ebbb~wmsegd%3A1920~wmtims%3A600~tk3%3Afde024226ce4259522ef758e196f79326d99c734c7718bc552b0437714d5f1d5/1ge587an1gsvo1l9owzerpgaqz/web/stream.mpd?channel=1554&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 tvg-id="dazn_13:00 südtirol - catanzaro" tvg-name="13:00 Südtirol - Catanzaro" tvg-logo="" group-title="EVENTI",13:00 Südtirol - Catanzaro
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
+#KODIPROP:inputstream.adaptive.license_key=c2a2d230de7750b6b8f1e7b1ad80a24a:f31186dc3e31e2e99c30867c4fe6ab9e
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|c2a2d230de7750b6b8f1e7b1ad80a24a:f31186dc3e31e2e99c30867c4fe6ab9e
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://www.dazn.com/
+#EXTVLCOPT:http-origin=https://www.dazn.com
+https://dcb-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3ODg2OTkzMDksImtpZCI6IjIwMjIxMTIzIiwicGF0aF9kIjoxLCJwYXRoIjoiY2NjODBiNGNjMmQ0OWFmNjQ1N2E1MjI2MmQ2ODljNGZkZDNmMTkxNiIsInNzaWQiOiI5ODI3YzNjZjkxZDMiLCJwcm90byI6ImRhc2giLCJnZW8iOiJpdCIsImFzbiI6WyIxMzMzNSJdLCJpYXQiOjE3ODg2MTI5MDl9.HzkfG0QYodxAFeFuqc2YQMKzUMUOmpF38EFzfMmul1o/huowj71s9njt1uo0c9zm7igpj/web/stream.mpd?channel=3931&mta=it&outlet=dazn-italy&plang=it
+
+#EXTINF:-1 tvg-id="dazn_15:15 ascoli - benevento" tvg-name="15:15 Ascoli - Benevento" tvg-logo="" group-title="EVENTI",15:15 Ascoli - Benevento
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
+#KODIPROP:inputstream.adaptive.license_key=fb04cea319535abca87b19623279f78d:d89d6df18ffb8e5463318043e92555a1
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|fb04cea319535abca87b19623279f78d:d89d6df18ffb8e5463318043e92555a1
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://www.dazn.com/
+#EXTVLCOPT:http-origin=https://www.dazn.com
+https://dcb-rw-livedazn.cdn.netrw.it/@st%3D1788621908~exp%3D1788708308~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23asn%3D13335%23path%3D1s%2C1d%23hashp%3Db5a43dbf9e6e0aef85bb7c998b16d67f4e2b399c6aeb38075ea66bd7d1d7e2f4%23wm%3D0~hmac%3D1d93e115aa3c7bba34439a97c3c0b2895abc5943536f0d17b3f0f2eee1ef21cb/1ibe6rdmanirn18mwp7jympnq8/web/stream.mpd?channel=3929&mta=it&outlet=dazn-italy&plang=it
+
 #EXTINF:-1 tvg-id="sky2_sky sport 24" tvg-name="Sky Sport 24" tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_35_darknow/LOGO_CHANNEL_LIGHT/4000?language=it-IT&proposition=NOWOTT" group-title="Sky Sport",Sky Sport 24
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
