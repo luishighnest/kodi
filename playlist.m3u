@@ -121,6 +121,17 @@ https://dcb-fs-live-dazn-cdn.dazn.com/@eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJl
 #EXTVLCOPT:http-origin=https://www.dazn.com
 https://dcb-rw-livedazn.cdn.netrw.it/@st%3D1788621908~exp%3D1788708308~acl%3D%2F*~id%3D9827c3cf91d3~data%3Dcountry%3Dit%23asn%3D13335%23path%3D1s%2C1d%23hashp%3Db5a43dbf9e6e0aef85bb7c998b16d67f4e2b399c6aeb38075ea66bd7d1d7e2f4%23wm%3D0~hmac%3D1d93e115aa3c7bba34439a97c3c0b2895abc5943536f0d17b3f0f2eee1ef21cb/1ibe6rdmanirn18mwp7jympnq8/web/stream.mpd?channel=3929&mta=it&outlet=dazn-italy&plang=it
 
+#EXTINF:-1 tvg-id="dazn_17:56 roma - atalanta" tvg-name="17:56 Roma - Atalanta" tvg-logo="" group-title="EVENTI",17:56 Roma - Atalanta
+#KODIPROP:inputstream=inputstream.adaptive
+#KODIPROP:inputstream.adaptive.manifest_type=mpd
+#KODIPROP:inputstream.adaptive.license_type=org.w3.clearkey
+#KODIPROP:inputstream.adaptive.license_key=e3f95391d6685b629ed33c1c55a2a8d6:ed3cebc938b1a2e186730fdc3440d393
+#KODIPROP:inputstream.adaptive.drm_legacy=org.w3.clearkey|e3f95391d6685b629ed33c1c55a2a8d6:ed3cebc938b1a2e186730fdc3440d393
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://www.dazn.com/
+#EXTVLCOPT:http-origin=https://www.dazn.com
+https://dca-ac-live.cdn.indazn.com/dugongeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InV1aWRfMSJ9.eyJwYXRocyI6WyIvMWpwbGJsb3o4NHg1ZTFuaXNleWxtaXlib3ciXSwiZXhjIjpbXSwiaGVhZGVycyI6W10sImNvIjp0cnVlLCJpcCI6ZmFsc2UsImFzbiI6WyIxMzMzNSJdLCJzc2lkIjoiOTgyN2MzY2Y5MWQzIiwid21pZCI6IjI5Y2U0ODIwLThiNTUtNWFjNi04YzdhLTVhODIwZTUxZWJiYiIsIndtaWRmbXQiOiJhc2NpaSIsIndtaWRsZW4iOjUxMiwid21pZHR5cCI6MSwid21vcGlkIjozNiwid21zZWdkIjoxOTIwLCJ3bXRpbXMiOjYwMCwid212ZXIiOjIsImludHNpZyI6IlNqN2FGOEJyemIySWNPMjhrTEpyV0FwNDctX3ZKZGRqdE45bDlXMFN2d00iLCJpYXQiOjE3ODg2MzE4MDgsImV4cCI6MTc4ODcxODIwOH0.N_Is3OGrYGq3_uMJL8qe7AR6J3WSfqT4_sfWe4lPBxI/1jplbloz84x5e1niseylmiybow/web/stream.mpd?channel=1555&mta=it&outlet=dazn-italy&plang=it
+
 #EXTINF:-1 tvg-id="sky2_sky sport 24" tvg-name="Sky Sport 24" tvg-logo="https://pixel.disco.nowtv.it/logo/skychb_35_darknow/LOGO_CHANNEL_LIGHT/4000?language=it-IT&proposition=NOWOTT" group-title="Sky Sport",Sky Sport 24
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=mpd
