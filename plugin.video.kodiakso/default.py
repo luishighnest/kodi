@@ -5035,13 +5035,13 @@ def test_play(cat, idx):
     if tok:
         hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
     li = xbmcgui.ListItem(path=mpd, offscreen=True)
+    li.setMimeType('application/dash+xml')
     li.setContentLookup(False)
     li.setProperty('inputstream', 'inputstream.adaptive')
     li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
     if ':' in key:
-        li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
-        li.setProperty('inputstream.adaptive.license_key', key)
-        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key)
+        clean_key = key.replace('|', ',')
+        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
     # live_stream_type raw solo per i live (URL con channel=); per i VOD va omesso
