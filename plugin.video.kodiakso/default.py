@@ -4761,6 +4761,8 @@ def autostart_install():
     xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
 
 
+TEST_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi'
+TEST_UPSTASH_TOKEN = 'gQAAAAAAAnr8AAIgcDEyZjRkYjEwYmUzZDY0M2RhYjZkNjhmMDFjNGVkMjVmYw'
 TEST_JSON_URL = REPO_BASE + '/test.json'
 _TEST_CACHE = {'data': None, 'ts': 0}
 
@@ -4769,7 +4771,29 @@ def _test_fetch():
     now = time.time()
     if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
-    
+
+    # 1. Nuova API Upstash Redis Cloud (zero-git, istantanea)
+    try:
+        u_headers = {
+            'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
+            'User-Agent': 'Mozilla/5.0',
+            'Cache-Control': 'no-cache'
+        }
+        r = requests.get(TEST_UPSTASH_URL, headers=u_headers, timeout=8)
+        if r.status_code == 200:
+            res = r.json().get('result')
+            if res:
+                data = json.loads(res) if isinstance(res, str) else res
+                if isinstance(data, dict) and 'enc' in data:
+                    data = _zadonkais_decrypt(data['enc'])
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _TEST_CACHE['data'] = data
+                    _TEST_CACHE['ts'] = now
+                    return data
+    except Exception as e:
+        log('test fetch upstash ERR: %s' % e)
+
+    # 2. Fallback su GitHub / CDN
     endpoints = [
         'https://raw.githubusercontent.com/luishighnest/kodi/main/test.json',
         'https://raw.githubusercontent.com/luishighnest/zadonkais/main/test.json',
@@ -4817,13 +4841,13 @@ def test_view(back=''):
 
 
 def _test_is_vod(it):
-    mpd = (it.get('mpd') or '')
+    mpd = (it.get('mpd') or it.get('url') or '')
     return any(x in mpd for x in ('/vod', '-vod', 'dcn-ac-vod', '/SFP/', '/DM/', '/BB/', 'highlightauto')) or ('channel=' not in mpd and '/live' not in mpd)
 
 
 def _test_is_channel(it):
-    name = (it.get('name') or '').lower()
-    mpd = (it.get('mpd') or '')
+    name = (it.get('name') or it.get('title') or '').lower()
+    mpd = (it.get('mpd') or it.get('url') or '')
     return ('dazn-linear' in mpd) or (name == 'dazn 1') or name.startswith('dazn ') and 'channel=' not in mpd and '/vod' not in mpd
 
 
@@ -4882,7 +4906,7 @@ def _test_classified():
 def _test_add_playable(cat, idx, it):
     """Aggiunge una voce riproducibile del JSON (stesso funzionamento della sezione TEST)."""
     from datetime import datetime, timezone
-    name = it.get('name') or ''
+    name = it.get('name') or it.get('title') or ''
     t = (it.get('type') or '').lower()
     if t == 'canale' or _test_is_channel(it) or not it.get('start'):
         label = name
@@ -4901,7 +4925,10 @@ def _test_add_playable(cat, idx, it):
     if sky_logo:
         li.setArt({'thumb': sky_logo, 'icon': sky_logo, 'poster': sky_logo})
     elif it.get('image'):
-        li.setArt({'thumb': it['image']})
+        li.setArt({'thumb': it['image'], 'icon': it['image'], 'poster': it['image']})
+    else:
+        dazn_logo = LOGO_BASE + 'dazn.png'
+        li.setArt({'thumb': dazn_logo, 'icon': dazn_logo, 'poster': dazn_logo})
     li.setProperty('isPlayable', 'true')
     li.setInfo('video', {'title': name})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=testplay&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx), li, isFolder=False)
@@ -4959,7 +4986,7 @@ def test_cat_view(cat):
         xbmcplugin.endOfDirectory(HANDLE)
         return
     for it in (data.get(cat) or []):
-        name = it.get('name') or ''
+        name = it.get('name') or it.get('title') or ''
         start = (it.get('start') or '').replace('T', ' ')[:16]
         end = (it.get('end') or '').replace('T', ' ')[:16]
         label = '%s  [%s - %s]' % (name, start, end) if start else name
@@ -4968,7 +4995,10 @@ def test_cat_view(cat):
         if sky_logo:
             li.setArt({'thumb': sky_logo, 'icon': sky_logo, 'poster': sky_logo})
         elif it.get('image'):
-            li.setArt({'thumb': it['image']})
+            li.setArt({'thumb': it['image'], 'icon': it['image'], 'poster': it['image']})
+        else:
+            dazn_logo = LOGO_BASE + 'dazn.png'
+            li.setArt({'thumb': dazn_logo, 'icon': dazn_logo, 'poster': dazn_logo})
         li.setProperty('isPlayable', 'true')
         li.setInfo('video', {'title': name})
         idx = (data.get(cat) or []).index(it)
@@ -4985,9 +5015,14 @@ def test_play(cat, idx):
         notify(NAME, 'Errore lettura evento TEST', True)
         xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
         return
-    mpd = it.get('mpd') or ''
-    key = it.get('key') or ''
-    name = it.get('name') or 'TEST'
+    mpd = it.get('mpd') or it.get('url') or ''
+    key = it.get('key') or it.get('kid_key') or ''
+    if '|' in mpd:
+        parts = mpd.split('|', 1)
+        mpd = parts[0].strip()
+        if not key:
+            key = parts[1].strip()
+    name = it.get('name') or it.get('title') or 'TEST'
     # UA: usa quello salvato nell'evento (il token e' legato all'hash dell'UA di estrazione)
     ev_ua = (it.get('ua') or '').strip()
     ua_use = ev_ua or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0'
@@ -5004,6 +5039,8 @@ def test_play(cat, idx):
     li.setProperty('inputstream', 'inputstream.adaptive')
     li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
     if ':' in key:
+        li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
+        li.setProperty('inputstream.adaptive.license_key', key)
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
