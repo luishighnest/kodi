@@ -4819,6 +4819,32 @@ def _test_fetch():
         return _TEST_CACHE['data']
     return {}
 
+EVENTI1_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi_mpd'
+_EVENTI1_CACHE = {'data': None, 'ts': 0}
+
+
+def _eventi1_fetch():
+    """Eventi 1: scarica SEMPRE dal vivo l'elenco dall'API Upstash (stream:eventi_mpd)."""
+    now = time.time()
+    if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
+        return _EVENTI1_CACHE['data']
+    try:
+        r = requests.get(EVENTI1_UPSTASH_URL, headers={
+            'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
+            'Cache-Control': 'no-cache'
+        }, timeout=10)
+        if r.status_code == 200:
+            res = r.json().get('result')
+            if res:
+                data = json.loads(res) if isinstance(res, str) else res
+                if isinstance(data, dict) and len(data) > 0:
+                    _EVENTI1_CACHE['data'] = data
+                    _EVENTI1_CACHE['ts'] = now
+                    return data
+    except Exception as e:
+        log('eventi1 fetch ERR: %s' % e)
+    return _EVENTI1_CACHE['data'] or {}
+
 def test_view(back=''):
     back_button(BASE + '?action=root')
     xbmcplugin.setContent(HANDLE, 'videos')
@@ -4903,7 +4929,7 @@ def _test_classified():
     return canali, eventi, vod
 
 
-def _test_add_playable(cat, idx, it):
+def _test_add_playable(cat, idx, it, play_action='testplay'):
     """Aggiunge una voce riproducibile del JSON (stesso funzionamento della sezione TEST)."""
     from datetime import datetime, timezone
     name = it.get('name') or it.get('title') or ''
@@ -4930,8 +4956,8 @@ def _test_add_playable(cat, idx, it):
         dazn_logo = LOGO_BASE + 'dazn.png'
         li.setArt({'thumb': dazn_logo, 'icon': dazn_logo, 'poster': dazn_logo})
     li.setProperty('isPlayable', 'true')
-    li.setInfo('video', {'title': name})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=testplay&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx), li, isFolder=False)
+    li.setInfo('video', {'title': name, 'plot': cat})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=' + play_action + '&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx), li, isFolder=False)
 
 
 def dazn_json_view():
@@ -4951,15 +4977,16 @@ def dazn_json_view():
 
 
 def eventi1_json_view():
-    """Eventi 1: eventi dal JSON direttamente riproducibili (stesso funzionamento della sezione TEST)."""
+    """Eventi 1: eventi live presi SEMPRE dal vivo dall'API Upstash (stream:eventi_mpd), senza test.json."""
     back_button(BASE + '?action=events')
     xbmcplugin.setContent(HANDLE, 'videos')
-    _, eventi, _ = _test_classified()
-    if not eventi:
+    data = _eventi1_fetch()
+    if not data:
         li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
-    for cat, idx, it in eventi:
-        _test_add_playable(cat, idx, it)
+    for cat, items in data.items():
+        for idx, it in enumerate(items or []):
+            _test_add_playable(cat, idx, it, play_action='eventi1play')
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -5006,15 +5033,7 @@ def test_cat_view(cat):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
-def test_play(cat, idx):
-    try:
-        data = _test_fetch()
-        it = (data.get(cat) or [])[int(idx)]
-    except Exception as e:
-        log('test play ERR: %s' % e)
-        notify(NAME, 'Errore lettura evento TEST', True)
-        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
-        return
+def _resolve_test_item(it):
     mpd = it.get('mpd') or it.get('url') or ''
     key = it.get('key') or it.get('kid_key') or ''
     if '|' in mpd:
@@ -5053,7 +5072,31 @@ def test_play(cat, idx):
         li.setProperty('inputstream.adaptive.max_bandwidth', bw)
     li.setLabel(lbl(name))
     li.setInfo('video', {'title': name})
-    xbmcplugin.setResolvedUrl(HANDLE, True, li)
+    return li
+
+
+def test_play(cat, idx):
+    try:
+        data = _test_fetch()
+        it = (data.get(cat) or [])[int(idx)]
+    except Exception as e:
+        log('test play ERR: %s' % e)
+        notify(NAME, 'Errore lettura evento TEST', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(it))
+
+
+def eventi1_play(cat, idx):
+    try:
+        data = _eventi1_fetch()
+        it = (data.get(cat) or [])[int(idx)]
+    except Exception as e:
+        log('eventi1 play ERR: %s' % e)
+        notify(NAME, 'Errore lettura evento Eventi 1', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(it))
 
 
 def main():
@@ -5116,6 +5159,8 @@ def main():
             dazn_json_view()
         elif action == 'eventi1':
             eventi1_json_view()
+        elif action == 'eventi1play':
+            eventi1_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'voddazn':
             vod_json_view()
         elif action == 'testcat':
