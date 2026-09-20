@@ -197,6 +197,7 @@ SEARCH_ICON = LOGO_BASE + 'search.png'
 HOME_ICON = LOGO_BASE + 'home.png'
 BACK_ICON = LOGO_BASE + 'back.png?v=3'
 LABEL = '[B][COLOR snow]%s[/COLOR][/B]'
+CAT_TITLE = '[B][COLOR gold]%s[/COLOR][/B]'
 BANNER_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'banner.png')
 ICON_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'icon.png')
 EMPTY_LOGO = os.path.join(ADDON.getAddonInfo('path'), 'resources', 'empty.png')
@@ -4984,34 +4985,24 @@ def dazn_json_view():
 
 
 def eventi1_json_view():
-    """Eventi 1: categorie condivise in cartelle separate, in ogni cartella gli eventi in ordine cronologico."""
+    """Eventi 1: TUTTI gli eventi nella stessa pagina; ogni categoria ha il suo titolo dedicato
+    e i suoi eventi in ordine cronologico (dal piu' vicino al piu' lontano)."""
     back_button(BASE + '?action=events')
     xbmcplugin.setContent(HANDLE, 'videos')
     data = _eventi1_fetch()
     if not data:
         li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
-    for cat, items in data.items():
-        label = '%s (%d)' % (cat, len(items or []))
-        li = xbmcgui.ListItem(label=lbl(label))
-        li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
-        li.setInfo('video', {'title': cat, 'plot': '%d eventi' % len(items or [])})
-        url = BASE + '?action=eventi1cat&cat=' + urllib.parse.quote(cat)
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
-def eventi1_cat_view(cat):
-    """Eventi di una singola categoria Eventi 1, in ordine cronologico dall'alto al basso."""
-    back_button(BASE + '?action=eventi1')
-    xbmcplugin.setContent(HANDLE, 'videos')
-    data = _eventi1_fetch()
-    items = _eventi1_sorted_items(data, cat)
-    if not items:
-        li = xbmcgui.ListItem(label=lbl('Nessun evento in questa categoria'))
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=False)
-    for idx, it in enumerate(items):
-        _test_add_playable(cat, idx, it, play_action='eventi1play')
+    for cat, _ in data.items():
+        items = _eventi1_sorted_items(data, cat)
+        if not items:
+            continue
+        # casella dedicata al titolo della categoria
+        hli = xbmcgui.ListItem(label=CAT_TITLE % cat)
+        hli.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', hli, isFolder=True)
+        for idx, it in enumerate(items):
+            _test_add_playable(cat, idx, it, play_action='eventi1play')
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -5184,8 +5175,6 @@ def main():
             dazn_json_view()
         elif action == 'eventi1':
             eventi1_json_view()
-        elif action == 'eventi1cat':
-            eventi1_cat_view(query.get('cat', [''])[0])
         elif action == 'eventi1play':
             eventi1_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'voddazn':
