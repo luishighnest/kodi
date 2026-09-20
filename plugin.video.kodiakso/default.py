@@ -4845,6 +4845,13 @@ def _eventi1_fetch():
         log('eventi1 fetch ERR: %s' % e)
     return _EVENTI1_CACHE['data'] or {}
 
+
+def _eventi1_sorted_items(data, cat):
+    """Eventi di una categoria della API Eventi 1, in ordine cronologico (dal piu' vicino al piu' lontano)."""
+    items = list(data.get(cat) or [])
+    items.sort(key=lambda it: ((it.get('start') or '').replace('Z', '+00:00') or '9999-12-31T00:00:00+00:00'))
+    return items
+
 def test_view(back=''):
     back_button(BASE + '?action=root')
     xbmcplugin.setContent(HANDLE, 'videos')
@@ -4977,7 +4984,7 @@ def dazn_json_view():
 
 
 def eventi1_json_view():
-    """Eventi 1: eventi live presi SEMPRE dal vivo dall'API Upstash (stream:eventi_mpd), senza test.json."""
+    """Eventi 1: categorie condivise in cartelle separate, in ogni cartella gli eventi in ordine cronologico."""
     back_button(BASE + '?action=events')
     xbmcplugin.setContent(HANDLE, 'videos')
     data = _eventi1_fetch()
@@ -4985,8 +4992,26 @@ def eventi1_json_view():
         li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
     for cat, items in data.items():
-        for idx, it in enumerate(items or []):
-            _test_add_playable(cat, idx, it, play_action='eventi1play')
+        label = '%s (%d)' % (cat, len(items or []))
+        li = xbmcgui.ListItem(label=lbl(label))
+        li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
+        li.setInfo('video', {'title': cat, 'plot': '%d eventi' % len(items or [])})
+        url = BASE + '?action=eventi1cat&cat=' + urllib.parse.quote(cat)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def eventi1_cat_view(cat):
+    """Eventi di una singola categoria Eventi 1, in ordine cronologico dall'alto al basso."""
+    back_button(BASE + '?action=eventi1')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    data = _eventi1_fetch()
+    items = _eventi1_sorted_items(data, cat)
+    if not items:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento in questa categoria'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=False)
+    for idx, it in enumerate(items):
+        _test_add_playable(cat, idx, it, play_action='eventi1play')
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -5090,7 +5115,7 @@ def test_play(cat, idx):
 def eventi1_play(cat, idx):
     try:
         data = _eventi1_fetch()
-        it = (data.get(cat) or [])[int(idx)]
+        it = _eventi1_sorted_items(data, cat)[int(idx)]
     except Exception as e:
         log('eventi1 play ERR: %s' % e)
         notify(NAME, 'Errore lettura evento Eventi 1', True)
@@ -5159,6 +5184,8 @@ def main():
             dazn_json_view()
         elif action == 'eventi1':
             eventi1_json_view()
+        elif action == 'eventi1cat':
+            eventi1_cat_view(query.get('cat', [''])[0])
         elif action == 'eventi1play':
             eventi1_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'voddazn':
