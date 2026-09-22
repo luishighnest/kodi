@@ -180,8 +180,11 @@ REPO_BASE = 'https://luishighnest.github.io/kodi'
 ZADONKAIS_BASE = 'https://luishighnest.github.io/zadonkais'
 SKY2_JSON_URL = REPO_BASE + '/sky2.json'
 GUIDA_TV_SKY_URL = REPO_BASE + '/guida_tv_sky.json'
+EWC_JSON_URL = REPO_BASE + '/events_with_channels.json'
 _SKY2_CACHE = {'data': None, 'ts': 0}
 _GUIDA_SKY_CACHE = {'data': None, 'ts': 0}
+_EWC = {'data': None, 'ts': 0, 'list':[]}
+_EWC_TTL = 300
 PLAYLIST_URL = ADDON.getSetting('playlist_url').strip() or DEFAULT_URL
 PLAYLIST_TS = ADDON.getSetting('playlist_timestamp') == 'true'
 
@@ -3832,8 +3835,123 @@ def play_sz6(e, i):
     xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
+def _ewc_fetch():
+    """TEST: legge events_with_channels.json (eventi del giorno con canali) dal repo."""
+    now = time.time()
+    if _EWC['data'] is not None and (now - _EWC['ts']) < _EWC_TTL:
+        return _EWC['list']
+    try:
+        r = requests.get(EWC_JSON_URL, timeout=15, headers={'User-Agent': UA})
+        r.raise_for_status()
+        val = r.json()
+        if isinstance(val, list) and val:
+            _EWC['list'] = val
+            _EWC['ts'] = now
+            _EWC['data'] = val
+            return val
+    except Exception as e:
+        log('ewc fetch ERR: %s' % e)
+    return _EWC['list']
+
+
+def _ewc_local(stime):
+    """'YYYY/MM/DD HH:MM:SS +ZZZZ' (UTC) -> ora locale '%d/%m %H:%M'."""
+    try:
+        m = re.match(r'^(\d{4})/(\d{2})/(\d{2})[ T](\d{2}):(\d{2}):(\d{2})\s*([+-]\d{4})?', (stime or '').strip())
+        if not m:
+            return ''
+        y, mo, dd = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        h, mi, se = int(m.group(4)), int(m.group(5)), int(m.group(6))
+        dt = datetime(y, mo, dd, h, mi, se, tzinfo=timezone.utc)
+        return dt.astimezone().strftime('%d/%m %H:%M')
+    except Exception:
+        return ''
+
+
+def ewc_view():
+    """TEST: elenco eventi del giorno da events_with_channels.json."""
+    back_button(BASE + '?action=events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    evs = _ewc_fetch()
+    if not evs:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    evs.sort(key=lambda e: (e.get('eventInfo') or {}).get('startTime', '') or '')
+    for idx, ev in enumerate(evs):
+        info = ev.get('eventInfo') or {}
+        title = (info.get('eventName') or ev.get('title') or '').strip()
+        stime = (info.get('startTime') or '').strip()
+        local = _ewc_local(stime)
+        label = '[COLOR snow]%s[/COLOR]' % title
+        if local:
+            label += '   [COLOR %s]%s[/COLOR]' % (EXP_OK_COLOR, local)
+        li = xbmcgui.ListItem(label=label)
+        plot = ''
+        if info.get('teamA') or info.get('teamB'):
+            plot = '%s vs %s' % (info.get('teamA', ''), info.get('teamB', ''))
+        if info.get('eventName'):
+            plot += (' | ' if plot else '') + str(info['eventName'])
+        if stime:
+            plot += (' | ' if plot else '') + 'Inizio ' + stime
+        nch = len(ev.get('decoded_channels') or [])
+        status = (ev.get('channel_status') or 'unknown')
+        plot += ' | %d canali' % nch if nch else ' | nessun canale'
+        li.setInfo('video', {'title': title, 'plot': plot})
+        thumb = info.get('teamAFlag') or info.get('eventBanner') or ''
+        li.setArt({'thumb': thumb if isinstance(thumb, str) and thumb.startswith('http') else LOGO_BASE + 'eventi_icon.png'})
+        url = _tmdb_url('ewc_ev', e=str(idx))
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def ewc_ev_view(e):
+    """TEST: canali di un evento da events_with_channels.json."""
+    back_button(BASE + '?action=ewc')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    evs = _ewc_fetch()
+    evs.sort(key=lambda e2: (e2.get('eventInfo') or {}).get('startTime', '') or '')
+    try:
+        ev = evs[int(e)]
+    except Exception:
+        ev = None
+    chs = (ev or {}).get('decoded_channels') or []
+    if not chs:
+        li = xbmcgui.ListItem(label=lbl('Nessun canale disponibile'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=ewc', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for idx, ch in enumerate(chs):
+        title = (ch.get('title') or ('Canale %d' % (idx + 1))).strip()
+        li = xbmcgui.ListItem(label=lbl(title))
+        li.setInfo('video', {'title': title, 'plot': title})
+        logo = ch.get('logo') or ''
+        li.setArt({'thumb': logo if isinstance(logo, str) and logo.startswith('http') else LOGO_BASE + 'sportzx.png'})
+        li.setProperty('isPlayable', 'true')
+        url = _tmdb_url('ewc_play', e=str(e), i=str(idx))
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def ewc_play(e, i):
+    """TEST: riproduzione canale da events_with_channels.json."""
+    evs = _ewc_fetch()
+    evs.sort(key=lambda e2: (e2.get('eventInfo') or {}).get('startTime', '') or '')
+    try:
+        chs = evs[int(e)].get('decoded_channels') or []
+    except Exception:
+        chs = []
+    li = _resolve_channel_list(chs, i, 'TEST')
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
+
+
 def events_view():
     home_button()
+    li = xbmcgui.ListItem(label=lbl('TEST'))
+    li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
+    li.setInfo('video', {'title': 'TEST', 'plot': 'Eventi del giorno con canali (events_with_channels.json)'})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ewc'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 1'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=True)
@@ -5189,6 +5307,12 @@ def main():
             films_view()
         elif action == 'events':
             events_view()
+        elif action == 'ewc':
+            ewc_view()
+        elif action == 'ewc_ev':
+            ewc_ev_view(query.get('e', ['0'])[0])
+        elif action == 'ewc_play':
+            ewc_play(query.get('e', ['0'])[0], query.get('i', ['0'])[0])
         elif action == 'gsearch':
             gsearch_view(query.get('q', [''])[0])
         elif action == 'autostart':
