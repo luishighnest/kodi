@@ -3948,6 +3948,10 @@ def ewc_play(e, i):
 
 def events_view():
     home_button()
+    li_test = xbmcgui.ListItem(label=lbl('EVENTI TEST'))
+    li_test.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
+    li_test.setInfo('video', {'title': 'EVENTI TEST', 'plot': 'Eventi estratti da script2 via proxy/direct'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventitest', li_test, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('TEST'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     li.setInfo('video', {'title': 'TEST', 'plot': 'Eventi del giorno con canali (events_with_channels.json)'})
@@ -5102,6 +5106,42 @@ def dazn_json_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def eventi_test_view():
+    """EVENTI TEST: Mostra gli eventi estratti con risoluzione tramite proxy e diretti."""
+    back_button(BASE + '?action=events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    data = _eventi1_fetch()
+    if not data:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for cat, _ in data.items():
+        items = _eventi1_sorted_items(data, cat)
+        if not items:
+            continue
+        hli = xbmcgui.ListItem(label=CAT_TITLE % cat)
+        hli.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventitest', hli, isFolder=True)
+        for idx, it in enumerate(items):
+            _test_add_playable(cat, idx, it, play_action='eventitestplay')
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def eventitest_play(cat, idx):
+    """Eventi TEST play: Risolve l'item impostando l'User-Agent dell'evento e il proxy per lo stream."""
+    try:
+        data = _eventi1_fetch()
+        it = _eventi1_sorted_items(data, cat)[int(idx)]
+    except Exception as e:
+        log('eventitest play ERR: %s' % e)
+        notify(NAME, 'Errore lettura evento TEST', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    li = _resolve_test_item(it)
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
+
+
 def eventi1_json_view():
     """Eventi 1: TUTTI gli eventi nella stessa pagina; ogni categoria ha il suo titolo dedicato
     e i suoi eventi in ordine cronologico (dal piu' vicino al piu' lontano)."""
@@ -5295,6 +5335,10 @@ def main():
             eventi1_json_view()
         elif action == 'eventi1play':
             eventi1_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
+        elif action == 'eventitest':
+            eventi_test_view()
+        elif action == 'eventitestplay':
+            eventitest_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'voddazn':
             vod_json_view()
         elif action == 'testcat':
