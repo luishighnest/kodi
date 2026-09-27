@@ -5219,7 +5219,7 @@ def _resolve_test_item(it):
     ev_ua = (it.get('ua') or '').strip()
     ua_use = ev_ua or 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
     
-    proxy_base = 'https://derek-counts-jar-permanent.trycloudflare.com/proxy?url='
+    proxy_base = 'http://127.0.0.1:5000/proxy?url='
     play_url = proxy_base + urllib.parse.quote(mpd, safe='') if (mpd and not mpd.startswith('http://127.0.0.1')) else mpd
 
     m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
