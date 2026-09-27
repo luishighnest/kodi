@@ -5219,18 +5219,17 @@ def _resolve_test_item(it):
     ev_ua = (it.get('ua') or '').strip()
     ua_use = ev_ua or 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
     
-    # Invia la richiesta tramite il proxy locale/tunnel per evitare il blocco 401 dell'User-Agent e della firma
-    proxy_base = 'https://alcohol-exercises-connections-iii.trycloudflare.com/proxy?url='
-    play_url = proxy_base + urllib.parse.quote(mpd, safe='') if (mpd and not mpd.startswith(proxy_base)) else mpd
+    # Riproduzione diretta pulita con User-Agent legato alla sessione
+    play_url = mpd
 
     m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
     tok = urllib.parse.unquote(m.group(1)) if m else ''
     if not tok:
         tok = (it.get('dazn_token') or '').strip()
     
-    hdrs = 'User-Agent=' + urllib.parse.quote(ua_use, safe='') + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
+    hdrs = 'User-Agent=' + ua_use + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
     if tok:
-        hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
+        hdrs += '&dazn-token=' + tok
         
     li = xbmcgui.ListItem(path=play_url, offscreen=True)
     li.setMimeType('application/dash+xml')
