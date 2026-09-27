@@ -5216,18 +5216,23 @@ def _resolve_test_item(it):
         if not key:
             key = parts[1].strip()
     name = it.get('name') or it.get('title') or 'TEST'
-    # UA: usa quello salvato nell'evento (il token e' legato all'hash dell'UA di estrazione)
     ev_ua = (it.get('ua') or '').strip()
-    ua_use = ev_ua or 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0'
-    # estrae il dazn-token dall'URL oppure dal campo dedicato (VOD: token solo negli header)
+    ua_use = ev_ua or 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+    
+    # Invia la richiesta tramite il proxy locale/tunnel per evitare il blocco 401 dell'User-Agent e della firma
+    proxy_base = 'https://alcohol-exercises-connections-iii.trycloudflare.com/proxy?url='
+    play_url = proxy_base + urllib.parse.quote(mpd, safe='') if (mpd and not mpd.startswith(proxy_base)) else mpd
+
     m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
     tok = urllib.parse.unquote(m.group(1)) if m else ''
     if not tok:
         tok = (it.get('dazn_token') or '').strip()
-    hdrs = 'User-Agent=' + ua_use + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
+    
+    hdrs = 'User-Agent=' + urllib.parse.quote(ua_use, safe='') + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
     if tok:
         hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
-    li = xbmcgui.ListItem(path=mpd, offscreen=True)
+        
+    li = xbmcgui.ListItem(path=play_url, offscreen=True)
     li.setMimeType('application/dash+xml')
     li.setContentLookup(False)
     li.setProperty('inputstream', 'inputstream.adaptive')
@@ -5237,10 +5242,6 @@ def _resolve_test_item(it):
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
-    # live_stream_type raw solo per i live (URL con channel=); per i VOD va omesso
-    is_live = ('channel=' in mpd) or (it.get('end', '')[:4] >= '2999')
-    if ADDON.getSetting('live_async') == 'true' and is_live:
-        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
     bw = ADDON.getSetting('max_bandwidth').strip()
     if bw and bw != '0':
         li.setProperty('inputstream.adaptive.max_bandwidth', bw)
