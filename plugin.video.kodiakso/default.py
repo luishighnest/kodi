@@ -3950,7 +3950,7 @@ def events_view():
     home_button()
     li_test = xbmcgui.ListItem(label=lbl('EVENTI TEST'))
     li_test.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
-    li_test.setInfo('video', {'title': 'EVENTI TEST', 'plot': 'Eventi estratti da script2 via proxy/direct'})
+    li_test.setInfo('video', {'title': 'EVENTI TEST', 'plot': 'Eventi estratti da script2 (riproduzione diretta)'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventitest', li_test, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('TEST'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
@@ -5129,7 +5129,7 @@ def eventi_test_view():
 
 
 def eventitest_play(cat, idx):
-    """Eventi TEST play: Risolve l'item impostando l'User-Agent dell'evento e il proxy per lo stream."""
+    """Eventi TEST play: Risolve l'item impostando l'User-Agent dell'evento per lo stream diretto."""
     try:
         data = _eventi1_fetch()
         it = _eventi1_sorted_items(data, cat)[int(idx)]
@@ -5216,27 +5216,37 @@ def _resolve_test_item(it):
         if not key:
             key = parts[1].strip()
     name = it.get('name') or it.get('title') or 'TEST'
+    # L'evento porta l'UA con cui e' stato creato il token CDN: e' il dato
+    # vincolante. Il fallback e' solo per eventi pubblicati senza 'ua', e non
+    # viene hardcoded su un Chrome specifico perche' un UA arbitrario fa
+    # fallire la CDN con 401: si usa quello configurato nell'addon.
     ev_ua = (it.get('ua') or '').strip()
-    ua_use = ev_ua or 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
-    
-    proxy_base = 'http://127.0.0.1:5000/proxy?url='
-    play_url = proxy_base + urllib.parse.quote(mpd, safe='') if (mpd and not mpd.startswith('http://127.0.0.1')) else mpd
+    ua_use = ev_ua or UA
+
+    # RIPRODUZIONE DIRETTA: l'URL contiene gia' il token CDN (path /@<token>/)
+    # e Kodi lo scarica direttamente da indazn.com. Nessun proxy, nessun worker.
+    play_url = mpd
 
     m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
     tok = urllib.parse.unquote(m.group(1)) if m else ''
     if not tok:
         tok = (it.get('dazn_token') or '').strip()
-    
+
+    # Il token CDN e' legato all'User-Agent con cui e' stato creato (claim
+    # "headers":["user-agent"]): se l'UA non coincide la CDN risponde 401 su
+    # manifest e segmenti. Solo l'UA e' indispensabile, gli altri header sono
+    # harmless per la CDN ma utili se l'edge richiede dazn-token.
     hdrs = 'User-Agent=' + ua_use + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
-    if tok:
-        hdrs += '&dazn-token=' + tok
-        
+    if tok and 'dazn-token=' not in mpd:
+        hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
+
     li = xbmcgui.ListItem(path=play_url, offscreen=True)
     li.setMimeType('application/dash+xml')
     li.setContentLookup(False)
     li.setProperty('inputstream', 'inputstream.adaptive')
     li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
     if ':' in key:
+        # ClearKey: inputstream.adaptive rifiuta license_key, va usato drm_legacy
         clean_key = key.replace('|', ',')
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
