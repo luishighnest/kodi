@@ -180,11 +180,8 @@ REPO_BASE = 'https://luishighnest.github.io/kodi'
 ZADONKAIS_BASE = 'https://luishighnest.github.io/zadonkais'
 SKY2_JSON_URL = REPO_BASE + '/sky2.json'
 GUIDA_TV_SKY_URL = REPO_BASE + '/guida_tv_sky.json'
-EWC_JSON_URL = REPO_BASE + '/events_with_channels.json'
 _SKY2_CACHE = {'data': None, 'ts': 0}
 _GUIDA_SKY_CACHE = {'data': None, 'ts': 0}
-_EWC = {'data': None, 'ts': 0, 'list':[]}
-_EWC_TTL = 300
 PLAYLIST_URL = ADDON.getSetting('playlist_url').strip() or DEFAULT_URL
 PLAYLIST_TS = ADDON.getSetting('playlist_timestamp') == 'true'
 
@@ -3835,127 +3832,8 @@ def play_sz6(e, i):
     xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
-def _ewc_fetch():
-    """TEST: legge events_with_channels.json (eventi del giorno con canali) dal repo."""
-    now = time.time()
-    if _EWC['data'] is not None and (now - _EWC['ts']) < _EWC_TTL:
-        return _EWC['list']
-    try:
-        r = requests.get(EWC_JSON_URL, timeout=15, headers={'User-Agent': UA})
-        r.raise_for_status()
-        val = r.json()
-        if isinstance(val, list) and val:
-            _EWC['list'] = val
-            _EWC['ts'] = now
-            _EWC['data'] = val
-            return val
-    except Exception as e:
-        log('ewc fetch ERR: %s' % e)
-    return _EWC['list']
-
-
-def _ewc_local(stime):
-    """'YYYY/MM/DD HH:MM:SS +ZZZZ' (UTC) -> ora locale '%d/%m %H:%M'."""
-    try:
-        m = re.match(r'^(\d{4})/(\d{2})/(\d{2})[ T](\d{2}):(\d{2}):(\d{2})\s*([+-]\d{4})?', (stime or '').strip())
-        if not m:
-            return ''
-        y, mo, dd = int(m.group(1)), int(m.group(2)), int(m.group(3))
-        h, mi, se = int(m.group(4)), int(m.group(5)), int(m.group(6))
-        dt = datetime(y, mo, dd, h, mi, se, tzinfo=timezone.utc)
-        return dt.astimezone().strftime('%d/%m %H:%M')
-    except Exception:
-        return ''
-
-
-def ewc_view():
-    """TEST: elenco eventi del giorno da events_with_channels.json."""
-    back_button(BASE + '?action=events')
-    xbmcplugin.setContent(HANDLE, 'videos')
-    evs = _ewc_fetch()
-    if not evs:
-        li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
-        xbmcplugin.endOfDirectory(HANDLE)
-        return
-    evs.sort(key=lambda e: (e.get('eventInfo') or {}).get('startTime', '') or '')
-    for idx, ev in enumerate(evs):
-        info = ev.get('eventInfo') or {}
-        title = (info.get('eventName') or ev.get('title') or '').strip()
-        stime = (info.get('startTime') or '').strip()
-        local = _ewc_local(stime)
-        label = '[COLOR snow]%s[/COLOR]' % title
-        if local:
-            label += '   [COLOR %s]%s[/COLOR]' % (EXP_OK_COLOR, local)
-        li = xbmcgui.ListItem(label=label)
-        plot = ''
-        if info.get('teamA') or info.get('teamB'):
-            plot = '%s vs %s' % (info.get('teamA', ''), info.get('teamB', ''))
-        if info.get('eventName'):
-            plot += (' | ' if plot else '') + str(info['eventName'])
-        if stime:
-            plot += (' | ' if plot else '') + 'Inizio ' + stime
-        nch = len(ev.get('decoded_channels') or [])
-        status = (ev.get('channel_status') or 'unknown')
-        plot += ' | %d canali' % nch if nch else ' | nessun canale'
-        li.setInfo('video', {'title': title, 'plot': plot})
-        thumb = info.get('teamAFlag') or info.get('eventBanner') or ''
-        li.setArt({'thumb': thumb if isinstance(thumb, str) and thumb.startswith('http') else LOGO_BASE + 'eventi_icon.png'})
-        url = _tmdb_url('ewc_ev', e=str(idx))
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
-def ewc_ev_view(e):
-    """TEST: canali di un evento da events_with_channels.json."""
-    back_button(BASE + '?action=ewc')
-    xbmcplugin.setContent(HANDLE, 'videos')
-    evs = _ewc_fetch()
-    evs.sort(key=lambda e2: (e2.get('eventInfo') or {}).get('startTime', '') or '')
-    try:
-        ev = evs[int(e)]
-    except Exception:
-        ev = None
-    chs = (ev or {}).get('decoded_channels') or []
-    if not chs:
-        li = xbmcgui.ListItem(label=lbl('Nessun canale disponibile'))
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=ewc', li, isFolder=False)
-        xbmcplugin.endOfDirectory(HANDLE)
-        return
-    for idx, ch in enumerate(chs):
-        title = (ch.get('title') or ('Canale %d' % (idx + 1))).strip()
-        li = xbmcgui.ListItem(label=lbl(title))
-        li.setInfo('video', {'title': title, 'plot': title})
-        logo = ch.get('logo') or ''
-        li.setArt({'thumb': logo if isinstance(logo, str) and logo.startswith('http') else LOGO_BASE + 'sportzx.png'})
-        li.setProperty('isPlayable', 'true')
-        url = _tmdb_url('ewc_play', e=str(e), i=str(idx))
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
-def ewc_play(e, i):
-    """TEST: riproduzione canale da events_with_channels.json."""
-    evs = _ewc_fetch()
-    evs.sort(key=lambda e2: (e2.get('eventInfo') or {}).get('startTime', '') or '')
-    try:
-        chs = evs[int(e)].get('decoded_channels') or []
-    except Exception:
-        chs = []
-    li = _resolve_channel_list(chs, i, 'TEST')
-    xbmcplugin.setResolvedUrl(HANDLE, True, li)
-
-
 def events_view():
     home_button()
-    li_test = xbmcgui.ListItem(label=lbl('EVENTI TEST'))
-    li_test.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
-    li_test.setInfo('video', {'title': 'EVENTI TEST', 'plot': 'Eventi estratti da script2 (riproduzione diretta)'})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventitest', li_test, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('TEST'))
-    li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
-    li.setInfo('video', {'title': 'TEST', 'plot': 'Eventi del giorno con canali (events_with_channels.json)'})
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ewc'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 1'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=True)
@@ -4851,10 +4729,6 @@ def autostart_view():
         li3.setArt({'thumb': ICON_LOGO})
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=autostart_settings', li3, isFolder=False)
 
-        li4 = xbmcgui.ListItem(label=lbl('→ Test: apri subito PZ8 (RunAddon)'))
-        li4.setArt({'thumb': ICON_LOGO})
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=autostart_test', li4, isFolder=False)
-
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -4975,27 +4849,6 @@ def _eventi1_sorted_items(data, cat):
     items.sort(key=lambda it: ((it.get('start') or '').replace('Z', '+00:00') or '9999-12-31T00:00:00+00:00'))
     return items
 
-def test_view(back=''):
-    back_button(BASE + '?action=root')
-    xbmcplugin.setContent(HANDLE, 'videos')
-    try:
-        data = _test_fetch()
-    except Exception as e:
-        log('test fetch ERR: %s' % e)
-        li = xbmcgui.ListItem(label=lbl('Impossibile scaricare test.json'))
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=False)
-        xbmcplugin.endOfDirectory(HANDLE)
-        return
-    for cat in data.keys():
-        items = data[cat] or []
-        li = xbmcgui.ListItem(label=lbl('%s (%d)' % (cat, len(items))))
-        li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
-        li.setInfo('video', {'title': cat, 'plot': '%d eventi' % len(items)})
-        url = BASE + '?action=testcat&cat=' + urllib.parse.quote(cat)
-        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
 def _test_is_vod(it):
     mpd = (it.get('mpd') or it.get('url') or '')
     return any(x in mpd for x in ('/vod', '-vod', 'dcn-ac-vod', '/SFP/', '/DM/', '/BB/', 'highlightauto')) or ('channel=' not in mpd and '/live' not in mpd)
@@ -5061,19 +4914,16 @@ def _test_classified():
 
 def _test_add_playable(cat, idx, it, play_action='testplay'):
     """Aggiunge una voce riproducibile del JSON (stesso funzionamento della sezione TEST)."""
-    from datetime import datetime, timezone
     name = it.get('name') or it.get('title') or ''
     t = (it.get('type') or '').lower()
     if t == 'canale' or _test_is_channel(it) or not it.get('start'):
         label = name
     else:
-        # solo l'orario di inizio convertito in ora locale
+        # Lo start arriva gia' in ora locale da script2: si mostra cosi' com'e',
+        # senza reinterpretarlo come UTC (altrimenti si aggiungerebbero 2 ore).
         try:
-            s = (it.get('start') or '').replace('Z', '+00:00')
-            dt = datetime.fromisoformat(s)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            label = '%s  %s' % (name, dt.astimezone().strftime('%H:%M'))
+            s = (it.get('start') or '').replace('T', ' ').strip()
+            label = '%s  %s' % (name, s[11:16]) if len(s) >= 16 else name
         except Exception:
             label = name
     li = xbmcgui.ListItem(label=lbl(label))
@@ -5104,42 +4954,6 @@ def dazn_json_view():
     for cat, idx, it in canali:
         _test_add_playable(cat, idx, it)
     xbmcplugin.endOfDirectory(HANDLE)
-
-
-def eventi_test_view():
-    """EVENTI TEST: Mostra gli eventi estratti con risoluzione tramite proxy e diretti."""
-    back_button(BASE + '?action=events')
-    xbmcplugin.setContent(HANDLE, 'videos')
-    data = _eventi1_fetch()
-    if not data:
-        li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
-        xbmcplugin.endOfDirectory(HANDLE)
-        return
-    for cat, _ in data.items():
-        items = _eventi1_sorted_items(data, cat)
-        if not items:
-            continue
-        hli = xbmcgui.ListItem(label=CAT_TITLE % cat)
-        hli.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventitest', hli, isFolder=True)
-        for idx, it in enumerate(items):
-            _test_add_playable(cat, idx, it, play_action='eventitestplay')
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
-def eventitest_play(cat, idx):
-    """Eventi TEST play: Risolve l'item impostando l'User-Agent dell'evento per lo stream diretto."""
-    try:
-        data = _eventi1_fetch()
-        it = _eventi1_sorted_items(data, cat)[int(idx)]
-    except Exception as e:
-        log('eventitest play ERR: %s' % e)
-        notify(NAME, 'Errore lettura evento TEST', True)
-        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
-        return
-    li = _resolve_test_item(it)
-    xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
 def eventi1_json_view():
@@ -5174,36 +4988,6 @@ def vod_json_view():
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
     for cat, idx, it in vod:
         _test_add_playable(cat, idx, it)
-    xbmcplugin.endOfDirectory(HANDLE)
-
-
-def test_cat_view(cat):
-    back_button(BASE + '?action=test')
-    xbmcplugin.setContent(HANDLE, 'videos')
-    try:
-        data = _test_fetch()
-    except Exception as e:
-        log('test fetch ERR: %s' % e)
-        xbmcplugin.endOfDirectory(HANDLE)
-        return
-    for it in (data.get(cat) or []):
-        name = it.get('name') or it.get('title') or ''
-        start = (it.get('start') or '').replace('T', ' ')[:16]
-        end = (it.get('end') or '').replace('T', ' ')[:16]
-        label = '%s  [%s - %s]' % (name, start, end) if start else name
-        li = xbmcgui.ListItem(label=lbl(label))
-        sky_logo = _test_sky_logo(it)
-        if sky_logo:
-            li.setArt({'thumb': sky_logo, 'icon': sky_logo, 'poster': sky_logo})
-        elif it.get('image'):
-            li.setArt({'thumb': it['image'], 'icon': it['image'], 'poster': it['image']})
-        else:
-            dazn_logo = LOGO_BASE + 'dazn.png'
-            li.setArt({'thumb': dazn_logo, 'icon': dazn_logo, 'poster': dazn_logo})
-        li.setProperty('isPlayable', 'true')
-        li.setInfo('video', {'title': name})
-        idx = (data.get(cat) or []).index(it)
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=testplay&cat=' + urllib.parse.quote(cat) + '&idx=' + str(idx), li, isFolder=False)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -5345,14 +5129,8 @@ def main():
             eventi1_json_view()
         elif action == 'eventi1play':
             eventi1_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
-        elif action == 'eventitest':
-            eventi_test_view()
-        elif action == 'eventitestplay':
-            eventitest_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'voddazn':
             vod_json_view()
-        elif action == 'testcat':
-            test_cat_view(query.get('cat', [''])[0])
         elif action == 'testplay':
             test_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'vod':
@@ -5361,12 +5139,6 @@ def main():
             films_view()
         elif action == 'events':
             events_view()
-        elif action == 'ewc':
-            ewc_view()
-        elif action == 'ewc_ev':
-            ewc_ev_view(query.get('e', ['0'])[0])
-        elif action == 'ewc_play':
-            ewc_play(query.get('e', ['0'])[0], query.get('i', ['0'])[0])
         elif action == 'gsearch':
             gsearch_view(query.get('q', [''])[0])
         elif action == 'autostart':
@@ -5376,8 +5148,6 @@ def main():
         elif action == 'autostart_settings':
             xbmcaddon.Addon('service.kodiakso.autostart').openSettings()
             xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
-        elif action == 'autostart_test':
-            xbmc.executebuiltin('RunAddon(plugin.video.kodiakso)')
         elif action == 'autostart_install':
             autostart_install()
         elif action == 'autostart_openrepo':
