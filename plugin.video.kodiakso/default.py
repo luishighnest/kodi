@@ -4766,7 +4766,7 @@ _TEST_CACHE = {'data': None, 'ts': 0}
 
 def _test_fetch():
     now = time.time()
-    if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 3):
+    if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
 
     # 1. Nuova API Upstash Redis Cloud (zero-git, istantanea)
@@ -4774,10 +4774,9 @@ def _test_fetch():
         u_headers = {
             'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
             'User-Agent': 'Mozilla/5.0',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+            'Cache-Control': 'no-cache'
         }
-        r = requests.get(TEST_UPSTASH_URL + '?_=' + str(int(now)), headers=u_headers, timeout=8)
+        r = requests.get(TEST_UPSTASH_URL, headers=u_headers, timeout=8)
         if r.status_code == 200:
             res = r.json().get('result')
             if res:
@@ -4822,28 +4821,19 @@ _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica gli eventi correnti dall'API Upstash (stream:eventi_mpd)."""
+    """Eventi 1: scarica SEMPRE dal vivo l'elenco dall'API Upstash (stream:eventi_mpd)."""
     now = time.time()
-    if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 3):
+    if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
     try:
-        r = requests.get(EVENTI1_UPSTASH_URL + '?_=' + str(int(now)), headers={
+        r = requests.get(EVENTI1_UPSTASH_URL, headers={
             'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
-            'User-Agent': 'Mozilla/5.0',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache'
+            'Cache-Control': 'no-cache'
         }, timeout=10)
         if r.status_code == 200:
             res = r.json().get('result')
             if res:
                 data = json.loads(res) if isinstance(res, str) else res
-                if isinstance(data, dict) and 'enc' in data:
-                    data = _zadonkais_decrypt(data['enc'])
-                elif isinstance(data, str):
-                    try:
-                        data = json.loads(data)
-                    except Exception:
-                        pass
                 if isinstance(data, dict) and len(data) > 0:
                     _EVENTI1_CACHE['data'] = data
                     _EVENTI1_CACHE['ts'] = now
@@ -4975,15 +4965,14 @@ def eventi1_json_view():
     if not data:
         li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
-    for cat in data.keys():
+    for cat, _ in data.items():
         items = _eventi1_sorted_items(data, cat)
         if not items:
             continue
-        # Titolo della categoria come voce separatrice (non folder)
+        # casella dedicata al titolo della categoria
         hli = xbmcgui.ListItem(label=CAT_TITLE % cat)
         hli.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
-        hli.setProperty('IsPlayable', 'false')
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', hli, isFolder=False)
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', hli, isFolder=True)
         for idx, it in enumerate(items):
             _test_add_playable(cat, idx, it, play_action='eventi1play')
     xbmcplugin.endOfDirectory(HANDLE)
