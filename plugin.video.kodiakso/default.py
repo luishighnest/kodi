@@ -4817,19 +4817,35 @@ def _test_fetch():
         return _TEST_CACHE['data']
     return {}
 
-EVENTI1_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi'
+EVENTI1_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi_mpd'
 _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica l'elenco unificato (stream:eventi / test.json)."""
+    """Eventi 1: scarica gli eventi correnti dall'API Upstash (stream:eventi_mpd)."""
+    now = time.time()
+    if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 3):
+        return _EVENTI1_CACHE['data']
     try:
-        data = _test_fetch()
-        if data:
-            return data
+        r = requests.get(EVENTI1_UPSTASH_URL + '?_=' + str(int(now)), headers={
+            'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
+            'User-Agent': 'Mozilla/5.0',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+        }, timeout=10)
+        if r.status_code == 200:
+            res = r.json().get('result')
+            if res:
+                data = json.loads(res) if isinstance(res, str) else res
+                if isinstance(data, dict) and 'enc' in data:
+                    data = _zadonkais_decrypt(data['enc'])
+                if isinstance(data, dict) and len(data) > 0:
+                    _EVENTI1_CACHE['data'] = data
+                    _EVENTI1_CACHE['ts'] = now
+                    return data
     except Exception as e:
         log('eventi1 fetch ERR: %s' % e)
-    return {}
+    return _EVENTI1_CACHE['data'] or {}
 
 
 def _eventi1_sorted_items(data, cat):
