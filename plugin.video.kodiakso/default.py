@@ -4975,14 +4975,15 @@ def eventi1_json_view():
     if not data:
         li = xbmcgui.ListItem(label=lbl('Nessun evento nel JSON'))
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
-    for cat, _ in data.items():
+    for cat in data.keys():
         items = _eventi1_sorted_items(data, cat)
         if not items:
             continue
-        # casella dedicata al titolo della categoria
+        # Titolo della categoria come voce separatrice (non folder)
         hli = xbmcgui.ListItem(label=CAT_TITLE % cat)
         hli.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
-        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', hli, isFolder=True)
+        hli.setProperty('IsPlayable', 'false')
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', hli, isFolder=False)
         for idx, it in enumerate(items):
             _test_add_playable(cat, idx, it, play_action='eventi1play')
     xbmcplugin.endOfDirectory(HANDLE)
