@@ -4766,7 +4766,7 @@ _TEST_CACHE = {'data': None, 'ts': 0}
 
 def _test_fetch():
     now = time.time()
-    if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
+    if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 3):
         return _TEST_CACHE['data']
 
     # 1. Nuova API Upstash Redis Cloud (zero-git, istantanea)
@@ -4774,9 +4774,10 @@ def _test_fetch():
         u_headers = {
             'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
             'User-Agent': 'Mozilla/5.0',
-            'Cache-Control': 'no-cache'
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
         }
-        r = requests.get(TEST_UPSTASH_URL, headers=u_headers, timeout=8)
+        r = requests.get(TEST_UPSTASH_URL + '?_=' + str(int(now)), headers=u_headers, timeout=8)
         if r.status_code == 200:
             res = r.json().get('result')
             if res:
@@ -4828,27 +4829,7 @@ def _eventi1_fetch():
             return data
     except Exception as e:
         log('eventi1 fetch ERR: %s' % e)
-    
-    # Fallback su endpoint Upstash
-    now = time.time()
-    if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
-        return _EVENTI1_CACHE['data']
-    try:
-        r = requests.get(EVENTI1_UPSTASH_URL, headers={
-            'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
-            'Cache-Control': 'no-cache'
-        }, timeout=10)
-        if r.status_code == 200:
-            res = r.json().get('result')
-            if res:
-                data = json.loads(res) if isinstance(res, str) else res
-                if isinstance(data, dict) and len(data) > 0:
-                    _EVENTI1_CACHE['data'] = data
-                    _EVENTI1_CACHE['ts'] = now
-                    return data
-    except Exception as e:
-        log('eventi1 fetch fallback ERR: %s' % e)
-    return _EVENTI1_CACHE['data'] or {}
+    return {}
 
 
 def _eventi1_sorted_items(data, cat):
