@@ -4816,12 +4816,20 @@ def _test_fetch():
         return _TEST_CACHE['data']
     return {}
 
-EVENTI1_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi_mpd'
+EVENTI1_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi'
 _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica SEMPRE dal vivo l'elenco dall'API Upstash (stream:eventi_mpd)."""
+    """Eventi 1: scarica l'elenco unificato (stream:eventi / test.json)."""
+    try:
+        data = _test_fetch()
+        if data:
+            return data
+    except Exception as e:
+        log('eventi1 fetch ERR: %s' % e)
+    
+    # Fallback su endpoint Upstash
     now = time.time()
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
@@ -4839,7 +4847,7 @@ def _eventi1_fetch():
                     _EVENTI1_CACHE['ts'] = now
                     return data
     except Exception as e:
-        log('eventi1 fetch ERR: %s' % e)
+        log('eventi1 fetch fallback ERR: %s' % e)
     return _EVENTI1_CACHE['data'] or {}
 
 
