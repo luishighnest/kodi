@@ -4839,6 +4839,11 @@ def _eventi1_fetch():
                 data = json.loads(res) if isinstance(res, str) else res
                 if isinstance(data, dict) and 'enc' in data:
                     data = _zadonkais_decrypt(data['enc'])
+                elif isinstance(data, str):
+                    try:
+                        data = json.loads(data)
+                    except Exception:
+                        pass
                 if isinstance(data, dict) and len(data) > 0:
                     _EVENTI1_CACHE['data'] = data
                     _EVENTI1_CACHE['ts'] = now
