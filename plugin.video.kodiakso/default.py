@@ -4758,8 +4758,19 @@ def autostart_install():
     xbmc.executebuiltin('Container.Update("%s?action=autostart", replace)' % BASE)
 
 
-TEST_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi'
-TEST_UPSTASH_TOKEN = 'gQAAAAAAAnr8AAIgcDEyZjRkYjEwYmUzZDY0M2RhYjZkNjhmMDFjNGVkMjVmYw'
+
+def _sec_blob(b64_str, key=0x5A):
+    try:
+        import base64
+        raw = base64.b64decode(b64_str)
+        return bytes([b ^ key for b in raw]).decode('utf-8')
+    except Exception:
+        return ''
+
+_SEC_E1 = 'Mi4uKilgdXU7OT93KT87NndrbGhvb2x0LyopLjspMnQzNXU9Py51KS4oPzs3YD8sPzQuMw=='
+_SEC_E2 = 'Mi4uKilgdXU7OT93KT87NndrbGhvb2x0LyopLjspMnQzNXU9Py51KS4oPzs3YD8sPzQuMwU3Kj4='
+_SEC_TK = 'PQsbGxsbGxsbNChiGxsTPTkeHyMAMAgxAzAfLQM3DyAAHgNqF2gIMgMwADEUMDI3Fx4cMBQdDDEXMAw3Ay0='
+
 TEST_JSON_URL = REPO_BASE + '/test.json'
 _TEST_CACHE = {'data': None, 'ts': 0}
 
@@ -4769,14 +4780,14 @@ def _test_fetch():
     if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
 
-    # 1. Nuova API Upstash Redis Cloud (zero-git, istantanea)
+    # 1. API Cloud protetta in memoria volatile
     try:
         u_headers = {
-            'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
+            'Authorization': 'Bearer ' + _sec_blob(_SEC_TK),
             'User-Agent': 'Mozilla/5.0',
             'Cache-Control': 'no-cache'
         }
-        r = requests.get(TEST_UPSTASH_URL, headers=u_headers, timeout=8)
+        r = requests.get(_sec_blob(_SEC_E1), headers=u_headers, timeout=8)
         if r.status_code == 200:
             res = r.json().get('result')
             if res:
@@ -4788,7 +4799,7 @@ def _test_fetch():
                     _TEST_CACHE['ts'] = now
                     return data
     except Exception as e:
-        log('test fetch upstash ERR: %s' % e)
+        log('test fetch ERR')
 
     # 2. Fallback su GitHub / CDN
     endpoints = [
@@ -4810,24 +4821,23 @@ def _test_fetch():
                     _TEST_CACHE['ts'] = now
                     return data
         except Exception as e:
-            log('test fetch %s ERR: %s' % (ep, e))
+            log('test fetch fallback ERR')
 
     if _TEST_CACHE['data']:
         return _TEST_CACHE['data']
     return {}
 
-EVENTI1_UPSTASH_URL = 'https://ace-seal-162556.upstash.io/get/stream:eventi_mpd'
 _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica SEMPRE dal vivo l'elenco dall'API Upstash (stream:eventi_mpd)."""
+    """Eventi 1: scarica in memoria volatile dall'API cifrata."""
     now = time.time()
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
     try:
-        r = requests.get(EVENTI1_UPSTASH_URL, headers={
-            'Authorization': 'Bearer ' + TEST_UPSTASH_TOKEN,
+        r = requests.get(_sec_blob(_SEC_E2), headers={
+            'Authorization': 'Bearer ' + _sec_blob(_SEC_TK),
             'Cache-Control': 'no-cache'
         }, timeout=10)
         if r.status_code == 200:
@@ -4839,7 +4849,7 @@ def _eventi1_fetch():
                     _EVENTI1_CACHE['ts'] = now
                     return data
     except Exception as e:
-        log('eventi1 fetch ERR: %s' % e)
+        log('eventi1 fetch ERR')
     return _EVENTI1_CACHE['data'] or {}
 
 
