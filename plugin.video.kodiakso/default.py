@@ -4770,6 +4770,7 @@ def _sec_blob(b64_str, key=0x5A):
 _SEC_E1 = 'Mi4uKilgdXUjNS80PXc4Lykydzhub2h0NikpPDEqamt0LTUoMT8oKXQ+Pyx1OyozdT8sPzQuMw=='
 _SEC_E2 = 'Mi4uKilgdXUjNS80PXc4Lykydzhub2h0NikpPDEqamt0LTUoMT8oKXQ+Pyx1OyozdT8sPzQuMwU3Kj4='
 _SEC_HK = 'KiBiBSkvKj8oBSk/OSg/LgUxNT4zOzEpNQUxPyMFaGpobA=='
+_SEC_AK = 'T4xxbbq4uFJPEwD4K6X3B6Itq1X/Z91XNCeWwjiZPfU='
 
 def _make_handshake_headers():
     import hmac, hashlib
@@ -4777,11 +4778,29 @@ def _make_handshake_headers():
     secret = _sec_blob(_SEC_HK)
     sig = hmac.new(secret.encode(), ts.encode(), hashlib.sha256).hexdigest()
     return {
-        'User-Agent': 'PZ8-Core/1.11.83',
+        'User-Agent': 'PZ8-Core/1.11.84',
         'X-PZ8-Time': ts,
         'X-PZ8-Signature': sig,
         'Cache-Control': 'no-cache'
     }
+
+def _decrypt_payload(payload):
+    """Decifra il payload crittografato AES-256-GCM in memoria RAM."""
+    if not isinstance(payload, dict) or 'ciphertext' not in payload:
+        return payload
+    try:
+        import base64
+        from Cryptodome.Cipher import AES
+        raw_key = bytes([b ^ 0x5A for b in base64.b64decode(_SEC_AK)])
+        nonce = base64.b64decode(payload['iv'])
+        ciphertext = base64.b64decode(payload['ciphertext'])
+        tag = base64.b64decode(payload['tag'])
+        cipher = AES.new(raw_key, AES.MODE_GCM, nonce=nonce)
+        plaintext = cipher.decrypt_and_verify(ciphertext, tag)
+        return json.loads(plaintext.decode('utf-8'))
+    except Exception as e:
+        log('payload decrypt ERR: %s' % e)
+        return None
 
 TEST_JSON_URL = REPO_BASE + '/test.json'
 _TEST_CACHE = {'data': None, 'ts': 0}
@@ -4792,13 +4811,15 @@ def _test_fetch():
     if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
 
-    # 1. API Cloudflare Worker con Handshake HMAC esclusivo
+    # 1. API Cloudflare Worker con Handshake HMAC ed Encryption AES-256
     try:
         u_headers = _make_handshake_headers()
         r = requests.get(_sec_blob(_SEC_E1), headers=u_headers, timeout=8)
         if r.status_code == 200:
             res = r.json()
-            if isinstance(res, dict) and 'result' in res:
+            if isinstance(res, dict) and 'ciphertext' in res:
+                res = _decrypt_payload(res)
+            elif isinstance(res, dict) and 'result' in res:
                 res = res.get('result')
             if res:
                 data = json.loads(res) if isinstance(res, str) else res
@@ -4841,7 +4862,7 @@ _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica in memoria volatile dall'API protetta Cloudflare con Handshake HMAC."""
+    """Eventi 1: scarica in memoria volatile dall'API protetta Cloudflare con AES-256."""
     now = time.time()
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
@@ -4849,7 +4870,9 @@ def _eventi1_fetch():
         r = requests.get(_sec_blob(_SEC_E2), headers=_make_handshake_headers(), timeout=10)
         if r.status_code == 200:
             res = r.json()
-            if isinstance(res, dict) and 'result' in res:
+            if isinstance(res, dict) and 'ciphertext' in res:
+                res = _decrypt_payload(res)
+            elif isinstance(res, dict) and 'result' in res:
                 res = res.get('result')
             if res:
                 data = json.loads(res) if isinstance(res, str) else res
