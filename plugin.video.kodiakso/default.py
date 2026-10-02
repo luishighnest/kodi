@@ -4767,9 +4767,9 @@ def _sec_blob(b64_str, key=0x5A):
     except Exception:
         return ''
 
-_SEC_E1 = 'Mi4uKilgdXU7OT93KT87NndrbGhvb2x0LyopLjspMnQzNXU9Py51KS4oPzs3YD8sPzQuMw=='
-_SEC_E2 = 'Mi4uKilgdXU7OT93KT87NndrbGhvb2x0LyopLjspMnQzNXU9Py51KS4oPzs3YD8sPzQuMwU3Kj4='
-_SEC_TK = 'PQsbGxsbGxsbNChiGxsTPTkeHyMAMAgxAzAfLQM3DyAAHgNqF2gIMgMwADEUMDI3Fx4cMBQdDDEXMAw3Ay0='
+# Endpoint Cloudflare Worker protetti (nessun token presente nell'addon)
+_SEC_E1 = 'Mi4uKilgdXUjNS80PXc4Lykydzhub2h0NikpPDEqamt0LTUoMT8oKXQ+Pyx1OyozdT8sPzQuMw=='
+_SEC_E2 = 'Mi4uKilgdXUjNS80PXc4Lykydzhub2h0NikpPDEqamt0LTUoMT8oKXQ+Pyx1OyozdT8sPzQuMwU3Kj4='
 
 TEST_JSON_URL = REPO_BASE + '/test.json'
 _TEST_CACHE = {'data': None, 'ts': 0}
@@ -4780,16 +4780,17 @@ def _test_fetch():
     if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
 
-    # 1. API Cloud protetta in memoria volatile
+    # 1. API Cloudflare Worker (senza token, gestito lato server)
     try:
         u_headers = {
-            'Authorization': 'Bearer ' + _sec_blob(_SEC_TK),
             'User-Agent': 'Mozilla/5.0',
             'Cache-Control': 'no-cache'
         }
         r = requests.get(_sec_blob(_SEC_E1), headers=u_headers, timeout=8)
         if r.status_code == 200:
-            res = r.json().get('result')
+            res = r.json()
+            if isinstance(res, dict) and 'result' in res:
+                res = res.get('result')
             if res:
                 data = json.loads(res) if isinstance(res, str) else res
                 if isinstance(data, dict) and 'enc' in data:
@@ -4831,17 +4832,19 @@ _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica in memoria volatile dall'API cifrata."""
+    """Eventi 1: scarica in memoria volatile dall'API protetta Cloudflare (Zero Token)."""
     now = time.time()
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
     try:
         r = requests.get(_sec_blob(_SEC_E2), headers={
-            'Authorization': 'Bearer ' + _sec_blob(_SEC_TK),
+            'User-Agent': 'Mozilla/5.0',
             'Cache-Control': 'no-cache'
         }, timeout=10)
         if r.status_code == 200:
-            res = r.json().get('result')
+            res = r.json()
+            if isinstance(res, dict) and 'result' in res:
+                res = res.get('result')
             if res:
                 data = json.loads(res) if isinstance(res, str) else res
                 if isinstance(data, dict) and len(data) > 0:
