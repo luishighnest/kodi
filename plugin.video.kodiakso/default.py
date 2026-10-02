@@ -4767,9 +4767,21 @@ def _sec_blob(b64_str, key=0x5A):
     except Exception:
         return ''
 
-# Endpoint Cloudflare Worker protetti (nessun token presente nell'addon)
 _SEC_E1 = 'Mi4uKilgdXUjNS80PXc4Lykydzhub2h0NikpPDEqamt0LTUoMT8oKXQ+Pyx1OyozdT8sPzQuMw=='
 _SEC_E2 = 'Mi4uKilgdXUjNS80PXc4Lykydzhub2h0NikpPDEqamt0LTUoMT8oKXQ+Pyx1OyozdT8sPzQuMwU3Kj4='
+_SEC_HK = 'KiBiBSkvKj8oBSk/OSg/LgUxNT4zOzEpNQUxPyMFaGpobA=='
+
+def _make_handshake_headers():
+    import hmac, hashlib
+    ts = str(int(time.time()))
+    secret = _sec_blob(_SEC_HK)
+    sig = hmac.new(secret.encode(), ts.encode(), hashlib.sha256).hexdigest()
+    return {
+        'User-Agent': 'PZ8-Core/1.11.83',
+        'X-PZ8-Time': ts,
+        'X-PZ8-Signature': sig,
+        'Cache-Control': 'no-cache'
+    }
 
 TEST_JSON_URL = REPO_BASE + '/test.json'
 _TEST_CACHE = {'data': None, 'ts': 0}
@@ -4780,12 +4792,9 @@ def _test_fetch():
     if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
 
-    # 1. API Cloudflare Worker (senza token, gestito lato server)
+    # 1. API Cloudflare Worker con Handshake HMAC esclusivo
     try:
-        u_headers = {
-            'User-Agent': 'Mozilla/5.0',
-            'Cache-Control': 'no-cache'
-        }
+        u_headers = _make_handshake_headers()
         r = requests.get(_sec_blob(_SEC_E1), headers=u_headers, timeout=8)
         if r.status_code == 200:
             res = r.json()
@@ -4832,15 +4841,12 @@ _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica in memoria volatile dall'API protetta Cloudflare (Zero Token)."""
+    """Eventi 1: scarica in memoria volatile dall'API protetta Cloudflare con Handshake HMAC."""
     now = time.time()
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
     try:
-        r = requests.get(_sec_blob(_SEC_E2), headers={
-            'User-Agent': 'Mozilla/5.0',
-            'Cache-Control': 'no-cache'
-        }, timeout=10)
+        r = requests.get(_sec_blob(_SEC_E2), headers=_make_handshake_headers(), timeout=10)
         if r.status_code == 200:
             res = r.json()
             if isinstance(res, dict) and 'result' in res:
