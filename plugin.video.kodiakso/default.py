@@ -1541,8 +1541,20 @@ def _guida_sky_fetch():
     return []
 
 
+def _get_rome_now():
+    """Restituisce la data/ora corrente espressa nel fuso orario di Roma (Europe/Rome)."""
+    try:
+        import zoneinfo
+        return datetime.now(zoneinfo.ZoneInfo("Europe/Rome"))
+    except Exception:
+        now_utc = datetime.now(timezone.utc)
+        m = now_utc.month
+        offset = 2 if (3 < m < 10 or (m == 10 and now_utc.day < 25)) else 1
+        return now_utc + timedelta(hours=offset)
+
+
 def _guida_sky_now(channel_name):
-    """Cerca il programma corrente e successivo in guida_tv_sky.json per il nome del canale."""
+    """Cerca il programma corrente e successivo in guida_tv_sky.json per il nome del canale (fuso orario Roma)."""
     try:
         data = _guida_sky_fetch()
         if not isinstance(data, list):
@@ -1559,7 +1571,7 @@ def _guida_sky_now(channel_name):
         if not group or not group.get('programmi'):
             return None, None
         progs = group['programmi']
-        now_dt = datetime.now()
+        now_dt = _get_rome_now()
         now_min = now_dt.hour * 60 + now_dt.minute
         cur_idx = -1
         for i, p in enumerate(progs):
