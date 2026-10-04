@@ -4679,11 +4679,6 @@ def root_view():
     bann.setProperty('IsPlayable', 'false')
     xbmcplugin.addDirectoryItem(HANDLE, BASE, bann, isFolder=True)
 
-    li_home = xbmcgui.ListItem(label=lbl('Home'))
-    li_home.setArt({'thumb': HOME_ICON, 'icon': HOME_ICON})
-    li_home.setInfo('video', {'title': 'Home', 'plot': 'Ricarica la pagina principale'})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li_home, isFolder=True)
-
     li = xbmcgui.ListItem(label=lbl('Ricerca globale'))
     li.setArt({'thumb': SEARCH_ICON})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('gsearch'), li, isFolder=True)
