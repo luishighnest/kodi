@@ -1024,17 +1024,29 @@ def sky_view():
     url0 = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_SPORT) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
     xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
 
-    # Lista Canali 2 - SKY (da sky2.json con conteggi e scadenze)
+    # Lista Canali 2 - SKY SPORT (da sky2.json aggiornato con Pz8 tasto 2)
     try:
-        c2 = _sky2_counts()
-        label_sky2 = lbl('Lista Canali 2 - SKY') + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c2.get('ok', 0), c2.get('soon', 0), c2.get('exp', 0))
+        c2 = _sky2_cat_counts('Sky Sport')
+        label_sky2 = lbl('Lista Canali 2 - SKY SPORT (Pz8)') + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c2.get('ok', 0), c2.get('soon', 0), c2.get('exp', 0))
     except Exception:
-        label_sky2 = lbl('Lista Canali 2 - SKY')
-    sky2_url = BASE + '?action=sky2'
+        label_sky2 = lbl('Lista Canali 2 - SKY SPORT (Pz8)')
+    sky2_url = BASE + '?action=sky2cat&cat=' + urllib.parse.quote('Sky Sport') + '&back=' + urllib.parse.quote(BASE + '?action=sky')
     li2 = xbmcgui.ListItem(label=label_sky2)
     li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li2.setInfo('video', {'title': 'Lista Canali 2 - SKY', 'plot': 'Canali Sky Italia 24/7 con scadenze ed EPG'})
+    li2.setInfo('video', {'title': 'Lista Canali 2 - SKY SPORT', 'plot': 'Canali Sky Sport Italia 24/7 da sky2.json (aggiornati via Pz8)'})
     xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
+
+    # Tutti i Canali Sky 2 (Tutte le Categorie: Cinema, Intrattenimento, Bambini...)
+    try:
+        c_all = _sky2_counts()
+        label_sky2_all = lbl('Tutte le Categorie Sky 2') + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c_all.get('ok', 0), c_all.get('soon', 0), c_all.get('exp', 0))
+    except Exception:
+        label_sky2_all = lbl('Tutte le Categorie Sky 2')
+    sky2_all_url = BASE + '?action=sky2'
+    li2_all = xbmcgui.ListItem(label=label_sky2_all)
+    li2_all.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
+    li2_all.setInfo('video', {'title': 'Tutte le Categorie Sky 2', 'plot': 'Sky Cinema, Intrattenimento, Bambini, TV e Altri da sky2.json'})
+    xbmcplugin.addDirectoryItem(HANDLE, sky2_all_url, li2_all, isFolder=True)
 
     sky3_url = BASE + '?action=sky3'
     li3 = xbmcgui.ListItem(label=lbl('Lista Canali 3 (Eventi Live)'))
@@ -1460,6 +1472,9 @@ def _sky2_fetch():
 
     # Fallback locale se presente nella cartella repo
     local_candidates = [
+        os.path.join(r'C:\Users\alecl\.gemini\antigravity\scratch\kodi', 'sky2.json'),
+        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\kodi_repo', 'sky2.json'),
+        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\htdocs', 'sky2.json'),
         os.path.join(r'C:\Users\alecl\Desktop\kodi_repo', 'sky2.json'),
         os.path.join(r'C:\Users\alecl\Desktop\htdocs', 'sky2.json'),
         os.path.join(ADDON.getAddonInfo('path'), 'sky2.json')
