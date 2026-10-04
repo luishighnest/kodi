@@ -389,15 +389,24 @@ def lbl(txt):
 
 
 def _top_button(label, icon, url):
-    pass
+    li = xbmcgui.ListItem(label=lbl(label))
+    li.setArt({'thumb': icon, 'icon': icon})
+    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
 
 def home_button():
-    pass
+    li = xbmcgui.ListItem(label=lbl('Home'))
+    li.setArt({'thumb': HOME_ICON, 'icon': HOME_ICON})
+    li.setInfo('video', {'title': 'Home', 'plot': 'Torna alla schermata principale'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=root', li, isFolder=True)
 
 
 def back_button(url=''):
-    pass
+    target = url or (BASE + '?action=root')
+    li = xbmcgui.ListItem(label=lbl('Indietro'))
+    li.setArt({'thumb': BACK_ICON, 'icon': BACK_ICON})
+    li.setInfo('video', {'title': 'Indietro', 'plot': 'Torna indietro'})
+    xbmcplugin.addDirectoryItem(HANDLE, target, li, isFolder=True)
 
 LOGOS = {
     'tg24': 'skytg24.png',
