@@ -4691,9 +4691,6 @@ def root_view():
         li = xbmcgui.ListItem(label=lbl(label))
         li.setArt({'thumb': icon or SQUARE_ICON})
         xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('Aggiorna PZ8   v' + ADDON.getAddonInfo('version')))
-    li.setArt({'thumb': ICON_LOGO})
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('update'), li, isFolder=False)
 
     # --- Avvio Automatico (service.kodiakso.autostart) ---
     svc_id = 'service.kodiakso.autostart'
