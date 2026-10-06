@@ -1506,6 +1506,13 @@ def _guida_sky_fetch():
     if _GUIDA_SKY_CACHE['data'] is not None and (now - _GUIDA_SKY_CACHE['ts'] < 300):
         return _GUIDA_SKY_CACHE['data']
     
+    # 1. API Upstash Redis (stream:guida) - Guida TV 24H aggiornata in tempo reale!
+    data = _fetch_upstash_key('guida')
+    if data and isinstance(data, list) and len(data) > 0:
+        _GUIDA_SKY_CACHE['data'] = data
+        _GUIDA_SKY_CACHE['ts'] = now
+        return data
+
     endpoints = [
         'https://raw.githubusercontent.com/luishighnest/kodi/main/guida_tv_sky.json',
         REPO_BASE + '/guida_tv_sky.json',
