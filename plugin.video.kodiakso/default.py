@@ -4901,33 +4901,46 @@ def _test_fetch():
         return _TEST_CACHE['data']
     return {}
 
-_EVENTI1_CACHE = {'data': None, 'ts': 0}
+UPSTASH_URL = 'https://ace-seal-162556.upstash.io'
+UPSTASH_TOKEN = 'Bearer gQAAAAAAAnr8AAIgcDEyZjRkYjEwYmUzZDY0M2RhYjZkNjhmMDFjNGVkMjVmYw'
+
+
+def _fetch_upstash_key(key_name):
+    try:
+        url = '%s/get/stream:%s' % (UPSTASH_URL, key_name)
+        headers = {'Authorization': UPSTASH_TOKEN}
+        r = requests.get(url, headers=headers, timeout=6)
+        if r.status_code == 200:
+            res = r.json().get('result')
+            if res:
+                data = json.loads(res)
+                if isinstance(data, dict) and len(data) > 0:
+                    return data
+    except Exception as e:
+        log('upstash fetch %s ERR: %s' % (key_name, e))
+    return None
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica gli eventi da test.json (collegato a script2)."""
+    """Eventi 1: scarica gli eventi dall'API Upstash Redis (stream:eventi_mpd) collegata a script2, con fallback."""
     now = time.time()
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
 
-    # 1. Legge prima da test.json (script2)
-    data = _test_fetch()
+    # 1. API Upstash Redis (stream:eventi_mpd) - la vera API generata da script2!
+    data = _fetch_upstash_key('eventi_mpd')
     if data and isinstance(data, dict) and len(data) > 0:
         _EVENTI1_CACHE['data'] = data
         _EVENTI1_CACHE['ts'] = now
         return data
 
-    # 2. Worker Cloudflare
-    try:
-        r = requests.get(_sec_blob(_SEC_E2), headers=_make_handshake_headers(), timeout=5)
-        if r.status_code == 200:
-            data = r.json()
-            if isinstance(data, dict) and len(data) > 0:
-                _EVENTI1_CACHE['data'] = data
-                _EVENTI1_CACHE['ts'] = now
-                return data
-    except Exception as e:
-        log('eventi1 fetch ERR: %s' % e)
+    # 2. Fallback su stream:test o _test_fetch()
+    data = _fetch_upstash_key('test') or _test_fetch()
+    if data and isinstance(data, dict) and len(data) > 0:
+        _EVENTI1_CACHE['data'] = data
+        _EVENTI1_CACHE['ts'] = now
+        return data
+
     return _EVENTI1_CACHE['data'] or {}
 
 
