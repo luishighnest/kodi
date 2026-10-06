@@ -4800,39 +4800,9 @@ def _sec_blob(b64_str, key=0x5A):
     except Exception:
         return ''
 
-# Endpoint Cloudflare Worker On-Demand (nessun link video né chiavi nel catalogo!)
-_SEC_E1 = 'Mi4uKilgdXUqNTYzKTI/PncpMSN3O2g5bXQoNz4+MWhpbG50LTUoMT8oKXQ+Pyx1OyozdTk7Ljs2NT0='
-_SEC_E2 = 'Mi4uKilgdXUqNTYzKTI/PncpMSN3O2g5bXQoNz4+MWhpbG50LTUoMT8oKXQ+Pyx1OyozdTk7Ljs2NT0='
-_SEC_RES = 'Mi4uKilgdXUqNTYzKTI/PncpMSN3O2g5bXQoNz4+MWhpbG50LTUoMT8oKXQ+Pyx1OyozdSg/KTU2LD9lMz5n'
-_SEC_HK = 'KiBiBSkvKj8oBSk/OSg/LgUxNT4zOzEpNQUxPyMFaGpobA=='
-
-def _make_handshake_headers():
-    import hmac, hashlib
-    ts = str(int(time.time()))
-    secret = _sec_blob(_SEC_HK)
-    sig = hmac.new(secret.encode(), ts.encode(), hashlib.sha256).hexdigest()
-    return {
-        'User-Agent': 'PZ8-Core/1.11.85',
-        'X-PZ8-Time': ts,
-        'X-PZ8-Signature': sig,
-        'Cache-Control': 'no-cache'
-    }
-
-def _resolve_single_event(event_id):
-    """Risolve lo stream per una singola partita On-Demand al momento del click."""
-    try:
-        url = _sec_blob(_SEC_RES) + urllib.parse.quote(str(event_id))
-        r = requests.get(url, headers=_make_handshake_headers(), timeout=10)
-        if r.status_code == 200:
-            return r.json()
-        elif r.status_code == 429:
-            notify(NAME, 'Troppe richieste: IP temporaneamente bloccato', True)
-    except Exception as e:
-        log('resolve single event ERR: %s' % e)
-    return None
-
 TEST_JSON_URL = REPO_BASE + '/test.json'
 _TEST_CACHE = {'data': None, 'ts': 0}
+_EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _test_fetch():
@@ -4883,19 +4853,6 @@ def _test_fetch():
                     return data
             except Exception as e:
                 log('test local fetch %s ERR: %s' % (lp, e))
-
-    # 3. API Cloudflare Worker Catalogo
-    try:
-        u_headers = _make_handshake_headers()
-        r = requests.get(_sec_blob(_SEC_E1), headers=u_headers, timeout=5)
-        if r.status_code == 200:
-            data = r.json()
-            if data and isinstance(data, dict) and len(data) > 0:
-                _TEST_CACHE['data'] = data
-                _TEST_CACHE['ts'] = now
-                return data
-    except Exception as e:
-        log('test worker fetch ERR: %s' % e)
 
     if _TEST_CACHE['data']:
         return _TEST_CACHE['data']
@@ -5158,13 +5115,8 @@ def test_play(cat, idx):
         xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(it))
         return
 
-    event_id = it.get('id', f"{cat}_{idx}")
-    resolved = _resolve_single_event(event_id)
-    if not resolved:
-        notify(NAME, 'Errore risoluzione stream On-Demand', True)
-        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
-        return
-    xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(resolved))
+    notify(NAME, 'Stream non disponibile', True)
+    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
 
 
 def eventi1_play(cat, idx):
@@ -5181,13 +5133,8 @@ def eventi1_play(cat, idx):
         xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(it))
         return
 
-    event_id = it.get('id', f"{cat}_{idx}")
-    resolved = _resolve_single_event(event_id)
-    if not resolved:
-        notify(NAME, 'Errore risoluzione stream On-Demand', True)
-        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
-        return
-    xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(resolved))
+    notify(NAME, 'Stream non disponibile', True)
+    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
 
 
 def main():
