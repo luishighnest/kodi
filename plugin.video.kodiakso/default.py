@@ -4840,20 +4840,7 @@ def _test_fetch():
     if _TEST_CACHE['data'] is not None and (now - _TEST_CACHE['ts'] < 60):
         return _TEST_CACHE['data']
 
-    # 1. API Cloudflare Worker Catalogo Innocuo
-    try:
-        u_headers = _make_handshake_headers()
-        r = requests.get(_sec_blob(_SEC_E1), headers=u_headers, timeout=8)
-        if r.status_code == 200:
-            data = r.json()
-            if data and isinstance(data, dict) and len(data) > 0:
-                _TEST_CACHE['data'] = data
-                _TEST_CACHE['ts'] = now
-                return data
-    except Exception as e:
-        log('test fetch ERR')
-
-    # 2. Fallback su GitHub / CDN
+    # 1. GitHub / CDN / Remote JSON di script2
     endpoints = [
         'https://raw.githubusercontent.com/luishighnest/kodi/main/test.json',
         'https://raw.githubusercontent.com/luishighnest/zadonkais/main/test.json',
@@ -4863,7 +4850,7 @@ def _test_fetch():
     headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
     for ep in endpoints:
         try:
-            r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=10)
+            r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=8)
             if r.status_code == 200 and r.text.strip():
                 data = json.loads(r.content.decode('utf-8-sig'))
                 if isinstance(data, dict) and 'enc' in data:
@@ -4873,7 +4860,42 @@ def _test_fetch():
                     _TEST_CACHE['ts'] = now
                     return data
         except Exception as e:
-            log('test fetch fallback ERR')
+            log('test fetch fallback ERR: %s' % e)
+
+    # 2. Fallback locale se presente
+    local_candidates = [
+        os.path.join(r'C:\Users\alecl\.gemini\antigravity\scratch\kodi', 'test.json'),
+        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\htdocs', 'test.json'),
+        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\kodi_repo', 'test.json'),
+        os.path.join(r'C:\Users\alecl\Desktop\kodi_repo', 'test.json'),
+        os.path.join(ADDON.getAddonInfo('path'), 'test.json')
+    ]
+    for lp in local_candidates:
+        if os.path.exists(lp):
+            try:
+                with open(lp, 'r', encoding='utf-8-sig') as f:
+                    data = json.load(f)
+                if isinstance(data, dict) and 'enc' in data:
+                    data = _zadonkais_decrypt(data['enc'])
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _TEST_CACHE['data'] = data
+                    _TEST_CACHE['ts'] = now
+                    return data
+            except Exception as e:
+                log('test local fetch %s ERR: %s' % (lp, e))
+
+    # 3. API Cloudflare Worker Catalogo
+    try:
+        u_headers = _make_handshake_headers()
+        r = requests.get(_sec_blob(_SEC_E1), headers=u_headers, timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            if data and isinstance(data, dict) and len(data) > 0:
+                _TEST_CACHE['data'] = data
+                _TEST_CACHE['ts'] = now
+                return data
+    except Exception as e:
+        log('test worker fetch ERR: %s' % e)
 
     if _TEST_CACHE['data']:
         return _TEST_CACHE['data']
@@ -4883,12 +4905,21 @@ _EVENTI1_CACHE = {'data': None, 'ts': 0}
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica il catalogo innocuo on-demand (zero link e zero chiavi nel menu)."""
+    """Eventi 1: scarica gli eventi da test.json (collegato a script2)."""
     now = time.time()
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
         return _EVENTI1_CACHE['data']
+
+    # 1. Legge prima da test.json (script2)
+    data = _test_fetch()
+    if data and isinstance(data, dict) and len(data) > 0:
+        _EVENTI1_CACHE['data'] = data
+        _EVENTI1_CACHE['ts'] = now
+        return data
+
+    # 2. Worker Cloudflare
     try:
-        r = requests.get(_sec_blob(_SEC_E2), headers=_make_handshake_headers(), timeout=10)
+        r = requests.get(_sec_blob(_SEC_E2), headers=_make_handshake_headers(), timeout=5)
         if r.status_code == 200:
             data = r.json()
             if isinstance(data, dict) and len(data) > 0:
@@ -4896,7 +4927,7 @@ def _eventi1_fetch():
                 _EVENTI1_CACHE['ts'] = now
                 return data
     except Exception as e:
-        log('eventi1 fetch ERR')
+        log('eventi1 fetch ERR: %s' % e)
     return _EVENTI1_CACHE['data'] or {}
 
 
@@ -5109,6 +5140,11 @@ def test_play(cat, idx):
         notify(NAME, 'Errore lettura evento TEST', True)
         xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
         return
+
+    if isinstance(it, dict) and (it.get('mpd') or it.get('url')):
+        xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(it))
+        return
+
     event_id = it.get('id', f"{cat}_{idx}")
     resolved = _resolve_single_event(event_id)
     if not resolved:
@@ -5127,6 +5163,11 @@ def eventi1_play(cat, idx):
         notify(NAME, 'Errore lettura evento Eventi 1', True)
         xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
         return
+
+    if isinstance(it, dict) and (it.get('mpd') or it.get('url')):
+        xbmcplugin.setResolvedUrl(HANDLE, True, _resolve_test_item(it))
+        return
+
     event_id = it.get('id', f"{cat}_{idx}")
     resolved = _resolve_single_event(event_id)
     if not resolved:
