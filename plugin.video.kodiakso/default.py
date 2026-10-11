@@ -23,6 +23,7 @@ import xbmcplugin
 import xbmcaddon
 import xbmc
 import requests
+import socket
 
 
 # === ZADONKAIS / KODIAKSO PURE PYTHON VERIFIED AES-256-GCM DECRYPT HELPER ===
@@ -4881,23 +4882,19 @@ def _fetch_upstash_key(key_name):
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica gli eventi dall'API Upstash Redis (stream:eventi_mpd) collegata a script2, con fallback."""
-    now = time.time()
-    if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 60):
-        return _EVENTI1_CACHE['data']
-
-    # 1. API Upstash Redis (stream:eventi_mpd) - la vera API generata da script2!
+    """Eventi 1: scarica gli eventi in tempo reale dall'API Upstash Redis (stream:eventi_mpd) collegata a script2."""
+    # 1. API Upstash Redis (stream:eventi_mpd) - sempre in tempo reale da script2!
     data = _fetch_upstash_key('eventi_mpd')
     if data and isinstance(data, dict) and len(data) > 0:
         _EVENTI1_CACHE['data'] = data
-        _EVENTI1_CACHE['ts'] = now
+        _EVENTI1_CACHE['ts'] = time.time()
         return data
 
     # 2. Fallback su stream:test o _test_fetch()
     data = _fetch_upstash_key('test') or _test_fetch()
     if data and isinstance(data, dict) and len(data) > 0:
         _EVENTI1_CACHE['data'] = data
-        _EVENTI1_CACHE['ts'] = now
+        _EVENTI1_CACHE['ts'] = time.time()
         return data
 
     return _EVENTI1_CACHE['data'] or {}
@@ -5051,6 +5048,52 @@ def vod_json_view():
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+VIEWER_API_BASE = "https://encourages-authorities-anniversary-responses.trycloudflare.com/api/viewers"
+
+def _track_viewer_playback(event_name):
+    """Invia heartbeat in background finche' l'utente riproduce l'evento su Kodi."""
+    def _worker():
+        import urllib.request
+        cid = ADDON.getSetting('kodi_client_id')
+        if not cid:
+            cid = str(uuid.uuid4())[:8]
+            try:
+                ADDON.setSetting('kodi_client_id', cid)
+            except Exception:
+                pass
+
+        log(f"[ViewerTracker] Avviato tracking per: {event_name} (CID: {cid})")
+        # Attesa breve che Kodi inizializzi il player
+        for _ in range(15):
+            time.sleep(1)
+            try:
+                if xbmc.Player().isPlaying():
+                    break
+            except Exception:
+                pass
+
+        while True:
+            try:
+                player = xbmc.Player()
+                if not player.isPlaying():
+                    break
+            except Exception:
+                break
+
+            try:
+                url = f"{VIEWER_API_BASE}/ping?event={urllib.parse.quote(event_name)}&cid={cid}"
+                req = urllib.request.Request(url, headers={'User-Agent': 'Kodi-PZ8/1.0'})
+                urllib.request.urlopen(req, timeout=4)
+            except Exception as e:
+                pass
+
+            time.sleep(20)
+        log(f"[ViewerTracker] Terminato tracking per: {event_name}")
+
+    t = threading.Thread(target=_worker, daemon=True)
+    t.start()
+
+
 def _resolve_test_item(it):
     mpd = it.get('mpd') or it.get('url') or ''
     key = it.get('key') or it.get('kid_key') or ''
@@ -5060,6 +5103,12 @@ def _resolve_test_item(it):
         if not key:
             key = parts[1].strip()
     name = it.get('name') or it.get('title') or 'TEST'
+    
+    # Avvia heartbeat per contatore spettatori su API
+    try:
+        _track_viewer_playback(name)
+    except Exception:
+        pass
     # L'evento porta l'UA con cui e' stato creato il token CDN: e' il dato
     # vincolante. Il fallback e' solo per eventi pubblicati senza 'ua', e non
     # viene hardcoded su un Chrome specifico perche' un UA arbitrario fa
@@ -5067,7 +5116,22 @@ def _resolve_test_item(it):
     ev_ua = (it.get('ua') or '').strip()
     ua_use = ev_ua or UA
 
-    # RIPRODUZIONE DIRETTA: l'URL contiene gia' il token CDN (path /@<token>/)
+    # Se è un link AceStream o Live decifrato (Tunnel pubblico / Locale)
+    if mpd.startswith("acestream://") or "(ACE)" in name or "/stream/live/" in mpd:
+        if mpd.startswith("http"):
+            play_url = mpd
+        else:
+            raw_name = name.replace(" (ACE)", "").strip()
+            play_url = f"http://127.0.0.1:5000/stream/live/{urllib.parse.quote(raw_name)}"
+        li = xbmcgui.ListItem(path=play_url)
+        li.setMimeType('video/mp2t')
+        li.setContentLookup(False)
+        li.setProperty('IsPlayable', 'true')
+        li.setLabel(lbl(name))
+        li.setInfo('video', {'title': name})
+        return li
+
+    # RIPRODUZIONE DIRETTA / MPD: l'URL contiene gia' il token CDN (path /@<token>/)
     # e Kodi lo scarica direttamente da indazn.com. Nessun proxy, nessun worker.
     play_url = mpd
 
@@ -5076,10 +5140,6 @@ def _resolve_test_item(it):
     if not tok:
         tok = (it.get('dazn_token') or '').strip()
 
-    # Il token CDN e' legato all'User-Agent con cui e' stato creato (claim
-    # "headers":["user-agent"]): se l'UA non coincide la CDN risponde 401 su
-    # manifest e segmenti. Solo l'UA e' indispensabile, gli altri header sono
-    # harmless per la CDN ma utili se l'edge richiede dazn-token.
     hdrs = 'User-Agent=' + ua_use + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
     if tok and 'dazn-token=' not in mpd:
         hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
@@ -5090,7 +5150,6 @@ def _resolve_test_item(it):
     li.setProperty('inputstream', 'inputstream.adaptive')
     li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
     if ':' in key:
-        # ClearKey: inputstream.adaptive rifiuta license_key, va usato drm_legacy
         clean_key = key.replace('|', ',')
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
