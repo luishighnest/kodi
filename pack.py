@@ -46,15 +46,20 @@ sub_index.write_text(f'<!DOCTYPE html>\n<html>\n<body>\n<a href="{zip_filename}"
 main_index = Path("zips/index.html")
 main_index.write_text(f'<!DOCTYPE html>\n<html>\n<body>\n<a href="plugin.video.kodiakso/">plugin.video.kodiakso/</a><br>\n<a href="repository.luishighnest/">repository.luishighnest/</a><br>\n<a href="{zip_filename}">{zip_filename}</a><br>\n<a href="service.kodiakso.autostart-1.0.1.zip">service.kodiakso.autostart-1.0.1.zip</a><br>\n</body>\n</html>\n', encoding="utf-8")
 
-with open('addons.xml', 'r', encoding='utf-8') as f:
+# L'addons.xml va scritto in LF: .gitattributes forza eol=lf, quindi git
+# pubblica la versione LF. Se venisse scritto in CRLF (default su Windows)
+# il md5 calcolato non corrisponderebbe mai a quello servito da GitHub Pages
+# e Kodi rifiuterebbe il file per checksum non valido.
+with open('addons.xml', 'r', encoding='utf-8', newline='') as f:
     content = f.read()
 
 content = re.sub(r'id="plugin\.video\.kodiakso" name="PZ8" version="[^"]+"', f'id="plugin.video.kodiakso" name="PZ8" version="{ver}"', content)
-with open('addons.xml', 'w', encoding='utf-8') as f:
+content = content.replace('\r\n', '\n').replace('\r', '\n')
+with open('addons.xml', 'w', encoding='utf-8', newline='\n') as f:
     f.write(content)
 
 md5 = hashlib.md5(open('addons.xml', 'rb').read()).hexdigest()
-with open('addons.xml.md5', 'w', encoding='utf-8') as f:
+with open('addons.xml.md5', 'w', encoding='utf-8', newline='\n') as f:
     f.write(md5)
 
 print('[pack] addons.xml e md5 aggiornati:', md5)
