@@ -179,6 +179,14 @@ NAME = ADDON.getAddonInfo('name')
 DEFAULT_URL = 'https://luishighnest.github.io/kodi/playlist.m3u'
 REPO_BASE = 'https://luishighnest.github.io/kodi'
 ZADONKAIS_BASE = 'https://luishighnest.github.io/zadonkais'
+
+# === CONTROLLO AGGIORNAMENTI (meccanismi nativi Kodi) ===
+ADDON_ID = 'plugin.video.kodiakso'
+UPD_CHECK_TTL = 3600
+UPD_CHECK_TTL_STALE = 30 * 24 * 3600
+_UPD_CACHE = {'ver': None, 'ts': 0}
+_UPD_BUSY = {'v': False}
+_UPD_PROMPTED = set()
 SKY2_JSON_URL = REPO_BASE + '/sky2.json'
 GUIDA_TV_SKY_URL = REPO_BASE + '/guida_tv_sky.json'
 _SKY2_CACHE = {'data': None, 'ts': 0}
@@ -587,7 +595,8 @@ def parse_m3u(text):
     return channels
 
 
-def sky_channels():
+def _sky_channels_net():
+    """Scarica la lista canali dall'API Heroku. Lenta (fino a ~50 s) se il dyno e' dormiente."""
     order = []
     seen = set()
 
@@ -628,12 +637,129 @@ def sky_channels():
     return channels
 
 
+def _sky_channels_refresh():
+    if _SKY_CH_BUSY['v']:
+        return _SKY_CH_CACHE['data']
+    _SKY_CH_BUSY['v'] = True
+    try:
+        data = _sky_channels_net()
+        if data:
+            _SKY_CH_CACHE['data'] = data
+            _SKY_CH_CACHE['ts'] = time.time()
+            _disk_save('sky_channels', data)
+        return data
+    finally:
+        _SKY_CH_BUSY['v'] = False
+
+
+def sky_channels():
+    """Lista canali Sky: restituisce subito i dati salvati e li aggiorna in background."""
+    now = time.time()
+    if _SKY_CH_CACHE['data'] is None:
+        disk = _disk_load('sky_channels', SKY_CH_TTL_STALE)
+        if disk:
+            _SKY_CH_CACHE['data'] = disk
+            _SKY_CH_CACHE['ts'] = 0
+    if _SKY_CH_CACHE['data'] is not None:
+        if now - _SKY_CH_CACHE['ts'] >= SKY_CH_TTL:
+            _bg(_sky_channels_refresh)
+        return _SKY_CH_CACHE['data']
+    data = _sky_channels_refresh()
+    return data if data else {}
+
+
 def _profile_path():
     p = ADDON.getAddonInfo('profile')
     try:
         return xbmc.translatePath(p)
     except Exception:
         return p
+
+
+# === CACHE SU DISCO + AGGIORNAMENTO IN BACKGROUND ===
+# L'API Sky (Heroku) addormenta il dyno dopo ~30 min di inattivita': la prima
+# richiesta costa allora decine di secondi. Senza cache, ogni apertura della
+# Lista 1 ripaga quel tempo. Con queste cache la vista usa subito i dati gia'
+# salvati e li aggiorna alle spalle, senza mai bloccare l'utente ad aspettare.
+
+GUIDA_SKY_TTL = 1800
+GUIDA_SKY_TTL_STALE = 7 * 24 * 3600
+SKY_CH_TTL = 6 * 3600
+SKY_CH_TTL_STALE = 30 * 24 * 3600
+SKY2_TTL = 60
+SKY2_TTL_STALE = 30 * 24 * 3600
+
+_EXP_BUSY = set()
+_SKY_CH_CACHE = {'data': None, 'ts': 0}
+_SKY_CH_BUSY = {'v': False}
+_GUIDA_BUSY = {'v': False}
+_SKY2_BUSY = {'v': False}
+_EXP_DISK = {'data': None, 'ts': 0}
+
+
+def _disk_cache_path(name):
+    return os.path.join(_profile_path(), name + '.pkl')
+
+
+def _disk_load(name, max_age):
+    try:
+        p = _disk_cache_path(name)
+        if os.path.exists(p) and time.time() - os.path.getmtime(p) < max_age:
+            with open(p, 'rb') as f:
+                return pickle.load(f)
+    except Exception as e:
+        log('disk_load %s ERR: %s' % (name, e))
+    return None
+
+
+def _disk_save(name, obj):
+    try:
+        d = _profile_path()
+        if not os.path.isdir(d):
+            os.makedirs(d)
+        with open(_disk_cache_path(name), 'wb') as f:
+            pickle.dump(obj, f, 2)
+    except Exception as e:
+        log('disk_save %s ERR: %s' % (name, e))
+
+
+def _exp_disk():
+    """Copia in memoria del file exp_cache.pkl, cosi' non viene riletto 21 volte di fila."""
+    now = time.time()
+    if _EXP_DISK['data'] is None or now - _EXP_DISK['ts'] > 30:
+        _EXP_DISK['data'] = _exp_cache_load()
+        _EXP_DISK['ts'] = now
+    return _EXP_DISK['data']
+
+
+def _exp_disk_save():
+    try:
+        d = dict(_EXP_CACHE)
+        _exp_cache_save(d)
+        _EXP_DISK['data'] = d
+        _EXP_DISK['ts'] = time.time()
+    except Exception:
+        pass
+
+
+def _bg(fn, *a):
+    """Esegue fn in un thread daemon: la vista non resta mai ferma ad aspettare la rete."""
+
+    def _run():
+        try:
+            fn(*a)
+        except Exception as e:
+            log('bg %s ERR: %s' % (getattr(fn, '__name__', fn), e))
+
+    try:
+        t = threading.Thread(target=_run)
+        t.daemon = True
+        t.start()
+    except Exception:
+        try:
+            fn(*a)
+        except Exception:
+            pass
 
 
 def _exp_cache_path():
@@ -728,24 +854,8 @@ def _sky_parts(title, exp, prog=''):
     return label, l2, tname
 
 
-def _sky_expiry(cid):
-    t = time.time()
-    hit = _EXP_CACHE.get(cid)
-    if hit:
-        ts, exp = hit
-        ttl = _EXP_CACHE_TTL if exp is not None else _EXP_CACHE_TTL_FAIL
-        if t - ts < ttl:
-            return exp
-    disk = _exp_cache_load()
-    if not _EXP_CACHE:
-        _EXP_CACHE.update(disk)
-    hit = disk.get(cid)
-    if hit:
-        ts, exp = hit
-        ttl = _EXP_CACHE_TTL if exp is not None else _EXP_CACHE_TTL_FAIL
-        if t - ts < ttl:
-            _EXP_CACHE[cid] = (ts, exp)
-            return exp
+def _sky_expiry_net(cid):
+    """Scarica la scadenza di UN canale dall'API. Ritorna (cid, datetime|None)."""
     exp = None
     try:
         resp = _SKY_SESS.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(cid), timeout=20)
@@ -761,10 +871,81 @@ def _sky_expiry(cid):
             xbmc.log('KODIAKSO sky expiry TB:\n' + traceback.format_exc(), xbmc.LOGERROR)
         except Exception:
             pass
-    _EXP_CACHE[cid] = (time.time(), exp)
-    global _EXP_CACHE_DIRTY
-    _EXP_CACHE_DIRTY = True
-    return exp
+    return cid, exp
+
+
+def _sky_expiry_cached(cid):
+    hit = _EXP_CACHE.get(cid)
+    if not hit:
+        hit = _exp_disk().get(cid)
+        if hit:
+            _EXP_CACHE[cid] = hit
+    return hit
+
+
+def _sky_prefetch_expiries(cids, wait=None):
+    """Scarica le scadenze di piu' canali IN PARALLELO (un solo giro di rete invece di N).
+    Con wait=False non blocca la vista: usa subito il valore salvato e aggiorna alle spalle."""
+    now = time.time()
+    todo = []
+    for cid in cids:
+        hit = _sky_expiry_cached(cid)
+        if hit:
+            ts, exp = hit
+            ttl = _EXP_CACHE_TTL if exp is not None else _EXP_CACHE_TTL_FAIL
+            if now - ts < ttl:
+                continue
+        if cid not in _EXP_BUSY:
+            todo.append(cid)
+    if not todo:
+        return
+    if wait is None:
+        wait = not any(_sky_expiry_cached(cid) for cid in todo)
+    for cid in todo:
+        _EXP_BUSY.add(cid)
+
+    def _work():
+        global _EXP_CACHE_DIRTY
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=min(12, len(todo))) as ex:
+                for cid, exp in ex.map(_sky_expiry_net, todo):
+                    if exp is None:
+                        # il dyno Heroku perde qualche richiesta sotto carico parallelo: riprova una volta
+                        cid, exp = _sky_expiry_net(cid)
+                    _EXP_CACHE[cid] = (time.time(), exp)
+            _EXP_CACHE_DIRTY = True
+        except Exception as e:
+            log('sky prefetch ERR: %s' % e)
+            for cid in todo:
+                try:
+                    _EXP_CACHE[cid] = _sky_expiry_net(cid)
+                except Exception:
+                    pass
+        finally:
+            for cid in todo:
+                _EXP_BUSY.discard(cid)
+            _exp_disk_save()
+
+    if wait:
+        _work()
+    else:
+        _bg(_work)
+
+
+def _sky_expiry(cid):
+    hit = _sky_expiry_cached(cid)
+    if hit:
+        ts, exp = hit
+        ttl = _EXP_CACHE_TTL if exp is not None else _EXP_CACHE_TTL_FAIL
+        if time.time() - ts < ttl:
+            return exp
+        # valore gia' presente ma scaduto: non bloccare, aggiorna in background
+        _bg(_sky_prefetch_expiries, [cid], True)
+        return exp
+    _sky_prefetch_expiries([cid], True)
+    hit = _sky_expiry_cached(cid)
+    return hit[1] if hit else None
 
 
 def resolve_sky(parIn, title, prog=''):
@@ -980,7 +1161,9 @@ def gsearch_view(q=''):
 
 def _sky_counts(cat):
     counts = {'ok': 0, 'soon': 0, 'exp': 0}
-    for title, cid in sky_channels().get(cat, []):
+    canali = sky_channels().get(cat, [])
+    _sky_prefetch_expiries([cid for _, cid in canali])
+    for title, cid in canali:
         st = _exp_status(_sky_expiry(cid)) or 'ok'
         counts[st] = counts.get(st, 0) + 1
     return counts
@@ -1441,116 +1624,109 @@ def sky1_view(back=''):
     xbmcplugin.endOfDirectory(HANDLE)
 
 
+def _sky2_refresh():
+    """Scarica i canali Sky2. Sorgente principale: Upstash, dove Pz8 tasto 2 salva i canali."""
+    if _SKY2_BUSY['v']:
+        return _SKY2_CACHE['data'] or {}
+    _SKY2_BUSY['v'] = True
+    try:
+        now = time.time()
+        # 1. Upstash Redis (stream:sky2) - scritto in tempo reale da Pz8 tasto 2
+        data = _fetch_upstash_key('sky2')
+        if not (isinstance(data, dict) and len(data) > 0):
+            # 2. Repo GitHub luishighnest/kodi, dove Pz8 tasto 2 salva sky2.json
+            endpoints = [
+                'https://raw.githubusercontent.com/luishighnest/kodi/main/sky2.json',
+                REPO_BASE + '/sky2.json',
+                'https://cdn.jsdelivr.net/gh/luishighnest/kodi@main/sky2.json'
+            ]
+            headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
+            for ep in endpoints:
+                try:
+                    r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=10)
+                    if r.status_code == 200 and r.text.strip():
+                        d = json.loads(r.content.decode('utf-8-sig'))
+                        if isinstance(d, dict) and 'enc' in d:
+                            d = _zadonkais_decrypt(d['enc'])
+                        if isinstance(d, dict) and len(d) > 0:
+                            data = d
+                            break
+                except Exception as e:
+                    log('sky2 fetch %s ERR: %s' % (ep, e))
+        if isinstance(data, dict) and len(data) > 0:
+            _SKY2_CACHE['data'] = data
+            _SKY2_CACHE['ts'] = time.time()
+            _disk_save('sky2', data)
+            return data
+        return _SKY2_CACHE['data'] or {}
+    finally:
+        _SKY2_BUSY['v'] = False
+
+
 def _sky2_fetch():
+    """Canali Sky2: subito i dati salvati su disco, aggiornamento in background. Mai blocchetti."""
     now = time.time()
-    if _SKY2_CACHE['data'] is not None and (now - _SKY2_CACHE['ts'] < 60):
-        return _SKY2_CACHE['data']
-    
-    # 1. API Upstash Redis (stream:sky2) - l'API generata in tempo reale da Pz8 Tasto 2!
-    data = _fetch_upstash_key('sky2')
-    if data and isinstance(data, dict) and len(data) > 0:
-        _SKY2_CACHE['data'] = data
-        _SKY2_CACHE['ts'] = now
-        return data
+    c = _SKY2_CACHE
+    if c['data'] is None:
+        disk = _disk_load('sky2', SKY2_TTL_STALE)
+        if isinstance(disk, dict) and len(disk) > 0:
+            c['data'] = disk
+            c['ts'] = 0
+    if c['data'] is not None:
+        if now - c['ts'] >= SKY2_TTL:
+            _bg(_sky2_refresh)
+        return c['data']
+    return _sky2_refresh()
 
-    endpoints = [
-        'https://raw.githubusercontent.com/luishighnest/kodi/main/sky2.json',
-        REPO_BASE + '/sky2.json',
-        'https://cdn.jsdelivr.net/gh/luishighnest/kodi@main/sky2.json',
-        'https://raw.githubusercontent.com/luishighnest/zadonkais/main/sky2.json',
-        ZADONKAIS_BASE + '/sky2.json'
-    ]
-    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
-    for ep in endpoints:
-        try:
-            r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=10)
-            if r.status_code == 200 and r.text.strip():
-                data = json.loads(r.content.decode('utf-8-sig'))
-                if isinstance(data, dict) and 'enc' in data:
-                    data = _zadonkais_decrypt(data['enc'])
-                if data and isinstance(data, dict) and len(data) > 0:
-                    _SKY2_CACHE['data'] = data
-                    _SKY2_CACHE['ts'] = now
-                    return data
-        except Exception as e:
-            log('sky2 fetch %s ERR: %s' % (ep, e))
+def _guida_sky_refresh():
+    """Scarica la guida TV (fino a ~1,9 MB) e la salva su disco."""
+    if _GUIDA_BUSY['v']:
+        return _GUIDA_SKY_CACHE['data'] or []
+    _GUIDA_BUSY['v'] = True
+    try:
+        now = time.time()
+        # 1. Upstash Redis (stream:guida) - Guida TV 24H aggiornata in tempo reale
+        data = _fetch_upstash_key('guida')
+        if not (isinstance(data, list) and len(data) > 0):
+            endpoints = [
+                'https://raw.githubusercontent.com/luishighnest/kodi/main/guida_tv_sky.json',
+                REPO_BASE + '/guida_tv_sky.json',
+                'https://cdn.jsdelivr.net/gh/luishighnest/kodi@main/guida_tv_sky.json'
+            ]
+            headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
+            for ep in endpoints:
+                try:
+                    r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=15)
+                    if r.status_code == 200 and r.text.strip():
+                        d = json.loads(r.content.decode('utf-8-sig'))
+                        if isinstance(d, list) and len(d) > 0:
+                            data = d
+                            break
+                except Exception:
+                    pass
+        if isinstance(data, list) and len(data) > 0:
+            _GUIDA_SKY_CACHE['data'] = data
+            _GUIDA_SKY_CACHE['ts'] = time.time()
+            _disk_save('guida_sky', data)
+            return data
+        return _GUIDA_SKY_CACHE['data'] or []
+    finally:
+        _GUIDA_BUSY['v'] = False
 
-    # Fallback locale se presente nella cartella repo
-    local_candidates = [
-        os.path.join(r'C:\Users\alecl\.gemini\antigravity\scratch\kodi', 'sky2.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\kodi_repo', 'sky2.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\htdocs', 'sky2.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\kodi_repo', 'sky2.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\htdocs', 'sky2.json'),
-        os.path.join(ADDON.getAddonInfo('path'), 'sky2.json')
-    ]
-    for lp in local_candidates:
-        if os.path.exists(lp):
-            try:
-                with open(lp, 'r', encoding='utf-8-sig') as f:
-                    data = json.load(f)
-                if isinstance(data, dict) and 'enc' in data:
-                    data = _zadonkais_decrypt(data['enc'])
-                if data and isinstance(data, dict) and len(data) > 0:
-                    _SKY2_CACHE['data'] = data
-                    _SKY2_CACHE['ts'] = now
-                    return data
-            except Exception as e:
-                log('sky2 local fetch %s ERR: %s' % (lp, e))
-            
-    if _SKY2_CACHE['data']:
-        return _SKY2_CACHE['data']
-    return {}
 
 def _guida_sky_fetch():
     now = time.time()
-    if _GUIDA_SKY_CACHE['data'] is not None and (now - _GUIDA_SKY_CACHE['ts'] < 300):
-        return _GUIDA_SKY_CACHE['data']
-    
-    # 1. API Upstash Redis (stream:guida) - Guida TV 24H aggiornata in tempo reale!
-    data = _fetch_upstash_key('guida')
-    if data and isinstance(data, list) and len(data) > 0:
-        _GUIDA_SKY_CACHE['data'] = data
-        _GUIDA_SKY_CACHE['ts'] = now
-        return data
-
-    endpoints = [
-        'https://raw.githubusercontent.com/luishighnest/kodi/main/guida_tv_sky.json',
-        REPO_BASE + '/guida_tv_sky.json',
-        'https://cdn.jsdelivr.net/gh/luishighnest/kodi@main/guida_tv_sky.json',
-        ZADONKAIS_BASE + '/guida_tv_sky.json'
-    ]
-    headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
-    for ep in endpoints:
-        try:
-            r = requests.get(ep + '?_=' + str(int(now)), headers=headers, timeout=15)
-            if r.status_code == 200 and r.text.strip():
-                data = json.loads(r.content.decode('utf-8-sig'))
-                if isinstance(data, list) and len(data) > 0:
-                    _GUIDA_SKY_CACHE['data'] = data
-                    _GUIDA_SKY_CACHE['ts'] = now
-                    return data
-        except Exception:
-            pass
-
-    # Fallback locale
-    local_candidates = [
-        os.path.join(r'C:\Users\alecl\Desktop\kodi_repo', 'guida_tv_sky.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\htdocs', 'guida_tv_sky.json')
-    ]
-    for lp in local_candidates:
-        if os.path.exists(lp):
-            try:
-                with open(lp, 'r', encoding='utf-8-sig') as f:
-                    data = json.load(f)
-                if isinstance(data, list) and len(data) > 0:
-                    _GUIDA_SKY_CACHE['data'] = data
-                    _GUIDA_SKY_CACHE['ts'] = now
-                    return data
-            except Exception:
-                pass
-
-    return []
+    c = _GUIDA_SKY_CACHE
+    if c['data'] is None:
+        disk = _disk_load('guida_sky', GUIDA_SKY_TTL_STALE)
+        if isinstance(disk, list) and len(disk) > 0:
+            c['data'] = disk
+            c['ts'] = 0
+    if c['data'] is not None:
+        if now - c['ts'] >= GUIDA_SKY_TTL:
+            _bg(_guida_sky_refresh)
+        return c['data']
+    return _guida_sky_refresh()
 
 
 def _get_rome_now():
@@ -2313,21 +2489,14 @@ def _http_get_bytes(url):
         raise last if last is not None else e
 
 
-def epg_load():
-    if _EPG_SESSION['data'] is not None:
+_EPG_BUSY = {'v': False}
+
+
+def _epg_refresh():
+    """Scarica e interpreta la guida EPG (.xml.gz). Operazione lenta: va SEMPRE in background."""
+    if _EPG_BUSY['v']:
         return _EPG_SESSION['data']
-    path = _epg_cache_path()
-    if os.path.exists(path):
-        try:
-            if time.time() - os.path.getmtime(path) < EPG_KEEP_HOURS * 3600:
-                with open(path, 'rb') as f:
-                    data = pickle.load(f)
-                _EPG_SESSION['data'] = data
-                return data
-        except Exception:
-            pass
-    if _EPG_SESSION.get('fail') and time.time() - _EPG_SESSION['fail'] < EPG_KEEP_HOURS * 3600:
-        return None
+    _EPG_BUSY['v'] = True
     try:
         url = ADDON.getSetting('epg_url').strip() or EPG_URL_DEFAULT
         raw = _http_get_bytes(url)
@@ -2336,16 +2505,19 @@ def epg_load():
         except Exception:
             pass
         data = _epg_parse(raw)
-        try:
-            d = os.path.dirname(path)
-            if not os.path.isdir(d):
-                os.makedirs(d)
-            with open(path, 'wb') as f:
-                pickle.dump(data, f)
-        except Exception:
-            pass
-        _EPG_SESSION['data'] = data
-        return data
+        if data:
+            try:
+                path = _epg_cache_path()
+                d = os.path.dirname(path)
+                if not os.path.isdir(d):
+                    os.makedirs(d)
+                with open(path, 'wb') as f:
+                    pickle.dump(data, f)
+            except Exception:
+                pass
+            _EPG_SESSION['data'] = data
+            _EPG_SESSION['fail'] = 0
+        return data or _EPG_SESSION['data']
     except Exception as e:
         xbmc.log('KODIAKSO epg ERR: ' + str(e), xbmc.LOGERROR)
         try:
@@ -2354,15 +2526,30 @@ def epg_load():
         except Exception:
             pass
         _EPG_SESSION['fail'] = time.time()
-        if os.path.exists(path):
-            try:
-                with open(path, 'rb') as f:
-                    data = pickle.load(f)
-                _EPG_SESSION['data'] = data
-                return data
-            except Exception:
-                pass
+        return _EPG_SESSION['data']
+    finally:
+        _EPG_BUSY['v'] = False
+
+
+def epg_load():
+    """Guida EPG: usa subito quella salvata (anche se datata) e la rinfresca alle spalle.
+    Prima bloccava la Lista 1 per tutto il download del file .xml.gz."""
+    if _EPG_SESSION['data'] is None and os.path.exists(_epg_cache_path()):
+        try:
+            with open(_epg_cache_path(), 'rb') as f:
+                _EPG_SESSION['data'] = pickle.load(f)
+        except Exception:
+            pass
+    if _EPG_SESSION['data'] is not None:
+        try:
+            if time.time() - os.path.getmtime(_epg_cache_path()) >= EPG_KEEP_HOURS * 3600:
+                _bg(_epg_refresh)
+        except Exception:
+            pass
+        return _EPG_SESSION['data']
+    if _EPG_SESSION.get('fail') and time.time() - _EPG_SESSION['fail'] < 300:
         return None
+    return _epg_refresh()
 
 
 def _epg_chid(cid, epg):
@@ -2420,7 +2607,10 @@ def sky_cat_view(cat, back=''):
     back_button(back or (BASE + '?action=sky'))
     epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
     try:
-        for title, cid in sky_channels().get(cat, []):
+        canali = sky_channels().get(cat, [])
+        # Tutte le scadenze in un solo giro di rete, invece di una richiesta per canale
+        _sky_prefetch_expiries([cid for _, cid in canali])
+        for title, cid in canali:
             try:
                 exp = _sky_expiry(cid)
                 cur_sky, nxt_sky = _guida_sky_now(title)
@@ -4603,62 +4793,133 @@ def _ver_tuple(s):
 
 
 def check_update():
+    """Aggiorna PZ8 con i MECCANISMI NATIVI di Kodi (repository + gestore addon).
+    Sostituisce il vecchio self-updater che scaricava lo zip e sovrascriveva i file a mano:
+    ora e' Kodi a confrontare le versioni, scaricare, gestire dipendenze ed eventuali rollback."""
     try:
-        headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0'}
-        r = requests.get(REPO_BASE + '/addons.xml?_=' + str(int(time.time())), headers=headers, timeout=15)
-        r.raise_for_status()
-        m = re.search(r'<addon id="plugin\.video\.kodiakso" name="PZ8" version="([^"]+)"', r.text)
-        if not m:
-            m = re.search(r'<addon id="plugin\.video\.kodiakso" version="([^"]+)"', r.text)
-        if not m:
-            raise Exception('versione non trovata')
-        new = m.group(1)
-        cur = ADDON.getAddonInfo('version')
-        if _ver_tuple(new) <= _ver_tuple(cur):
-            notify(NAME, 'Aggiornato: sei gia alla v' + cur)
+        new = _addon_pending_version()
+        if not new:
+            notify(NAME, 'Aggiornato: sei gia alla v' + _addon_current_version())
             return
-        z = requests.get(REPO_BASE + '/zips/plugin.video.kodiakso/plugin.video.kodiakso-' + new + '.zip?_=' + str(int(time.time())), headers=headers, timeout=120)
-        z.raise_for_status()
-        data = zipfile.ZipFile(io.BytesIO(z.content))
-        dest = ADDON.getAddonInfo('path')
-        count = 0
-        for name in data.namelist():
-            rel = name[len('plugin.video.kodiakso/'):] if name.startswith('plugin.video.kodiakso/') else name
-            if not rel or not name.startswith('plugin.video.kodiakso/') or rel.endswith('/'):
-                continue
-            target = os.path.normpath(os.path.join(dest, rel.replace('/', os.sep)))
-            if not target.startswith(os.path.normpath(dest)):
-                continue
-            d = os.path.dirname(target)
-            if not os.path.isdir(d):
-                try:
-                    os.makedirs(d)
-                except Exception:
-                    continue
-            tmp = target + '.tmp'
-            try:
-                with open(tmp, 'wb') as f:
-                    f.write(data.read(name))
-                try:
-                    os.replace(tmp, target)
-                except Exception:
-                    if os.path.exists(target):
-                        try:
-                            os.remove(target)
-                        except Exception:
-                            try:
-                                os.rename(target, target + '.' + str(int(time.time())) + '.old')
-                            except Exception:
-                                pass
-                    os.replace(tmp, target)
-                count += 1
-            except Exception as e:
-                xbmc.log('KODIAKSO update file ERR (' + rel + '): ' + str(e), xbmc.LOGERROR)
-        xbmc.executebuiltin('UpdateLocalAddons')
-        notify(NAME, 'Aggiornato alla v' + new + ' (file aggiornati: ' + str(count) + ')')
+        # 1. fa aggiornare a Kodi la lista degli addon dai repository installati
+        xbmc.executebuiltin('UpdateAddonRepos')
+        xbmc.sleep(2000)
+        # 2. chiede a Kodi di installare/aggiornare l'addon dal repository
+        xbmc.executebuiltin('InstallAddon(%s)' % ADDON_ID)
+        xbmc.sleep(1500)
+        notify(NAME, 'Richiesto a Kodi l aggiornamento alla v' + new)
     except Exception as e:
         xbmc.log('KODIAKSO update ERR: ' + str(e), xbmc.LOGERROR)
         notify(NAME, 'Impossibile controllare gli aggiornamenti', True)
+
+
+def _addon_current_version():
+    try:
+        return ADDON.getAddonInfo('version') or '0'
+    except Exception:
+        return '0'
+
+
+def _addon_version_refresh():
+    """Scarica l'ultima versione pubblicata (addons.xml del repository)."""
+    if _UPD_BUSY['v']:
+        return _UPD_CACHE['ver']
+    _UPD_BUSY['v'] = True
+    try:
+        now = time.time()
+        headers = {'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0', 'User-Agent': 'Mozilla/5.0'}
+        r = requests.get(REPO_BASE + '/addons.xml?_=' + str(int(now)), headers=headers, timeout=10)
+        if r.status_code == 200 and r.text.strip():
+            m = re.search(r'<addon id="%s"[^>]*?version="([^"]+)"' % ADDON_ID.replace('.', r'\.'), r.text)
+            if m:
+                _UPD_CACHE['ver'] = m.group(1)
+                _UPD_CACHE['ts'] = now
+                _disk_save('addon_version', {'ver': m.group(1), 'ts': now})
+                return m.group(1)
+        return _UPD_CACHE['ver']
+    except Exception as e:
+        log('addon version refresh ERR: %s' % e)
+        return _UPD_CACHE['ver']
+    finally:
+        _UPD_BUSY['v'] = False
+
+
+def _addon_latest_version():
+    """Ultima versione pubblicata nel repository. Cache su disco: la home non resta mai ferma."""
+    now = time.time()
+    if _UPD_CACHE['ver'] is None:
+        disk = _disk_load('addon_version', UPD_CHECK_TTL_STALE)
+        if isinstance(disk, dict) and disk.get('ver'):
+            _UPD_CACHE['ver'] = disk['ver']
+            _UPD_CACHE['ts'] = disk.get('ts', 0)
+    if _UPD_CACHE['ver'] is not None:
+        if now - _UPD_CACHE['ts'] >= UPD_CHECK_TTL:
+            _bg(_addon_version_refresh)
+        return _UPD_CACHE['ver']
+    return _addon_version_refresh()
+
+
+def _addon_pending_version():
+    """La versione piu' recente di quella installata, oppure None se si e' gia aggiornati."""
+    new = _addon_latest_version()
+    if not new:
+        return None
+    try:
+        return new if _ver_tuple(new) > _ver_tuple(_addon_current_version()) else None
+    except Exception:
+        return None
+
+
+def _addon_update_bg():
+    """Controllo automatico all'apertura della home: se c'e' una versione nuova, lo annuncia.
+    Gira in background, quindi non rallenta mai l'apertura dell'addon."""
+    new = _addon_pending_version()
+    if not new or new in _UPD_PROMPTED:
+        return
+    _UPD_PROMPTED.add(new)
+    notify(NAME, 'Disponibile la v%s - voce AGGIORNAMENTI in home' % new)
+
+
+def addon_updates_view():
+    """Menu AGGIORNAMENTI: versione installata, ultima pubblicata, avvio aggiornamento nativo."""
+    home_button()
+    xbmcplugin.setContent(HANDLE, 'videos')
+    cur = _addon_current_version()
+    new = _addon_latest_version()
+    pending = _addon_pending_version()
+
+    li = xbmcgui.ListItem(label=lbl('Versione installata:  [COLOR snow]v%s[/COLOR]' % cur))
+    li.setArt({'thumb': ICON_LOGO})
+    li.setInfo('video', {'title': 'Versione installata', 'plot': 'PZ8 v%s installato su questo dispositivo' % cur})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
+
+    if new:
+        if pending:
+            det = '[COLOR FFB300]v%s   NUOVA[/COLOR]' % new
+            plot = 'Ultima versione pubblicata nel repository: v%s (tu hai v%s)' % (new, cur)
+        else:
+            det = '[COLOR 00FF00]v%s   aggiornato[/COLOR]' % new
+            plot = 'Sei gia all ultima versione pubblicata: v%s' % new
+    else:
+        det = '[COLOR FFFFFF]non rilevata[/COLOR]'
+        plot = 'Impossibile contattare il repository: controlla la connessione'
+    li = xbmcgui.ListItem(label=lbl('Ultima pubblicata:  %s' % det))
+    li.setArt({'thumb': ICON_LOGO})
+    li.setInfo('video', {'title': 'Ultima pubblicata', 'plot': plot})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
+
+    if pending:
+        li = xbmcgui.ListItem(label=lbl('[B][COLOR gold]AGGIORNA ORA alla v%s[/COLOR][/B]' % pending))
+        li.setArt({'thumb': ICON_LOGO})
+        li.setInfo('video', {'title': 'Aggiorna ora', 'plot': 'Usa i meccanismi nativi di Kodi (repository + gestore addon) per installare la v%s' % pending})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=addonupd&v=' + urllib.parse.quote(pending), li, isFolder=False)
+
+    li = xbmcgui.ListItem(label=lbl('Ricontrolla aggiornamenti'))
+    li.setArt({'thumb': ICON_LOGO})
+    li.setInfo('video', {'title': 'Ricontrolla', 'plot': 'Consulta di nuovo il repository e aggiorna questa schermata'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=addonupdates&refresh=1', li, isFolder=False)
+
+    xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
 
 
 def update_view():
@@ -4724,7 +4985,23 @@ def root_view():
         li.setArt({'thumb': ICON_LOGO})
         xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('autostart'), li, isFolder=True)
 
+    # --- Aggiornamenti (controllo nativo Kodi) ---
+    pend = _addon_pending_version()
+    if pend:
+        li = xbmcgui.ListItem(label=lbl('AGGIORNAMENTI  [COLOR FFB300]v%s disponibile[/COLOR]' % pend))
+        li.setInfo('video', {'title': 'Aggiornamenti', 'plot': 'C e una versione nuova: v%s. La installi con i meccanismi nativi di Kodi.' % pend})
+    else:
+        curv = _addon_current_version()
+        li = xbmcgui.ListItem(label=lbl('AGGIORNAMENTI  [COLOR 00FF00]v%s aggiornato[/COLOR]' % curv))
+        li.setInfo('video', {'title': 'Aggiornamenti', 'plot': 'Versione installata: v%s' % curv})
+    li.setArt({'thumb': ICON_LOGO})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=addonupdates', li, isFolder=True)
+
     xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
+
+    # Controllo automatico in background: avvisa se esce una versione nuova,
+    # senza mai bloccare l'apertura della home.
+    _bg(_addon_update_bg)
 
 
 def autostart_view():
@@ -4837,10 +5114,6 @@ def _test_fetch():
 
     # 2. Fallback locale se presente
     local_candidates = [
-        os.path.join(r'C:\Users\alecl\.gemini\antigravity\scratch\kodi', 'test.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\htdocs', 'test.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\PROJECT_HUB\apps\kodi_repo', 'test.json'),
-        os.path.join(r'C:\Users\alecl\Desktop\kodi_repo', 'test.json'),
         os.path.join(ADDON.getAddonInfo('path'), 'test.json')
     ]
     for lp in local_candidates:
@@ -4866,6 +5139,8 @@ UPSTASH_TOKEN = 'Bearer gQAAAAAAAnr8AAIgcDEyZjRkYjEwYmUzZDY0M2RhYjZkNjhmMDFjNGVk
 
 
 def _fetch_upstash_key(key_name):
+    """Legge una chiave stream:* da Upstash Redis.
+    Accetta sia dict sia list: stream:sky2 e' un dict, stream:guida e' una lista."""
     try:
         url = '%s/get/stream:%s' % (UPSTASH_URL, key_name)
         headers = {'Authorization': UPSTASH_TOKEN}
@@ -4874,7 +5149,7 @@ def _fetch_upstash_key(key_name):
             res = r.json().get('result')
             if res:
                 data = json.loads(res)
-                if isinstance(data, dict) and len(data) > 0:
+                if isinstance(data, (dict, list)) and len(data) > 0:
                     return data
     except Exception as e:
         log('upstash fetch %s ERR: %s' % (key_name, e))
@@ -5131,11 +5406,27 @@ def _resolve_test_item(it):
         li.setInfo('video', {'title': name})
         return li
 
-    # RIPRODUZIONE DIRETTA / MPD: l'URL contiene gia' il token CDN (path /@<token>/)
-    # e Kodi lo scarica direttamente da indazn.com. Nessun proxy, nessun worker.
+    # Se il link include il tracciamento /live/stream.mpd, risolve il target reale ed effettua il click una sola volta
     play_url = mpd
+    if "/live/stream.mpd" in mpd and "target=" in mpd:
+        try:
+            parsed = urllib.parse.urlparse(mpd)
+            qs = urllib.parse.parse_qs(parsed.query)
+            real_target = qs.get("target", [""])[0]
+            if real_target:
+                # 1. Notifica click del tasto play una sola volta in background
+                def _notify_click():
+                    try:
+                        urllib.request.urlopen(mpd, timeout=3)
+                    except Exception:
+                        pass
+                threading.Thread(target=_notify_click, daemon=True).start()
+                # 2. Kodi riproduce direttamente il target reale, senza più contattare stream.mpd alla chiusura!
+                play_url = real_target
+        except Exception:
+            pass
 
-    m = re.search(r'[?&]dazn-token=([^&]+)', mpd)
+    m = re.search(r'[?&]dazn-token=([^&]+)', play_url)
     tok = urllib.parse.unquote(m.group(1)) if m else ''
     if not tok:
         tok = (it.get('dazn_token') or '').strip()
@@ -5285,6 +5576,14 @@ def main():
             xbmc.executebuiltin('ActivateWindow(addonbrowser)')
         elif action == 'update':
             update_view()
+        elif action == 'addonupdates':
+            if query.get('refresh', [''])[0]:
+                _UPD_CACHE['ts'] = 0
+                _UPD_CACHE['ver'] = None
+            addon_updates_view()
+        elif action == 'addonupd':
+            check_update()
+            xbmc.executebuiltin('Container.Refresh')
         elif action == 'search':
             tmdb_search(query.get('q', [''])[0], int(query.get('page', ['1'])[0]),
                         query.get('back', [''])[0])
