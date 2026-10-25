@@ -5323,7 +5323,6 @@ def root_view():
         ('GUIDA TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=guida'),
         ('EVENTI', LOGO_BASE + 'eventi_icon.png', BASE + '?action=events'),
         ('SPORT', LOGO_BASE + 'skyhd.png', BASE + '?action=sky'),
-        ('DAZN', LOGO_BASE + 'dazn.png', BASE + '?action=dazn'),
         ('TV', LOGO_BASE + 'tv_icon.png', BASE + '?action=tv'),
     ]
     if ADDON.getSetting('home_tmdb') != 'false':
