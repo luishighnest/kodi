@@ -42,8 +42,9 @@
         <setting id="szx_key" type="text" label="Chiave AES raw (hex/base64) - ignora la password" default="" />
         <setting id="szx_iv" type="text" label="IV AES raw (hex/base64) - ignora la password" default="" />
     </category>
-    <category label="Avvio Automatico">
-        <setting type="lsep" label="Apri PZ8 automaticamente all'avvio di Kodi"/>
-        <setting id="autostart_hint" type="text" label="Installa il file service.kodiakso.autostart-1.0.1.zip da zips/plugin.video.kodiakso/ (repo) e abilitalo. Vedi voce in Home." default="" enable="false" />
+    <category label="Aggiornamenti">
+        <setting id="update_auto" type="bool" label="Aggiorna PZ8 automaticamente" default="true" help="All'apertura della home di PZ8 (e all'avvio di Kodi tramite il servizio PZ8 Autostart) controlla il repository e installa da solo le versioni nuove con i meccanismi nativi di Kodi." />
+        <setting type="lsep" label="Ultimo controllo e installazione avvengono con i meccanismi nativi di Kodi"/>
+        <setting id="autostart_hint" type="text" label="Per il controllo all'avvio di Kodi serve service.kodiakso.autostart (da repository). Vedi voce in Home." default="" enable="false" />
     </category>
 </settings>

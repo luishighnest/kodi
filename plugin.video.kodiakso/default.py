@@ -4792,25 +4792,58 @@ def _ver_tuple(s):
     return tuple(int(x) for x in re.findall(r'\d+', s) or ['0'])
 
 
-def check_update():
+def _addon_installed_disk():
+    """Versione PZ8 realmente su disco, letta dal FILE addon.xml.
+    Non si passa da xbmcaddon.Addon(): quel gestore puo' restituire la copia in
+    cache e il poll non vedrebbe mai l'aggiornamento applicato."""
+    try:
+        p = os.path.join(ADDON.getAddonInfo('path'), 'addon.xml')
+        if os.path.exists(p):
+            with open(p, 'r', encoding='utf-8', errors='replace') as f:
+                txt = f.read(4096)
+            m = re.search(r'<addon[^>]*\sversion="([^"]+)"', txt)
+            if m:
+                return m.group(1)
+    except Exception as e:
+        log('installed version ERR: %s' % e)
+    return _addon_current_version()
+
+
+def check_update(verify=True, wait_s=45):
     """Aggiorna PZ8 con i MECCANISMI NATIVI di Kodi (repository + gestore addon).
     Sostituisce il vecchio self-updater che scaricava lo zip e sovrascriveva i file a mano:
-    ora e' Kodi a confrontare le versioni, scaricare, gestire dipendenze ed eventuali rollback."""
+    ora e' Kodi a confrontare le versioni, scaricare, gestire dipendenze ed eventuali rollback.
+    Ritorna True se l'addon e' aggiornato (o lo era gia)."""
     try:
+        cur = _addon_current_version()
         new = _addon_pending_version()
         if not new:
-            notify(NAME, 'Aggiornato: sei gia alla v' + _addon_current_version())
-            return
+            notify(NAME, 'Aggiornato: sei gia alla v' + cur)
+            return True
         # 1. fa aggiornare a Kodi la lista degli addon dai repository installati
         xbmc.executebuiltin('UpdateAddonRepos')
-        xbmc.sleep(2000)
+        xbmc.sleep(3000)
         # 2. chiede a Kodi di installare/aggiornare l'addon dal repository
         xbmc.executebuiltin('InstallAddon(%s)' % ADDON_ID)
-        xbmc.sleep(1500)
-        notify(NAME, 'Richiesto a Kodi l aggiornamento alla v' + new)
+        if not verify:
+            notify(NAME, 'Richiesto a Kodi l aggiornamento alla v' + new)
+            return True
+        # 3. conferma leggendo addon.xml su disco: se la versione non cambia,
+        #    il messaggio di successo sarebbe falso
+        deadline = time.time() + wait_s
+        while time.time() < deadline:
+            if _addon_installed_disk() == new:
+                notify(NAME, 'Aggiornato da v%s a v%s' % (cur, new))
+                _UPD_CACHE['ver'] = new
+                _UPD_CACHE['ts'] = time.time()
+                return True
+            xbmc.sleep(500)
+        notify(NAME, 'Aggiornamento alla v%s non confermato - riprova da AGGIORNAMENTI' % new, True)
+        return False
     except Exception as e:
         xbmc.log('KODIAKSO update ERR: ' + str(e), xbmc.LOGERROR)
         notify(NAME, 'Impossibile controllare gli aggiornamenti', True)
+        return False
 
 
 def _addon_current_version():
@@ -4871,13 +4904,19 @@ def _addon_pending_version():
 
 
 def _addon_update_bg():
-    """Controllo automatico all'apertura della home: se c'e' una versione nuova, lo annuncia.
+    """Controllo automatico all'apertura della home. Se c'e' una versione nuova la
+    installa COI MECCANISMI NATIVI di Kodi, senza chiedere conferma.
     Gira in background, quindi non rallenta mai l'apertura dell'addon."""
     new = _addon_pending_version()
     if not new or new in _UPD_PROMPTED:
         return
     _UPD_PROMPTED.add(new)
-    notify(NAME, 'Disponibile la v%s - voce AGGIORNAMENTI in home' % new)
+    auto = ADDON.getSetting('update_auto') != 'false'
+    if not auto:
+        notify(NAME, 'Disponibile la v%s - voce AGGIORNAMENTI in home' % new)
+        return
+    if not check_update(verify=True, wait_s=20):
+        notify(NAME, 'Aggiornamento alla v%s non riuscito - prova AGGIORNAMENTI' % new, True)
 
 
 def addon_updates_view():
@@ -5582,8 +5621,15 @@ def main():
                 _UPD_CACHE['ver'] = None
             addon_updates_view()
         elif action == 'addonupd':
-            check_update()
-            xbmc.executebuiltin('Container.Refresh')
+            # non bloccare la UI: l'installazione puo' richiedere decine di secondi
+            def _upd_then_refresh():
+                check_update(verify=True, wait_s=45)
+                try:
+                    _UPD_CACHE['ts'] = time.time()
+                except Exception:
+                    pass
+                xbmc.executebuiltin('Container.Refresh')
+            _bg(_upd_then_refresh)
         elif action == 'search':
             tmdb_search(query.get('q', [''])[0], int(query.get('page', ['1'])[0]),
                         query.get('back', [''])[0])

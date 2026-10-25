@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="service.kodiakso.autostart" name="PZ8 Autostart" version="1.0.1" provider-name="Luigi">
+<addon id="service.kodiakso.autostart" name="PZ8 Autostart" version="1.0.2" provider-name="Luigi">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
     </requires>
@@ -7,9 +7,10 @@
     <extension point="xbmc.addon.metadata">
         <summary lang="it">Avvio automatico PZ8</summary>
         <summary lang="en">PZ8 auto-launch</summary>
-        <description lang="it">All'apertura di Kodi apre in automatico l'addon PZ8 (plugin.video.kodiakso). Disattivabile dalle impostazioni.</description>
-        <description lang="en">On Kodi startup it automatically opens the PZ8 addon (plugin.video.kodiakso). Can be disabled in settings.</description>
+        <description lang="it">All'apertura di Kodi apre in automatico l'addon PZ8 (plugin.video.kodiakso) e controlla se sono uscite versioni nuove, installandole con i meccanismi nativi di Kodi. Tutto disattivabile dalle impostazioni.</description>
+        <description lang="en">On Kodi startup it automatically opens the PZ8 addon (plugin.video.kodiakso) and checks for new versions, installing them with Kodi's native mechanisms. Everything can be disabled in settings.</description>
         <license>MIT</license>
         <source>https://github.com/luishighnest/kodi</source>
+        <news>v1.0.2: Controllo aggiornamenti di PZ8 a ogni avvio di Kodi, indipendentemente dall'Avvio Automatico e senza che PZ8 venga aperto. Legge addons.xml del repository e, se c'e' una versione piu' recente, la installa con i MECCANISMI NATIVI di Kodi (UpdateAddonRepos + InstallAddon), confermando l'avvenuto aggiornamento leggendo addon.xml su disco. Avviene prima di aprire PZ8, quindi in un momento in cui nessuno sta riproducendo qualcosa. Nuova impostazione "Aggiorna PZ8 automaticamente" (attiva di default) per disattivarlo. v1.0.1: Ritardo configurabile all'avvio. v1.0.0: Avvio automatico di PZ8 all'apertura di Kodi.</news>
     </extension>
 </addon>

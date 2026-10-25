@@ -1,65 +1,124 @@
-import os
 import hashlib
-import zipfile
+import os
 import re
+import zipfile
 from pathlib import Path
 
-addon_xml = Path("plugin.video.kodiakso/addon.xml")
-if not addon_xml.exists():
-    print("ERRORE: addon.xml non trovato")
-    exit(1)
+ROOT = Path(__file__).resolve().parent
+ZIPS = ROOT / 'zips'
+SITE = 'https://luishighnest.github.io/kodi'
 
-xml_txt = addon_xml.read_text(encoding="utf-8")
-m = re.search(r'id="plugin\.video\.kodiakso"[^>]*version="([^"]+)"', xml_txt)
-if not m:
-    print("ERRORE: versione non trovata in addon.xml")
-    exit(1)
+SKIP_DIRS = {'zips', '.git', '__pycache__', 'sportzx_apk', 'sportzx_smali'}
+SKIP_EXT = {'.pyc', '.bak', '.orig', '.log'}
 
-ver = m.group(1)
-print(f"[pack] Versione rilevata da addon.xml: {ver}")
+# ---------------------------------------------------------------- scoperta addon
+addons = []
+for d in sorted(ROOT.iterdir()):
+    if not d.is_dir() or d.name in SKIP_DIRS:
+        continue
+    ax = d / 'addon.xml'
+    if not ax.exists():
+        continue
 
-addon_dir = 'plugin.video.kodiakso'
-zip_dir = os.path.join('zips', addon_dir)
-os.makedirs(zip_dir, exist_ok=True)
-zip_filename = f'plugin.video.kodiakso-{ver}.zip'
-zip_path = os.path.join(zip_dir, zip_filename)
+    txt = ax.read_text(encoding='utf-8')
+    m = re.search(r'<addon\b[^>]*?\bid="([^"]+)"', txt)
+    m2 = re.search(r'<addon\b[^>]*?\bversion="([^"]+)"', txt)
+    if not m or not m2:
+        print('[pack] SALTO %s: id/versione non leggibili in addon.xml' % d.name)
+        continue
 
-with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
-    for root, dirs, files in os.walk(addon_dir):
-        for file in files:
-            full_path = os.path.join(root, file)
-            z.write(full_path, full_path)
+    aid, ver = m.group(1), m2.group(1)
+    if aid != d.name:
+        print('[pack] ATTENZIONE: cartella %s ma id addon %s' % (d.name, aid))
 
-print('[pack] Zip creato:', zip_path)
+    addons.append({'dir': d, 'id': aid, 'ver': ver, 'xml': txt})
 
-# Copia dello zip anche direttamente in zips/ per download diretto o link rapido
-zips_root_zip = os.path.join('zips', zip_filename)
-with open(zip_path, 'rb') as f_in, open(zips_root_zip, 'wb') as f_out:
-    f_out.write(f_in.read())
-print('[pack] Copia creata in:', zips_root_zip)
+if not addons:
+    print('[pack] ERRORE: nessun addon trovato')
+    raise SystemExit(1)
 
-# Aggiorna index.html in zips/plugin.video.kodiakso/
-sub_index = Path(zip_dir) / "index.html"
-sub_index.write_text(f'<!DOCTYPE html>\n<html>\n<body>\n<a href="{zip_filename}">{zip_filename}</a><br>\n</body>\n</html>\n', encoding="utf-8")
+print('[pack] Addon trovati:')
+for a in addons:
+    print('       - %-28s v%s' % (a['id'], a['ver']))
 
-# Aggiorna index.html in zips/
-main_index = Path("zips/index.html")
-main_index.write_text(f'<!DOCTYPE html>\n<html>\n<body>\n<a href="plugin.video.kodiakso/">plugin.video.kodiakso/</a><br>\n<a href="repository.luishighnest/">repository.luishighnest/</a><br>\n<a href="{zip_filename}">{zip_filename}</a><br>\n<a href="service.kodiakso.autostart-1.0.1.zip">service.kodiakso.autostart-1.0.1.zip</a><br>\n</body>\n</html>\n', encoding="utf-8")
 
-# L'addons.xml va scritto in LF: .gitattributes forza eol=lf, quindi git
-# pubblica la versione LF. Se venisse scritto in CRLF (default su Windows)
-# il md5 calcolato non corrisponderebbe mai a quello servito da GitHub Pages
-# e Kodi rifiuterebbe il file per checksum non valido.
-with open('addons.xml', 'r', encoding='utf-8', newline='') as f:
-    content = f.read()
+# ---------------------------------------------------------------------- packing
+def build_zip(a):
+    out_dir = ZIPS / a['id']
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out = out_dir / ('%s-%s.zip' % (a['id'], a['ver']))
 
-content = re.sub(r'id="plugin\.video\.kodiakso" name="PZ8" version="[^"]+"', f'id="plugin.video.kodiakso" name="PZ8" version="{ver}"', content)
-content = content.replace('\r\n', '\n').replace('\r', '\n')
-with open('addons.xml', 'w', encoding='utf-8', newline='\n') as f:
-    f.write(content)
+    with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
+        for root, dirs, files in os.walk(str(a['dir'])):
+            dirs[:] = [x for x in dirs if x not in SKIP_DIRS]
+            for fn in files:
+                if Path(fn).suffix.lower() in SKIP_EXT:
+                    continue
+                full = os.path.join(root, fn)
+                # lo zip contiene i file con il prefisso <id>/ come da convenzione Kodi
+                arc = os.path.join(a['id'], os.path.relpath(full, a['dir']))
+                z.write(full, arc.replace(os.sep, '/'))
 
-md5 = hashlib.md5(open('addons.xml', 'rb').read()).hexdigest()
-with open('addons.xml.md5', 'w', encoding='utf-8', newline='\n') as f:
-    f.write(md5)
+    print('[pack] Zip creato: %s (%d B)' % (out.relative_to(ROOT), out.stat().st_size))
 
-print('[pack] addons.xml e md5 aggiornati:', md5)
+    # copia in zips/ per il download diretto dal browser
+    flat = ZIPS / out.name
+    if flat.resolve() != out.resolve():
+        flat.write_bytes(out.read_bytes())
+        print('[pack] Copia in zips/%s' % out.name)
+    return out
+
+
+for a in addons:
+    build_zip(a)
+
+
+# ------------------------------------------------------------------- addons.xml
+# Formato atteso da Kodi: radice <addons> con <addon> figli.
+# CAddonMgr::AddonsFromRepoXML rifiuta il file intero ("Malformed") se la radice
+# non si chiama "addons", quindi non basta mettere un solo <addon> a radice.
+DECL = re.compile(r'^\s*<\?xml[^>]*\?>\s*', re.S)
+body = []
+for a in addons:
+    b = DECL.sub('', a['xml']).strip()
+    if not b.startswith('<addon'):
+        print('[pack] SALTO %s da addons.xml: non inizia con <addon>' % a['id'])
+        continue
+    body.append(b)
+
+out_lines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<addons>',
+]
+for b in body:
+    out_lines.extend('    ' + ln if ln.strip() else ln for ln in b.split('\n'))
+out_lines.append('</addons>')
+
+# LF obbligatorio: .gitattributes forza eol=lf, quindi git pubblica la versione LF.
+# Se venisse scritto in CRLF (default su Windows) il md5 non corrisponderebbe mai
+# a quello servito da GitHub Pages e Kodi rifiuterebbe il file per checksum errato.
+addons_xml = '\n'.join(out_lines) + '\n'
+(ROOT / 'addons.xml').write_text(addons_xml, encoding='utf-8', newline='\n')
+
+digest = hashlib.md5(addons_xml.encode('utf-8')).hexdigest()
+(ROOT / 'addons.xml.md5').write_text(digest + '\n', encoding='utf-8', newline='\n')
+print('[pack] addons.xml scritto (%d B, %d addon) md5=%s'
+      % (len(addons_xml.encode('utf-8')), len(body), digest))
+
+
+# ------------------------------------------------------------------ index.html
+for a in addons:
+    idx = ZIPS / a['id'] / 'index.html'
+    idx.write_text(
+        '<!DOCTYPE html>\n<html>\n<body>\n'
+        '<a href="%s-%s.zip">%s-%s.zip</a><br>\n'
+        '</body>\n</html>\n' % (a['id'], a['ver'], a['id'], a['ver']),
+        encoding='utf-8', newline='\n')
+
+links = ''.join('<a href="%s/">%s/</a><br>\n' % (a['id'], a['id']) for a in addons)
+links += ''.join('<a href="%s-%s.zip">%s-%s.zip</a><br>\n'
+                 % (a['id'], a['ver'], a['id'], a['ver']) for a in addons)
+(ZIPS / 'index.html').write_text(
+    '<!DOCTYPE html>\n<html>\n<body>\n' + links + '</body>\n</html>\n',
+    encoding='utf-8', newline='\n')
+print('[pack] index.html aggiornati')

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="repository.luishighnest" name="Luigi Repo" version="1.0.0" provider-name="Luigi">
+<addon id="repository.luishighnest" name="Luigi Repo" version="1.0.1" provider-name="Luigi">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
     </requires>
     <extension point="xbmc.addon.repository" name="Luigi Repo">
         <dir>
             <info compressed="false">https://luishighnest.github.io/kodi/addons.xml</info>
-            <checksum verify="true">https://luishighnest.github.io/kodi/addons.xml.md5</checksum>
+            <checksum verify="md5">https://luishighnest.github.io/kodi/addons.xml.md5</checksum>
             <datadir zip="true">https://luishighnest.github.io/kodi/zips/</datadir>
+            <hashes>false</hashes>
         </dir>
     </extension>
     <extension point="xbmc.addon.metadata">
@@ -19,6 +20,6 @@
         <license>MIT</license>
         <source>https://github.com/luishighnest/kodi</source>
         <website>https://luishighnest.github.io/kodi/</website>
-        <news>Initial release.</news>
+        <news>v1.0.1: FIX CRITICO - l'attributo verify="true" di checksum non e' un tipo di digest valido: CDigest::TypeFromString lancia std::invalid_argument su Kodi 19/20/21 e Kodi non riusciva a costruire l'oggetto repository. Ora usa verify="md5", che e' il valore atteso. Aggiunto hashes=false per esplicitare che gli zip non hanno hash di controllo. Da reinstallare UNA VOLTA a mano: da questa versione in poi il repository si aggiorna da solo. v1.0.0: Release iniziale.</news>
     </extension>
 </addon>
