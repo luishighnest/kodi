@@ -4061,14 +4061,138 @@ def play_sz6(e, i):
     xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
+EVENT_M3U_SOURCES = {
+    'sportfisso': {
+        'title': 'Sport Fisso',
+        'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/90b6665d29b10ee85379ab9e30ee8162/raw/sportfisso.m3u',
+        'thumb': LOGO_BASE + 'sport.webp'
+    },
+    'sportzx': {
+        'title': 'Sport ZX (Live)',
+        'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/889bc409c27d050293a2c58333df7a46/raw/sportzx.m3u',
+        'thumb': LOGO_BASE + 'sportzx.png'
+    },
+    'matchora': {
+        'title': 'Matchora',
+        'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/748aed4f4e64dc7b6ce30983d97729b1/raw/matchora.m3u',
+        'thumb': LOGO_BASE + 'sport.webp'
+    },
+    'daddy': {
+        'title': 'Daddy Live (M3U)',
+        'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/7afbe08326cff798ef3c2127edd9f9f7/raw/daddy_black.m3u',
+        'thumb': LOGO_BASE + 'sport.webp'
+    }
+}
+
+_EVENT_M3U_CACHE = {}
+
+
+def _event_m3u_fetch(list_key, force=False):
+    cfg = EVENT_M3U_SOURCES.get(list_key)
+    if not cfg:
+        return []
+    now = time.time()
+    c = _EVENT_M3U_CACHE.get(list_key)
+    if not force and c and (now - c.get('ts', 0)) < 900:
+        return c.get('channels', [])
+    try:
+        r = requests.get(cfg['url'], headers={'User-Agent': UA}, timeout=25)
+        r.encoding = 'utf-8'
+        channels = parse_m3u(r.text)
+        _EVENT_M3U_CACHE[list_key] = {'ts': now, 'channels': channels}
+        return channels
+    except Exception as e:
+        log('event_m3u fetch %s ERR: %s' % (list_key, e))
+        return (c.get('channels', []) if c else [])
+
+
+def event_m3u_view(list_key, group=None):
+    cfg = EVENT_M3U_SOURCES.get(list_key)
+    if not cfg:
+        return
+    if group:
+        back_button(BASE + '?action=event_m3u&list=' + list_key)
+    else:
+        back_button(BASE + '?action=events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+
+    channels = _event_m3u_fetch(list_key)
+    if not channels:
+        li = xbmcgui.ListItem(label=lbl('Nessun canale o lista non raggiungibile'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+
+    # Tasto aggiorna lista
+    li_ref = xbmcgui.ListItem(label=lbl('Aggiorna lista'))
+    li_ref.setArt({'thumb': ICON_LOGO})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u_refresh&list=' + list_key, li_ref, isFolder=False)
+
+    groups = {}
+    for ch in channels:
+        g = ch.get('group') or 'Altri'
+        groups.setdefault(g, []).append(ch)
+
+    if group or len(groups) <= 1:
+        if group and group != 'ALL':
+            target_channels = groups.get(group, channels)
+        else:
+            target_channels = channels
+
+        for ch in target_channels:
+            li = xbmcgui.ListItem(label=lbl(ch['label']), path=ch['url'])
+            if ch.get('logo'):
+                li.setArt({'thumb': ch['logo'], 'icon': ch['logo']})
+            else:
+                li.setArt({'thumb': cfg['thumb'], 'icon': cfg['thumb']})
+            li.setProperty('isPlayable', 'true')
+            li.setProperty('inputstream', 'inputstream.adaptive')
+            u_low = ch['url'].lower()
+            if '.mpd' in u_low:
+                li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+            elif '.m3u8' in u_low:
+                li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+            for k, v in ch.get('props', {}).items():
+                if k == 'inputstream' and not v:
+                    continue
+                li.setProperty(k, v)
+            xbmcplugin.addDirectoryItem(HANDLE, ch['url'], li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+    else:
+        li_all = xbmcgui.ListItem(label=lbl('[B]TUTTI GLI EVENTI (%d)[/B]' % len(channels)))
+        li_all.setArt({'thumb': cfg['thumb']})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=' + list_key + '&group=ALL', li_all, isFolder=True)
+        for g in sorted(groups.keys(), key=lambda x: x.lower()):
+            cnt = len(groups[g])
+            li_g = xbmcgui.ListItem(label=lbl('%s (%d)' % (g, cnt)))
+            li_g.setArt({'thumb': cfg['thumb']})
+            xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=' + list_key + '&group=' + urllib.parse.quote(g), li_g, isFolder=True)
+        xbmcplugin.endOfDirectory(HANDLE)
+
+
 def events_view():
     home_button()
     li = xbmcgui.ListItem(label=lbl('Eventi 1'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('Eventi 2 (AK47 Sports)'))
+
+    # Nuove liste distinte e separate per gli eventi dal Quote
+    li = xbmcgui.ListItem(label=lbl('Sport Fisso'))
+    li.setArt({'thumb': LOGO_BASE + 'sport.webp'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=sportfisso', li, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Sport ZX (Live)'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sportzx'), li, isFolder=True)
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=sportzx', li, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Matchora'))
+    li.setArt({'thumb': LOGO_BASE + 'sport.webp'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=matchora', li, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Daddy Live (M3U)'))
+    li.setArt({'thumb': LOGO_BASE + 'sport.webp'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=daddy', li, isFolder=True)
+
     li = xbmcgui.ListItem(label=lbl('Eventi 3 (Daddy)'))
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy'), li, isFolder=True)
     li = xbmcgui.ListItem(label=lbl('Eventi 4 (HTSport)'))
@@ -5693,6 +5817,11 @@ def main():
         elif action == 'skyplay':
             li = resolve_sky(query.get('id', [''])[0], query.get('t', [''])[0], query.get('p', [''])[0])
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
+        elif action == 'event_m3u':
+            event_m3u_view(query.get('list', [''])[0], query.get('group', [None])[0])
+        elif action == 'event_m3u_refresh':
+            _event_m3u_fetch(query.get('list', [''])[0], force=True)
+            xbmc.executebuiltin('Container.Refresh()')
         elif action == 'sportzx':
             sportzx_view()
         elif action == 'ak47_events':
