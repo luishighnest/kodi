@@ -5966,12 +5966,28 @@ def _fctv33_events(data):
     return list((data or {}).get('events') or [])
 
 
+def _fctv33_is_playable(ch):
+    mpd = (ch.get('mpd_url') or ch.get('mpd') or ch.get('url') or '').strip().lower()
+    if not mpd or mpd == 'ok':
+        return False
+    if 'embed' in mpd or 'streamec.st/embed' in mpd or 'embedindia' in mpd or 'taifood-blog' in mpd:
+        return False
+    if '.mpd' in mpd or '.m3u8' in mpd or 'playlist' in mpd or '.m3u' in mpd or mpd.endswith('.ts'):
+        return True
+    if mpd.startswith('http') and ('cloudfront' in mpd or 'master' in mpd):
+        return True
+    return False
+
+
 def _resolve_fctv33_channel(ch):
     mpd = (ch.get('mpd_url') or ch.get('mpd') or ch.get('url') or '').strip()
     key = (ch.get('kid_key') or ch.get('key') or '').strip()
     ua = (ch.get('user_agent') or UA).strip()
     referer = (ch.get('referer') or '').strip()
     name = ch.get('name') or 'Canale'
+
+    if not _fctv33_is_playable(ch):
+        return None
 
     if mpd.startswith('acestream://'):
         li = xbmcgui.ListItem(path=mpd)
@@ -5986,7 +6002,10 @@ def _resolve_fctv33_channel(ch):
     if referer:
         hdrs += '&Referer=' + referer
 
-    if '.m3u8' in mpd.lower():
+    is_mpd = '.mpd' in mpd.lower()
+    is_hls = (not is_mpd)
+
+    if is_hls:
         li = xbmcgui.ListItem(path=mpd)
         li.setMimeType('application/x-mpegURL')
         li.setContentLookup(False)
@@ -6075,6 +6094,8 @@ def fctv33_event_view(event_idx):
         xbmcplugin.endOfDirectory(HANDLE)
         return
     for ci, ch in enumerate(channels):
+        if not _fctv33_is_playable(ch):
+            continue
         name = ch.get('name') or 'Canale'
         li = xbmcgui.ListItem(label=lbl(name))
         li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
@@ -6098,6 +6119,10 @@ def fctv33_play(event_idx, ch_idx):
         return
     try:
         li = _resolve_fctv33_channel(ch)
+        if li is None:
+            notify(NAME, 'Canale non riproducibile', True)
+            xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+            return
         xbmcplugin.setResolvedUrl(HANDLE, True, li)
     except Exception as e:
         log('fctv33 resolve ERR: %s' % e)
