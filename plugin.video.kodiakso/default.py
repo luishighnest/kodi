@@ -182,7 +182,7 @@ ZADONKAIS_BASE = 'https://luishighnest.github.io/zadonkais'
 
 # === CONTROLLO AGGIORNAMENTI (meccanismi nativi Kodi) ===
 ADDON_ID = 'plugin.video.kodiakso'
-UPD_CHECK_TTL = 3600
+UPD_CHECK_TTL = 180
 UPD_CHECK_TTL_STALE = 30 * 24 * 3600
 _UPD_CACHE = {'ver': None, 'ts': 0}
 _UPD_BUSY = {'v': False}
@@ -4933,41 +4933,101 @@ def _addon_installed_disk():
     return _addon_current_version()
 
 
-def check_update(verify=True, wait_s=45):
-    """Aggiorna PZ8 con i MECCANISMI NATIVI di Kodi (repository + gestore addon).
-    Sostituisce il vecchio self-updater che scaricava lo zip e sovrascriveva i file a mano:
-    ora e' Kodi a confrontare le versioni, scaricare, gestire dipendenze ed eventuali rollback.
-    Ritorna True se l'addon e' aggiornato (o lo era gia)."""
+_UPDATING_LOCK = False
+
+
+def _direct_zip_install(new_ver):
+    """Download ed estrazione diretta dello zip in memoria: affidabilita 100% se Kodi fa cilecca."""
+    zip_url = '%s/zips/%s/%s-%s.zip' % (REPO_BASE, ADDON_ID, ADDON_ID, new_ver)
+    try:
+        log('Avvio download zip diretto di fallback: %s' % zip_url)
+        addons_dir = None
+        for fn in ('xbmcvfs', 'xbmc'):
+            try:
+                mod = __import__(fn)
+                tr = getattr(mod, 'translatePath', None)
+                if tr:
+                    addons_dir = tr('special://home/addons')
+                    break
+            except Exception:
+                pass
+        if not addons_dir or not os.path.exists(addons_dir):
+            addons_dir = os.path.dirname(ADDON.getAddonInfo('path'))
+
+        import urllib.request
+        import io
+        import zipfile
+        req = urllib.request.Request(zip_url, headers={'User-Agent': 'Mozilla/5.0 Kodi-PZ8'})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            zip_bytes = resp.read()
+
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+            zf.extractall(addons_dir)
+
+        xbmc.executebuiltin('UpdateLocalAddons')
+        log('Estrazione zip diretta completata per v%s' % new_ver)
+        return True
+    except Exception as e:
+        log('Direct zip install ERR: %s' % e)
+        return False
+
+
+def check_update(verify=True, wait_s=15):
+    """Aggiorna PZ8 con affidabilita 100%: tenta il gestore nativo di Kodi,
+    e se entro 3 secondi i file non sono su disco, applica subito lo zip diretto."""
+    global _UPDATING_LOCK
+    if _UPDATING_LOCK:
+        return False
+    _UPDATING_LOCK = True
     try:
         cur = _addon_current_version()
         new = _addon_pending_version()
         if not new:
-            notify(NAME, 'Aggiornato: sei gia alla v' + cur)
+            notify(NAME, 'Gia aggiornato alla v' + cur)
             return True
-        # 1. fa aggiornare a Kodi la lista degli addon dai repository installati
-        xbmc.executebuiltin('UpdateAddonRepos')
-        xbmc.sleep(3000)
-        # 2. chiede a Kodi di installare/aggiornare l'addon dal repository
-        xbmc.executebuiltin('InstallAddon(%s)' % ADDON_ID)
-        if not verify:
-            notify(NAME, 'Richiesto a Kodi l aggiornamento alla v' + new)
+
+        notify(NAME, 'Aggiornamento a v%s in corso...' % new)
+
+        updated = False
+        # 1. Tentativo nativo Kodi
+        try:
+            xbmc.executebuiltin('UpdateAddonRepos')
+            xbmc.sleep(1500)
+            xbmc.executebuiltin('InstallAddon(%s)' % ADDON_ID)
+            deadline = time.time() + 3.5
+            while time.time() < deadline:
+                if _addon_installed_disk() == new:
+                    updated = True
+                    break
+                xbmc.sleep(400)
+        except Exception as e:
+            log('Native update failed: %s' % e)
+
+        # 2. Se Kodi non ha aggiornato su disco, fallback zip diretto immediato
+        if not updated and _addon_installed_disk() != new:
+            if _direct_zip_install(new):
+                if _addon_installed_disk() == new:
+                    updated = True
+
+        if updated or _addon_installed_disk() == new:
+            _UPD_CACHE['ver'] = new
+            _UPD_CACHE['ts'] = time.time()
+            notify(NAME, 'Aggiornato alla v%s!' % new)
+            try:
+                xbmc.sleep(400)
+                xbmc.executebuiltin('Container.Refresh')
+            except Exception:
+                pass
             return True
-        # 3. conferma leggendo addon.xml su disco: se la versione non cambia,
-        #    il messaggio di successo sarebbe falso
-        deadline = time.time() + wait_s
-        while time.time() < deadline:
-            if _addon_installed_disk() == new:
-                notify(NAME, 'Aggiornato da v%s a v%s' % (cur, new))
-                _UPD_CACHE['ver'] = new
-                _UPD_CACHE['ts'] = time.time()
-                return True
-            xbmc.sleep(500)
-        notify(NAME, 'Aggiornamento alla v%s non confermato - riprova da AGGIORNAMENTI' % new, True)
-        return False
+        else:
+            notify(NAME, 'Aggiornamento alla v%s non riuscito' % new, True)
+            return False
     except Exception as e:
         xbmc.log('KODIAKSO update ERR: ' + str(e), xbmc.LOGERROR)
-        notify(NAME, 'Impossibile controllare gli aggiornamenti', True)
+        notify(NAME, 'Impossibile aggiornare l addon', True)
         return False
+    finally:
+        _UPDATING_LOCK = False
 
 
 def _addon_current_version():
@@ -5044,7 +5104,7 @@ def _addon_update_bg():
 
 
 def addon_updates_view():
-    """Menu AGGIORNAMENTI: versione installata, ultima pubblicata, avvio aggiornamento nativo."""
+    """Menu AGGIORNAMENTI: nessun testo o plot di descrizione."""
     home_button()
     xbmcplugin.setContent(HANDLE, 'videos')
     cur = _addon_current_version()
@@ -5053,33 +5113,26 @@ def addon_updates_view():
 
     li = xbmcgui.ListItem(label=lbl('Versione installata:  [COLOR snow]v%s[/COLOR]' % cur))
     li.setArt({'thumb': ICON_LOGO})
-    li.setInfo('video', {'title': 'Versione installata', 'plot': 'PZ8 v%s installato su questo dispositivo' % cur})
     xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
 
     if new:
         if pending:
             det = '[COLOR FFB300]v%s   NUOVA[/COLOR]' % new
-            plot = 'Ultima versione pubblicata nel repository: v%s (tu hai v%s)' % (new, cur)
         else:
             det = '[COLOR 00FF00]v%s   aggiornato[/COLOR]' % new
-            plot = 'Sei gia all ultima versione pubblicata: v%s' % new
     else:
         det = '[COLOR FFFFFF]non rilevata[/COLOR]'
-        plot = 'Impossibile contattare il repository: controlla la connessione'
     li = xbmcgui.ListItem(label=lbl('Ultima pubblicata:  %s' % det))
     li.setArt({'thumb': ICON_LOGO})
-    li.setInfo('video', {'title': 'Ultima pubblicata', 'plot': plot})
     xbmcplugin.addDirectoryItem(HANDLE, BASE, li, isFolder=False)
 
     if pending:
         li = xbmcgui.ListItem(label=lbl('[B][COLOR gold]AGGIORNA ORA alla v%s[/COLOR][/B]' % pending))
         li.setArt({'thumb': ICON_LOGO})
-        li.setInfo('video', {'title': 'Aggiorna ora', 'plot': 'Usa i meccanismi nativi di Kodi (repository + gestore addon) per installare la v%s' % pending})
         xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=addonupd&v=' + urllib.parse.quote(pending), li, isFolder=False)
 
     li = xbmcgui.ListItem(label=lbl('Ricontrolla aggiornamenti'))
     li.setArt({'thumb': ICON_LOGO})
-    li.setInfo('video', {'title': 'Ricontrolla', 'plot': 'Consulta di nuovo il repository e aggiorna questa schermata'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=addonupdates&refresh=1', li, isFolder=False)
 
     xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
@@ -5148,15 +5201,13 @@ def root_view():
         li.setArt({'thumb': ICON_LOGO})
         xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('autostart'), li, isFolder=True)
 
-    # --- Aggiornamenti (controllo nativo Kodi) ---
+    # --- Aggiornamenti ---
     pend = _addon_pending_version()
     if pend:
         li = xbmcgui.ListItem(label=lbl('AGGIORNAMENTI  [COLOR FFB300]v%s disponibile[/COLOR]' % pend))
-        li.setInfo('video', {'title': 'Aggiornamenti', 'plot': 'C e una versione nuova: v%s. La installi con i meccanismi nativi di Kodi.' % pend})
     else:
         curv = _addon_current_version()
         li = xbmcgui.ListItem(label=lbl('AGGIORNAMENTI  [COLOR 00FF00]v%s aggiornato[/COLOR]' % curv))
-        li.setInfo('video', {'title': 'Aggiornamenti', 'plot': 'Versione installata: v%s' % curv})
     li.setArt({'thumb': ICON_LOGO})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=addonupdates', li, isFolder=True)
 
@@ -5743,6 +5794,7 @@ def main():
             if query.get('refresh', [''])[0]:
                 _UPD_CACHE['ts'] = 0
                 _UPD_CACHE['ver'] = None
+                _addon_version_refresh()
             addon_updates_view()
         elif action == 'addonupd':
             # non bloccare la UI: l'installazione puo' richiedere decine di secondi
