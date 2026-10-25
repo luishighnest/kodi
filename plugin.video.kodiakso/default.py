@@ -6094,8 +6094,6 @@ def fctv33_event_view(event_idx):
         xbmcplugin.endOfDirectory(HANDLE)
         return
     for ci, ch in enumerate(channels):
-        if not _fctv33_is_playable(ch):
-            continue
         name = ch.get('name') or 'Canale'
         li = xbmcgui.ListItem(label=lbl(name))
         li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
@@ -6120,8 +6118,13 @@ def fctv33_play(event_idx, ch_idx):
     try:
         li = _resolve_fctv33_channel(ch)
         if li is None:
-            notify(NAME, 'Canale non riproducibile', True)
-            xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+            # Fallback: prova a riprodurre l'URL direttamente (es. embed/redirect)
+            name = ch.get('name') or 'Canale'
+            mpd = (ch.get('mpd_url') or ch.get('mpd') or ch.get('url') or '').strip()
+            li = xbmcgui.ListItem(path=mpd)
+            li.setLabel(lbl(name))
+            li.setInfo('video', {'title': name})
+            xbmcplugin.setResolvedUrl(HANDLE, True, li)
             return
         xbmcplugin.setResolvedUrl(HANDLE, True, li)
     except Exception as e:
