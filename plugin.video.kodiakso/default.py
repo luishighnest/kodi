@@ -4096,6 +4096,11 @@ EVENT_M3U_SOURCES = {
         'title': 'Vavoo',
         'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/dc1b7e9b05c30760bc8893945e8c0f2a/raw/vavoo.m3u',
         'thumb': LOGO_BASE + 'tv_icon.png'
+    },
+    'nxtbox': {
+        'title': 'NXTBox Stalker',
+        'url': 'https://polished-sky-a2c7.rmddk2364.workers.dev/playlist.m3u',
+        'thumb': LOGO_BASE + 'eventi_icon.png'
     }
 }
 
@@ -4337,6 +4342,10 @@ def events_view():
     li = xbmcgui.ListItem(label=lbl('Lista 11 - Vavoo'))
     li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=vavoo', li, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Lista 12 - NXTBox'))
+    li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=nxtbox', li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
