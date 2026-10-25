@@ -4402,6 +4402,9 @@ def events_view():
     li = xbmcgui.ListItem(label=lbl('Lista 12 - XtraFR'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=xtrafr', li, isFolder=True)
+    li = xbmcgui.ListItem(label=lbl('Lista 13 - FCTV33'))
+    li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=fctv33', li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -5940,6 +5943,168 @@ def eventi1_play(cat, idx):
     xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
 
 
+
+_FCTV33_CACHE = {'data': None, 'ts': 0}
+
+
+def _fctv33_fetch():
+    """Legge gli eventi FCTV33 dall'API Upstash (stream:fctv33_cached)."""
+    try:
+        data = _fetch_upstash_key('fctv33_cached')
+        if data and isinstance(data, dict) and data.get('events'):
+            _FCTV33_CACHE['data'] = data
+            _FCTV33_CACHE['ts'] = time.time()
+            return data
+    except Exception as e:
+        log('fctv33 fetch ERR: %s' % e)
+    if _FCTV33_CACHE['data']:
+        return _FCTV33_CACHE['data']
+    return {}
+
+
+def _fctv33_events(data):
+    return list((data or {}).get('events') or [])
+
+
+def _resolve_fctv33_channel(ch):
+    mpd = (ch.get('mpd_url') or ch.get('mpd') or ch.get('url') or '').strip()
+    key = (ch.get('kid_key') or ch.get('key') or '').strip()
+    ua = (ch.get('user_agent') or UA).strip()
+    referer = (ch.get('referer') or '').strip()
+    name = ch.get('name') or 'Canale'
+
+    if mpd.startswith('acestream://'):
+        li = xbmcgui.ListItem(path=mpd)
+        li.setMimeType('video/mp2t')
+        li.setContentLookup(False)
+        li.setProperty('IsPlayable', 'true')
+        li.setLabel(lbl(name))
+        li.setInfo('video', {'title': name})
+        return li
+
+    hdrs = 'User-Agent=' + ua
+    if referer:
+        hdrs += '&Referer=' + referer
+
+    if '.m3u8' in mpd.lower():
+        li = xbmcgui.ListItem(path=mpd)
+        li.setMimeType('application/x-mpegURL')
+        li.setContentLookup(False)
+        li.setProperty('IsPlayable', 'true')
+        li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+        li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+        li.setLabel(lbl(name))
+        li.setInfo('video', {'title': name})
+        return li
+
+    li = xbmcgui.ListItem(path=mpd, offscreen=True)
+    li.setMimeType('application/dash+xml')
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+    li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+    if key and ':' in key:
+        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + key.replace('|', ','))
+    li.setProperty('inputstream.adaptive.stream_headers', hdrs)
+    li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
+    bw = ADDON.getSetting('max_bandwidth').strip() if hasattr(ADDON, 'getSetting') else ''
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+    li.setLabel(lbl(name))
+    li.setInfo('video', {'title': name})
+    return li
+
+
+def fctv33_view():
+    """Lista eventi FCTV33 dall'API Upstash."""
+    back_button(BASE + '?action=events')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    data = _fctv33_fetch()
+    events = _fctv33_events(data)
+    if not events:
+        li = xbmcgui.ListItem(label=lbl('Nessun evento FCTV33 disponibile'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=events', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    # raggruppa per categoria mantenendo ordine
+    cats = []
+    seen = set()
+    for ev in events:
+        c = ev.get('category') or 'Altro'
+        if c not in seen:
+            seen.add(c)
+            cats.append(c)
+    for cat in cats:
+        cevs = [ev for ev in events if (ev.get('category') or 'Altro') == cat]
+        hli = xbmcgui.ListItem(label=CAT_TITLE % ('FCTV33 - ' + cat))
+        hli.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=fctv33', hli, isFolder=True)
+        for idx, ev in enumerate(events):
+            if (ev.get('category') or 'Altro') != cat:
+                continue
+            title = ev.get('event_title') or 'Evento'
+            st = ev.get('startTime') or ''
+            try:
+                s = st.replace('T', ' ').strip()
+                label = '%s  %s' % (title, s[11:16]) if len(s) >= 16 else title
+            except Exception:
+                label = title
+            li = xbmcgui.ListItem(label=lbl(label))
+            li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
+            li.setInfo('video', {'title': title, 'plot': '%d canali' % (ev.get('channels_count') or len(ev.get('channels') or []))})
+            url = BASE + '?action=fctv33event&event=' + str(idx)
+            xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def fctv33_event_view(event_idx):
+    back_button(BASE + '?action=fctv33')
+    xbmcplugin.setContent(HANDLE, 'videos')
+    data = _fctv33_fetch()
+    events = _fctv33_events(data)
+    try:
+        ev = events[int(event_idx)]
+    except Exception:
+        li = xbmcgui.ListItem(label=lbl('Evento non trovato'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=fctv33', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    channels = ev.get('channels') or []
+    if not channels:
+        li = xbmcgui.ListItem(label=lbl('Nessun canale per questo evento'))
+        xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=fctv33', li, isFolder=False)
+        xbmcplugin.endOfDirectory(HANDLE)
+        return
+    for ci, ch in enumerate(channels):
+        name = ch.get('name') or 'Canale'
+        li = xbmcgui.ListItem(label=lbl(name))
+        li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png', 'icon': LOGO_BASE + 'eventi_icon.png'})
+        li.setProperty('isPlayable', 'true')
+        li.setInfo('video', {'title': name})
+        url = BASE + '?action=fctv33play&event=' + str(event_idx) + '&ch=' + str(ci)
+        xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+    xbmcplugin.endOfDirectory(HANDLE)
+
+
+def fctv33_play(event_idx, ch_idx):
+    data = _fctv33_fetch()
+    events = _fctv33_events(data)
+    try:
+        ev = events[int(event_idx)]
+        ch = (ev.get('channels') or [])[int(ch_idx)]
+    except Exception as e:
+        log('fctv33 play ERR: %s' % e)
+        notify(NAME, 'Errore lettura canale FCTV33', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+    try:
+        li = _resolve_fctv33_channel(ch)
+        xbmcplugin.setResolvedUrl(HANDLE, True, li)
+    except Exception as e:
+        log('fctv33 resolve ERR: %s' % e)
+        notify(NAME, 'Impossibile riprodurre il contenuto', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+
+
 def main():
     global _VOD_SRC
     query = urllib.parse.parse_qs(sys.argv[2][1:])
@@ -6000,6 +6165,12 @@ def main():
             dazn_json_view()
         elif action == 'eventi1':
             eventi1_json_view()
+        elif action == 'fctv33':
+            fctv33_view()
+        elif action == 'fctv33event':
+            fctv33_event_view(query.get('event', ['0'])[0])
+        elif action == 'fctv33play':
+            fctv33_play(query.get('event', ['0'])[0], query.get('ch', ['0'])[0])
         elif action == 'eventi1play':
             eventi1_play(query.get('cat', [''])[0], query.get('idx', ['0'])[0])
         elif action == 'voddazn':
