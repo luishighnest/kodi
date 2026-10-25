@@ -1264,6 +1264,12 @@ def sky_view():
     li7.setInfo('video', {'title': 'Lista Canali 7 (IPTV)', 'plot': 'Canali live IPTV Xtream'})
     xbmcplugin.addDirectoryItem(HANDLE, sky7_url, li7, isFolder=True)
 
+    # Lista Canali 8 - Wuffy IPTV (813 canali da nerozone)
+    li8 = xbmcgui.ListItem(label=lbl('Lista Canali 8 - Wuffy IPTV'))
+    li8.setArt({'thumb': LOGO_BASE + 'sport.webp', 'icon': LOGO_BASE + 'sport.webp'})
+    li8.setInfo('video', {'title': 'Lista Canali 8 - Wuffy IPTV', 'plot': '813 canali IPTV (Italia, Sport, Cinema, DAZN, Sky, ecc.)'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=wuffy', li8, isFolder=True)
+
     xbmcplugin.endOfDirectory(HANDLE)
 
 
@@ -4101,6 +4107,11 @@ EVENT_M3U_SOURCES = {
         'title': 'XtraFR Live',
         'url': 'http://line.xtrafr.cc:8080/get.php?username=nicolas100&password=nicolas200&type=m3u',
         'thumb': LOGO_BASE + 'eventi_icon.png'
+    },
+    'wuffy': {
+        'title': 'Wuffy IPTV',
+        'url': 'https://raw.githubusercontent.com/luishighnest/kodi/main/wuffy_iptv.m3u',
+        'thumb': LOGO_BASE + 'sport.webp'
     }
 }
 
