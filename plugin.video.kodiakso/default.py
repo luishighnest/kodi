@@ -4138,24 +4138,17 @@ def event_m3u_view(list_key, group=None):
         else:
             target_channels = channels
 
-        for ch in target_channels:
-            li = xbmcgui.ListItem(label=lbl(ch['label']), path=ch['url'])
+        for idx, ch in enumerate(target_channels):
+            li = xbmcgui.ListItem(label=lbl(ch['label']))
             if ch.get('logo'):
                 li.setArt({'thumb': ch['logo'], 'icon': ch['logo']})
             else:
                 li.setArt({'thumb': cfg['thumb'], 'icon': cfg['thumb']})
             li.setProperty('isPlayable', 'true')
-            li.setProperty('inputstream', 'inputstream.adaptive')
-            u_low = ch['url'].lower()
-            if '.mpd' in u_low:
-                li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
-            elif '.m3u8' in u_low:
-                li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-            for k, v in ch.get('props', {}).items():
-                if k == 'inputstream' and not v:
-                    continue
-                li.setProperty(k, v)
-            xbmcplugin.addDirectoryItem(HANDLE, ch['url'], li, isFolder=False)
+            play_url = BASE + '?action=event_m3u_play&list=' + list_key + '&idx=' + str(idx)
+            if group:
+                play_url += '&group=' + urllib.parse.quote(group)
+            xbmcplugin.addDirectoryItem(HANDLE, play_url, li, isFolder=False)
         xbmcplugin.endOfDirectory(HANDLE)
     else:
         li_all = xbmcgui.ListItem(label=lbl('[B]TUTTI GLI EVENTI (%d)[/B]' % len(channels)))
@@ -4167,6 +4160,111 @@ def event_m3u_view(list_key, group=None):
             li_g.setArt({'thumb': cfg['thumb']})
             xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=' + list_key + '&group=' + urllib.parse.quote(g), li_g, isFolder=True)
         xbmcplugin.endOfDirectory(HANDLE)
+
+
+def event_m3u_play(list_key, idx, group=None):
+    """Player universale per le liste eventi M3U:
+    - Risolve le pagine web/embed (es. Matchora -> m3u8)
+    - Gestisce correttamente il DRM ClearKey per Kodi 20/21
+    - Applica gli header necessari."""
+    try:
+        channels = _event_m3u_fetch(list_key)
+        if group and group != 'ALL':
+            target_channels = [c for c in channels if (c.get('group') or 'Altri') == group]
+        else:
+            target_channels = channels
+        ch = target_channels[int(idx)]
+    except Exception as e:
+        log('event_m3u_play fetch ERR: %s' % e)
+        notify(NAME, 'Impossibile caricare il canale', True)
+        xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+        return
+
+    url = ch.get('url', '').strip()
+    props = dict(ch.get('props', {}))
+    label = ch.get('label') or 'Evento'
+
+    # 1. Se e' un link Matchora embed (es. https://matchora.to/embed/channel/12345 o simile)
+    if 'matchora' in url and ('/embed/' in url or '/channel/' in url):
+        ch_m = re.search(r'/channel/(\d+)', url)
+        if ch_m:
+            chid = ch_m.group(1)
+            try:
+                api = 'https://matchora.pro/api/play/' + chid
+                ra = requests.get(api, timeout=15, headers={
+                    'User-Agent': UA,
+                    'Referer': url,
+                    'Origin': 'https://matchora.pro'
+                }).json()
+                if ra.get('url'):
+                    url = ra['url']
+                    props['inputstream.adaptive.stream_headers'] = 'User-Agent=%s&Referer=https://matchora.pro/&verifypeer=false' % UA
+                    props['inputstream.adaptive.manifest_headers'] = 'User-Agent=%s&Referer=https://matchora.pro/&verifypeer=false' % UA
+                else:
+                    notify('Matchora', ra.get('reason') or 'Canale non attivo al momento', True)
+                    xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+                    return
+            except Exception as e:
+                log('matchora api play ERR: %s' % e)
+                notify('Matchora', 'Errore risoluzione stream', True)
+                xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
+                return
+
+    li = xbmcgui.ListItem(path=url, offscreen=True)
+    li.setContentLookup(False)
+    li.setProperty('inputstream', 'inputstream.adaptive')
+
+    u_low = url.lower()
+    if '.mpd' in u_low:
+        li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+    elif '.m3u8' in u_low:
+        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+
+    # Gestione DRM ClearKey per Kodi 20/21
+    key = props.get('inputstream.adaptive.license_key', '').strip()
+    lic_type = props.get('inputstream.adaptive.license_type', '').strip().lower()
+
+    if key or lic_type in ('clearkey', 'org.w3.clearkey'):
+        # Kodi richiede tassativamente org.w3.clearkey
+        li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
+        if key:
+            clean_key = key.replace('|', ',')
+            # Imposta sia drm_legacy che license_key per compatibilità universale
+            li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
+            li.setProperty('inputstream.adaptive.license_key', clean_key)
+
+    # Applica tutte le altre proprietà
+    for k, v in props.items():
+        if k in ('inputstream.adaptive.license_type', 'inputstream.adaptive.license_key'):
+            continue
+        if k == 'inputstream' and not v:
+            continue
+        li.setProperty(k, v)
+
+    # Header generici di default se non definiti
+    if not li.getProperty('inputstream.adaptive.stream_headers'):
+        try:
+            h = 'https://' + url.split('/')[2]
+        except Exception:
+            h = 'https://google.com'
+        def_hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, h, h)
+        li.setProperty('inputstream.adaptive.stream_headers', def_hdrs)
+        li.setProperty('inputstream.adaptive.manifest_headers', def_hdrs)
+
+    if ADDON.getSetting('buffer_enabled') == 'true':
+        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+    if ADDON.getSetting('live_async') == 'true':
+        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+    if ADDON.getSetting('manifest_upd') == 'true':
+        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+
+    bw = ADDON.getSetting('max_bandwidth').strip()
+    if bw and bw != '0':
+        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+
+    li.setLabel(lbl(label))
+    li.setInfo('video', {'title': label})
+    xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
 
 def events_view():
@@ -5913,6 +6011,8 @@ def main():
             xbmcplugin.setResolvedUrl(HANDLE, True, li)
         elif action == 'event_m3u':
             event_m3u_view(query.get('list', [''])[0], query.get('group', [None])[0])
+        elif action == 'event_m3u_play':
+            event_m3u_play(query.get('list', [''])[0], query.get('idx', ['0'])[0], query.get('group', [None])[0])
         elif action == 'event_m3u_refresh':
             _event_m3u_fetch(query.get('list', [''])[0], force=True)
             xbmc.executebuiltin('Container.Refresh()')
