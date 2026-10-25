@@ -4175,30 +4175,36 @@ def events_view():
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=eventi1', li, isFolder=True)
 
-    # Nuove liste distinte e separate per gli eventi dal Quote
-    li = xbmcgui.ListItem(label=lbl('Sport Fisso'))
+    # Liste eventi organizzate: Lista X - Nome
+    li = xbmcgui.ListItem(label=lbl('Lista 2 - Sport Fisso'))
     li.setArt({'thumb': LOGO_BASE + 'sport.webp'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=sportfisso', li, isFolder=True)
 
-    li = xbmcgui.ListItem(label=lbl('Sport ZX (Live)'))
+    li = xbmcgui.ListItem(label=lbl('Lista 3 - Sport ZX'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=sportzx', li, isFolder=True)
 
-    li = xbmcgui.ListItem(label=lbl('Matchora'))
+    li = xbmcgui.ListItem(label=lbl('Lista 4 - Matchora'))
     li.setArt({'thumb': LOGO_BASE + 'sport.webp'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=matchora', li, isFolder=True)
 
-    li = xbmcgui.ListItem(label=lbl('Daddy Live (M3U)'))
+    li = xbmcgui.ListItem(label=lbl('Lista 5 - Daddy Live'))
     li.setArt({'thumb': LOGO_BASE + 'sport.webp'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=daddy', li, isFolder=True)
 
-    li = xbmcgui.ListItem(label=lbl('Eventi 3 (Daddy)'))
-    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy'), li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('Eventi 4 (HTSport)'))
+    li = xbmcgui.ListItem(label=lbl('Lista 6 - HTSport'))
+    li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('htsport'), li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('Eventi 5 (Canali Sport)'))
+
+    li = xbmcgui.ListItem(label=lbl('Lista 7 - Canali Sport'))
+    li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sports'), li, isFolder=True)
-    li = xbmcgui.ListItem(label=lbl('Eventi 6 (SportzX)'))
+
+    li = xbmcgui.ListItem(label=lbl('Lista 8 - Daddy Live Web'))
+    li.setArt({'thumb': LOGO_BASE + 'sport.webp'})
+    xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('ddy'), li, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Lista 9 - SportzX'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sz6'), li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
@@ -4406,12 +4412,38 @@ def resolve_htsport(page):
         page_url = urllib.parse.urljoin(HTSPORT_BASE, page) if not page.startswith('http') else page
         p = requests.get(page_url, timeout=25, headers={'User-Agent': UA})
         p.raise_for_status()
-        m = re.search(r'<iframe[^>]+src="([^"]+)"', p.text)
-        if m:
-            fr = m.group(1)
-            po = requests.get(fr, timeout=25, headers={'User-Agent': UA, 'Referer': HTSPORT_BASE + '/'})
-            po.raise_for_status()
-            url = _ht_decode_obf(po.text)
+
+        # 1. Cerca iframe matchora (nuovo player htsport)
+        iframes = re.findall(r'<iframe[^>]+src="([^"]+)"', p.text)
+        for fr in iframes:
+            fr_clean = fr.replace(r'\/', '/').strip()
+            if 'matchora' in fr_clean:
+                ch_m = re.search(r'/channel/(\d+)', fr_clean)
+                if ch_m:
+                    chid = ch_m.group(1)
+                    api = 'https://matchora.pro/api/play/' + chid
+                    ra = requests.get(api, timeout=15, headers={
+                        'User-Agent': UA,
+                        'Referer': fr_clean,
+                        'Origin': 'https://matchora.pro'
+                    }).json()
+                    if ra.get('url'):
+                        url = ra.get('url')
+                        break
+
+        # 2. Fallback vecchio metodo (obfuscated iframe)
+        if not url:
+            for fr in iframes:
+                fr_clean = fr.replace(r'\/', '/').strip()
+                try:
+                    po = requests.get(fr_clean, timeout=15, headers={'User-Agent': UA, 'Referer': HTSPORT_BASE + '/'})
+                    if po.status_code == 200:
+                        dec = _ht_decode_obf(po.text)
+                        if dec:
+                            url = dec
+                            break
+                except Exception:
+                    pass
     except Exception as e:
         log('htsport resolve %s: %s' % (page, e))
         url = ''
@@ -4531,11 +4563,14 @@ def play_htsport(page):
     li.setContentLookup(False)
     li.setProperty('inputstream', 'inputstream.adaptive')
     li.setProperty('inputstream.adaptive.manifest_type', 'hls')
-    try:
-        host = 'https://' + url.split('/')[2]
-    except Exception:
-        host = url
-    hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, host, host)
+    if 'veziha' in url or 'matchora' in url:
+        ref = 'https://matchora.pro/'
+    else:
+        try:
+            ref = 'https://' + url.split('/')[2] + '/'
+        except Exception:
+            ref = HTSPORT_BASE + '/'
+    hdrs = 'User-Agent=%s&Referer=%s&verifypeer=false' % (UA, ref)
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
     if ADDON.getSetting('buffer_enabled') == 'true':
