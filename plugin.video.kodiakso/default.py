@@ -4288,55 +4288,55 @@ def event_m3u_play(list_key, idx, group=None):
 
     li = xbmcgui.ListItem(path=url, offscreen=True)
     li.setContentLookup(False)
-    li.setProperty('inputstream', 'inputstream.adaptive')
 
     u_low = url.lower()
-    if '.mpd' in u_low:
-        li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
-    elif '.m3u8' in u_low:
-        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    is_stream = ('.mpd' in u_low) or ('.m3u8' in u_low)
+    if is_stream:
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        if '.mpd' in u_low:
+            li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+        elif '.m3u8' in u_low:
+            li.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
-    # Gestione DRM ClearKey: imposta ESCLUSIVAMENTE drm_legacy per evitare il crash "WRONG DRM CONFIGURATION"
-    key = props.get('inputstream.adaptive.license_key', '').strip()
-    if not key:
-        key = props.get('license_key', '').strip()
+        # Gestione DRM ClearKey
+        key = props.get('inputstream.adaptive.license_key', '').strip()
+        if not key:
+            key = props.get('license_key', '').strip()
+        if key and ':' in key:
+            clean_key = key.replace('|', ',')
+            li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
 
-    if key and ':' in key:
-        clean_key = key.replace('|', ',')
-        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
+        for k, v in props.items():
+            if k in ('inputstream.adaptive.license_type', 'inputstream.adaptive.license_key'):
+                continue
+            if k == 'inputstream' and not v:
+                continue
+            li.setProperty(k, v)
 
-    # Applica tutte le altre proprietà
-    for k, v in props.items():
-        if k in ('inputstream.adaptive.license_type', 'inputstream.adaptive.license_key'):
-            continue
-        if k == 'inputstream' and not v:
-            continue
-        li.setProperty(k, v)
+        if not li.getProperty('inputstream.adaptive.stream_headers'):
+            try:
+                h = 'https://' + url.split('/')[2]
+            except Exception:
+                h = 'https://google.com'
+            def_hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, h, h)
+            li.setProperty('inputstream.adaptive.stream_headers', def_hdrs)
+            li.setProperty('inputstream.adaptive.manifest_headers', def_hdrs)
 
-    # Header generici di default se non definiti
-    if not li.getProperty('inputstream.adaptive.stream_headers'):
-        try:
-            h = 'https://' + url.split('/')[2]
-        except Exception:
-            h = 'https://google.com'
-        def_hdrs = 'User-Agent=%s&Referer=%s/&Origin=%s&verifypeer=false' % (UA, h, h)
-        li.setProperty('inputstream.adaptive.stream_headers', def_hdrs)
-        li.setProperty('inputstream.adaptive.manifest_headers', def_hdrs)
-
-    if ADDON.getSetting('buffer_enabled') == 'true':
-        li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
-    if ADDON.getSetting('live_async') == 'true':
-        li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
-    if ADDON.getSetting('manifest_upd') == 'true':
-        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
-
-    bw = ADDON.getSetting('max_bandwidth').strip()
-    if bw and bw != '0':
-        li.setProperty('inputstream.adaptive.max_bandwidth', bw)
+        if ADDON.getSetting('buffer_enabled') == 'true':
+            li.setProperty('inputstream.adaptive.buffer_size', ADDON.getSetting('buffer_size') + 'MiB')
+        if ADDON.getSetting('live_async') == 'true':
+            li.setProperty('inputstream.adaptive.live_stream_type', 'raw')
+        if ADDON.getSetting('manifest_upd') == 'true':
+            li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
+        bw = ADDON.getSetting('max_bandwidth').strip()
+        if bw and bw != '0':
+            li.setProperty('inputstream.adaptive.max_bandwidth', bw)
 
     li.setLabel(lbl(label))
     li.setInfo('video', {'title': label})
     xbmcplugin.setResolvedUrl(HANDLE, True, li)
+    return
+
 
 
 def events_view():
