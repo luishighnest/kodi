@@ -4086,6 +4086,16 @@ EVENT_M3U_SOURCES = {
         'title': 'Daddy Live (M3U)',
         'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/7afbe08326cff798ef3c2127edd9f9f7/raw/daddy_black.m3u',
         'thumb': LOGO_BASE + 'sport.webp'
+    },
+    'skycinema': {
+        'title': 'Sky Cinema',
+        'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/cbe97d328666011b0a3be34865c2477d/raw/mieisky.m3u',
+        'thumb': LOGO_BASE + 'skyhd.png'
+    },
+    'vavoo': {
+        'title': 'Vavoo',
+        'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/dc1b7e9b05c30760bc8893945e8c0f2a/raw/vavoo.m3u',
+        'thumb': LOGO_BASE + 'tv_icon.png'
     }
 }
 
@@ -4319,6 +4329,14 @@ def events_view():
     li = xbmcgui.ListItem(label=lbl('Lista 9 - SportzX'))
     li.setArt({'thumb': LOGO_BASE + 'sportzx.png'})
     xbmcplugin.addDirectoryItem(HANDLE, _tmdb_url('sz6'), li, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Lista 10 - Sky Cinema'))
+    li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=skycinema', li, isFolder=True)
+
+    li = xbmcgui.ListItem(label=lbl('Lista 11 - Vavoo'))
+    li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=vavoo', li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
