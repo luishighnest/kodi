@@ -186,7 +186,6 @@ UPD_CHECK_TTL = 180
 UPD_CHECK_TTL_STALE = 30 * 24 * 3600
 _UPD_CACHE = {'ver': None, 'ts': 0}
 _UPD_BUSY = {'v': False}
-_UPD_PROMPTED = set()
 SKY2_JSON_URL = REPO_BASE + '/sky2.json'
 GUIDA_TV_SKY_URL = REPO_BASE + '/guida_tv_sky.json'
 _SKY2_CACHE = {'data': None, 'ts': 0}
@@ -4972,21 +4971,24 @@ def _direct_zip_install(new_ver):
         return False
 
 
-def check_update(verify=True, wait_s=15):
+def check_update(verify=True, wait_s=15, silent=False):
     """Aggiorna PZ8 con affidabilita 100%: tenta il gestore nativo di Kodi,
-    e se entro 3 secondi i file non sono su disco, applica subito lo zip diretto."""
+    e se entro 3 secondi i file non sono su disco, applica subito lo zip diretto.
+    silent=True: solo UNA notifica finale (successo o fallimento)."""
     global _UPDATING_LOCK
     if _UPDATING_LOCK:
         return False
     _UPDATING_LOCK = True
     try:
-        cur = _addon_current_version()
+        cur = _addon_installed_disk()
         new = _addon_pending_version()
         if not new:
-            notify(NAME, 'Gia aggiornato alla v' + cur)
+            if not silent:
+                notify(NAME, 'Gia aggiornato alla v' + cur)
             return True
 
-        notify(NAME, 'Aggiornamento a v%s in corso...' % new)
+        if not silent:
+            notify(NAME, 'Aggiornamento a v%s in corso...' % new)
 
         updated = False
         # 1. Tentativo nativo Kodi
@@ -5082,32 +5084,37 @@ def _addon_pending_version():
     if not new:
         return None
     try:
-        return new if _ver_tuple(new) > _ver_tuple(_addon_current_version()) else None
+        return new if _ver_tuple(new) > _ver_tuple(_addon_installed_disk()) else None
     except Exception:
         return None
 
 
+_UPDATE_BG_DONE = False
+
 def _addon_update_bg():
-    """Controllo automatico all'apertura della home. Se c'e' una versione nuova la
-    installa COI MECCANISMI NATIVI di Kodi, senza chiedere conferma.
-    Gira in background, quindi non rallenta mai l'apertura dell'addon."""
-    new = _addon_pending_version()
-    if not new or new in _UPD_PROMPTED:
+    """Controllo automatico all'apertura/ricarica della home.
+    - Se gia' aggiornato: NIENTE notifiche.
+    - Se c'e' una nuova versione: aggiorna silenziosamente, UNA SOLA notifica finale."""
+    global _UPDATE_BG_DONE
+    if _UPDATE_BG_DONE:
         return
-    _UPD_PROMPTED.add(new)
+    _UPDATE_BG_DONE = True
+    new = _addon_pending_version()
+    if not new:
+        return   # gia' aggiornato: silenzio totale
     auto = ADDON.getSetting('update_auto') != 'false'
     if not auto:
         notify(NAME, 'Disponibile la v%s - voce AGGIORNAMENTI in home' % new)
         return
-    if not check_update(verify=True, wait_s=20):
-        notify(NAME, 'Aggiornamento alla v%s non riuscito - prova AGGIORNAMENTI' % new, True)
+    # Aggiorna silenziosamente: UNA SOLA notifica finale
+    check_update(verify=True, wait_s=20, silent=True)
 
 
 def addon_updates_view():
     """Menu AGGIORNAMENTI: nessun testo o plot di descrizione."""
     home_button()
     xbmcplugin.setContent(HANDLE, 'videos')
-    cur = _addon_current_version()
+    cur = _addon_installed_disk()
     new = _addon_latest_version()
     pending = _addon_pending_version()
 
@@ -5206,7 +5213,7 @@ def root_view():
     if pend:
         li = xbmcgui.ListItem(label=lbl('AGGIORNAMENTI  [COLOR FFB300]v%s disponibile[/COLOR]' % pend))
     else:
-        curv = _addon_current_version()
+        curv = _addon_installed_disk()
         li = xbmcgui.ListItem(label=lbl('AGGIORNAMENTI  [COLOR 00FF00]v%s aggiornato[/COLOR]' % curv))
     li.setArt({'thumb': ICON_LOGO})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=addonupdates', li, isFolder=True)
