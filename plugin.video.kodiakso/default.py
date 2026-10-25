@@ -668,11 +668,17 @@ def sky_channels():
 
 
 def _profile_path():
-    p = ADDON.getAddonInfo('profile')
     try:
-        return xbmc.translatePath(p)
+        import xbmcvfs
+        return xbmcvfs.translatePath(ADDON.getAddonInfo('profile'))
     except Exception:
-        return p
+        pass
+    try:
+        return xbmc.translatePath(ADDON.getAddonInfo('profile'))
+    except Exception:
+        pass
+    p = ADDON.getAddonInfo('profile')
+    return p
 
 
 # === CACHE SU DISCO + AGGIORNAMENTO IN BACKGROUND ===
@@ -4133,6 +4139,7 @@ def event_m3u_view(list_key, group=None):
         groups.setdefault(g, []).append(ch)
 
     if group or len(groups) <= 1:
+        xbmcplugin.setContent(HANDLE, 'videos')
         if group and group != 'ALL':
             target_channels = groups.get(group, channels)
         else:
@@ -4144,7 +4151,7 @@ def event_m3u_view(list_key, group=None):
                 li.setArt({'thumb': ch['logo'], 'icon': ch['logo']})
             else:
                 li.setArt({'thumb': cfg['thumb'], 'icon': cfg['thumb']})
-            li.setProperty('isPlayable', 'true')
+            li.setProperty('IsPlayable', 'true')
             play_url = BASE + '?action=event_m3u_play&list=' + list_key + '&idx=' + str(idx)
             if group:
                 play_url += '&group=' + urllib.parse.quote(group)
@@ -4190,16 +4197,27 @@ def event_m3u_play(list_key, idx, group=None):
         if ch_m:
             chid = ch_m.group(1)
             try:
-                api = 'https://matchora.pro/api/play/' + chid
+                # Usa matchora.to e pro con Referer coerente
+                api = 'https://matchora.to/api/play/' + chid
+                ref = 'https://matchora.to/embed/channel/' + chid
                 ra = requests.get(api, timeout=15, headers={
                     'User-Agent': UA,
-                    'Referer': url,
-                    'Origin': 'https://matchora.pro'
+                    'Referer': ref,
+                    'Origin': 'https://matchora.to'
                 }).json()
+                if not ra.get('url'):
+                    # Fallback pro
+                    api2 = 'https://matchora.pro/api/play/' + chid
+                    ref2 = 'https://matchora.pro/embed/channel/' + chid
+                    ra = requests.get(api2, timeout=15, headers={
+                        'User-Agent': UA,
+                        'Referer': ref2,
+                        'Origin': 'https://matchora.pro'
+                    }).json()
                 if ra.get('url'):
                     url = ra['url']
-                    props['inputstream.adaptive.stream_headers'] = 'User-Agent=%s&Referer=https://matchora.pro/&verifypeer=false' % UA
-                    props['inputstream.adaptive.manifest_headers'] = 'User-Agent=%s&Referer=https://matchora.pro/&verifypeer=false' % UA
+                    props['inputstream.adaptive.stream_headers'] = 'User-Agent=%s&Referer=https://matchora.to/&verifypeer=false' % UA
+                    props['inputstream.adaptive.manifest_headers'] = 'User-Agent=%s&Referer=https://matchora.to/&verifypeer=false' % UA
                 else:
                     notify('Matchora', ra.get('reason') or 'Canale non attivo al momento', True)
                     xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
@@ -4220,18 +4238,14 @@ def event_m3u_play(list_key, idx, group=None):
     elif '.m3u8' in u_low:
         li.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
-    # Gestione DRM ClearKey per Kodi 20/21
+    # Gestione DRM ClearKey: imposta ESCLUSIVAMENTE drm_legacy per evitare il crash "WRONG DRM CONFIGURATION"
     key = props.get('inputstream.adaptive.license_key', '').strip()
-    lic_type = props.get('inputstream.adaptive.license_type', '').strip().lower()
+    if not key:
+        key = props.get('license_key', '').strip()
 
-    if key or lic_type in ('clearkey', 'org.w3.clearkey'):
-        # Kodi richiede tassativamente org.w3.clearkey
-        li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
-        if key:
-            clean_key = key.replace('|', ',')
-            # Imposta sia drm_legacy che license_key per compatibilità universale
-            li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
-            li.setProperty('inputstream.adaptive.license_key', clean_key)
+    if key and ':' in key:
+        clean_key = key.replace('|', ',')
+        li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
 
     # Applica tutte le altre proprietà
     for k, v in props.items():
