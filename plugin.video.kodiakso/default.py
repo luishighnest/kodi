@@ -4332,6 +4332,19 @@ def event_m3u_play(list_key, idx, group=None):
         if bw and bw != '0':
             li.setProperty('inputstream.adaptive.max_bandwidth', bw)
 
+    if not is_stream:
+        # Risolvi redirect (il server ritorna 302 con token, blocca UA Kodi)
+        try:
+            rr = requests.get(url, headers={'User-Agent': UA}, allow_redirects=True, timeout=10, stream=True)
+            if rr.url and rr.url != url:
+                url = rr.url
+            rr.close()
+        except Exception:
+            pass
+        li.setPath(url)
+        li.setProperty('UserAgent', UA)
+        li.setProperty('Mimetype', 'video/mp2t')
+
     li.setLabel(lbl(label))
     li.setInfo('video', {'title': label})
     xbmcplugin.setResolvedUrl(HANDLE, True, li)
