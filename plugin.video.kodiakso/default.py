@@ -4097,9 +4097,9 @@ EVENT_M3U_SOURCES = {
         'url': 'https://gist.githubusercontent.com/alemagno1994alex-glitch/dc1b7e9b05c30760bc8893945e8c0f2a/raw/vavoo.m3u',
         'thumb': LOGO_BASE + 'tv_icon.png'
     },
-    'nxtbox': {
-        'title': 'NXTBox Stalker',
-        'url': 'https://polished-sky-a2c7.rmddk2364.workers.dev/playlist.m3u',
+    'xtrafr': {
+        'title': 'XtraFR Live',
+        'url': 'http://line.xtrafr.cc:8080/get.php?username=nicolas100&password=nicolas200&type=m3u',
         'thumb': LOGO_BASE + 'eventi_icon.png'
     }
 }
@@ -4343,9 +4343,9 @@ def events_view():
     li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=vavoo', li, isFolder=True)
 
-    li = xbmcgui.ListItem(label=lbl('Lista 12 - NXTBox'))
+    li = xbmcgui.ListItem(label=lbl('Lista 12 - XtraFR'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=nxtbox', li, isFolder=True)
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=xtrafr', li, isFolder=True)
     xbmcplugin.endOfDirectory(HANDLE)
 
 
