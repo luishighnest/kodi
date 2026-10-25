@@ -4184,6 +4184,38 @@ def event_m3u_view(list_key, group=None):
         xbmcplugin.endOfDirectory(HANDLE)
 
 
+def _matchora_resolve(chid, host='matchora.to', timeout=30):
+    """Risolve un canale Matchora interrogando /api/play finche' non e' ready.
+
+    Il player web fa polling finche' ready=True (o finche' non arriva un
+    motivo terminale: dead/unknown/capacity/limit). Ritorna (url, reason)
+    dove url e' la m3u8 pronta oppure None."""
+    api = 'https://%s/api/play/%s' % (host, chid)
+    ref = 'https://%s/embed/channel/%s' % (host, chid)
+    origin = 'https://%s' % host
+    deadline = time.time() + timeout
+    last = None
+    while time.time() < deadline:
+        try:
+            ra = requests.get(api, timeout=15, headers={
+                'User-Agent': UA,
+                'Referer': ref,
+                'Origin': origin
+            }).json()
+        except Exception as e:
+            log('matchora api play ERR: %s' % e)
+            return None, 'error'
+        last = ra
+        if ra.get('ready') and ra.get('url'):
+            return ra.get('url'), None
+        reason = ra.get('reason')
+        if reason in ('dead', 'unknown', 'capacity', 'limit'):
+            return None, reason
+        # warming o url non pronto: attendi e riprova
+        time.sleep(2)
+    return None, (last.get('reason') if (isinstance(last, dict)) else 'timeout') or 'timeout'
+
+
 def event_m3u_play(list_key, idx, group=None):
     """Player universale per le liste eventi M3U:
     - Risolve le pagine web/embed (es. Matchora -> m3u8)
@@ -4212,29 +4244,29 @@ def event_m3u_play(list_key, idx, group=None):
         if ch_m:
             chid = ch_m.group(1)
             try:
-                # Usa matchora.to e pro con Referer coerente
-                api = 'https://matchora.to/api/play/' + chid
-                ref = 'https://matchora.to/embed/channel/' + chid
-                ra = requests.get(api, timeout=15, headers={
-                    'User-Agent': UA,
-                    'Referer': ref,
-                    'Origin': 'https://matchora.to'
-                }).json()
-                if not ra.get('url'):
-                    # Fallback pro
-                    api2 = 'https://matchora.pro/api/play/' + chid
-                    ref2 = 'https://matchora.pro/embed/channel/' + chid
-                    ra = requests.get(api2, timeout=15, headers={
-                        'User-Agent': UA,
-                        'Referer': ref2,
-                        'Origin': 'https://matchora.pro'
-                    }).json()
-                if ra.get('url'):
-                    url = ra['url']
+                # Polling come fa il player web: attendi ready=True
+                resolved_url = None
+                reason = None
+                for host in ('matchora.to', 'matchora.pro'):
+                    resolved_url, reason = _matchora_resolve(chid, host, timeout=25)
+                    if resolved_url:
+                        break
+                    if reason in ('dead', 'unknown', 'capacity', 'limit', 'error'):
+                        break
+                if resolved_url:
+                    url = resolved_url
                     props['inputstream.adaptive.stream_headers'] = 'User-Agent=%s&Referer=https://matchora.to/&verifypeer=false' % UA
                     props['inputstream.adaptive.manifest_headers'] = 'User-Agent=%s&Referer=https://matchora.to/&verifypeer=false' % UA
                 else:
-                    notify('Matchora', ra.get('reason') or 'Canale non attivo al momento', True)
+                    msgs = {
+                        'dead': 'Canale non attivo al momento',
+                        'unknown': 'Canale non trovato',
+                        'capacity': 'Canale occupato, riprova tra un minuto',
+                        'limit': 'Troppi canali aperti, riprova tra qualche minuto',
+                        'timeout': 'Timeout risoluzione stream',
+                        'error': 'Errore risoluzione stream',
+                    }
+                    notify('Matchora', msgs.get(reason, 'Canale non attivo al momento'), True)
                     xbmcplugin.setResolvedUrl(HANDLE, False, xbmcgui.ListItem())
                     return
             except Exception as e:
@@ -4560,14 +4592,15 @@ def resolve_htsport(page):
                 ch_m = re.search(r'/channel/(\d+)', fr_clean)
                 if ch_m:
                     chid = ch_m.group(1)
-                    api = 'https://matchora.pro/api/play/' + chid
-                    ra = requests.get(api, timeout=15, headers={
-                        'User-Agent': UA,
-                        'Referer': fr_clean,
-                        'Origin': 'https://matchora.pro'
-                    }).json()
-                    if ra.get('url'):
-                        url = ra.get('url')
+                    # Polling fino a ready; prova il canale successivo se dead
+                    resolved, _reason = _matchora_resolve(chid, 'matchora.pro', timeout=20)
+                    if resolved:
+                        url = resolved
+                        break
+                    # Se l'host .pro non risponde, prova .to
+                    resolved2, _ = _matchora_resolve(chid, 'matchora.to', timeout=20)
+                    if resolved2:
+                        url = resolved2
                         break
 
         # 2. Fallback vecchio metodo (obfuscated iframe)
