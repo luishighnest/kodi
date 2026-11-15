@@ -5598,7 +5598,7 @@ def _fetch_upstash_key(key_name):
     try:
         url = '%s/get/stream:%s' % (UPSTASH_URL, key_name)
         headers = {'Authorization': UPSTASH_TOKEN}
-        r = requests.get(url, headers=headers, timeout=6)
+        r = requests.get(url, headers=headers, timeout=12)
         if r.status_code == 200:
             res = r.json().get('result')
             if res:
@@ -5612,6 +5612,23 @@ def _fetch_upstash_key(key_name):
 
 def _eventi1_fetch():
     """Eventi 1: scarica gli eventi in tempo reale dall'API Upstash Redis (stream:eventi_mpd) collegata a script2."""
+    now = time.time()
+    # 0. Controlla file locale dazn_event.json di script2 se presente sulla stessa macchina
+    local_p = r'C:\Users\alecl\Desktop\PROJECT_HUB\core_scripts\script2\dazn_event.json'
+    if os.path.exists(local_p):
+        try:
+            with open(local_p, 'r', encoding='utf-8') as _lf:
+                _ldata = json.load(_lf)
+                if isinstance(_ldata, dict) and len(_ldata) > 0:
+                    _EVENTI1_CACHE['data'] = _ldata
+                    _EVENTI1_CACHE['ts'] = now
+                    return _ldata
+        except Exception:
+            pass
+
+    if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 30):
+        return _EVENTI1_CACHE['data']
+
     # 1. API Upstash Redis (stream:eventi_mpd) - sempre in tempo reale da script2!
     data = _fetch_upstash_key('eventi_mpd')
     if data and isinstance(data, dict) and len(data) > 0:
@@ -5619,8 +5636,8 @@ def _eventi1_fetch():
         _EVENTI1_CACHE['ts'] = time.time()
         return data
 
-    # 2. Fallback su stream:test o _test_fetch()
-    data = _fetch_upstash_key('test') or _test_fetch()
+    # 2. Fallback su stream:eventi o stream:test o _test_fetch()
+    data = _fetch_upstash_key('eventi') or _fetch_upstash_key('test') or _test_fetch()
     if data and isinstance(data, dict) and len(data) > 0:
         _EVENTI1_CACHE['data'] = data
         _EVENTI1_CACHE['ts'] = time.time()
@@ -5880,23 +5897,115 @@ def _resolve_test_item(it):
         except Exception:
             pass
 
+    # LBA TV: risoluzione al click dinamica (ottiene MPD fresco con token Akamai valido al secondo 0)
+    _lba_id = it.get('lba_id') or (it.get('id') if 'dve-streams.akamaized.net' in play_url or 'lbatv.com' in str(it.get('referer', '')) else None)
+    # LBA TV: Se l'evento punta già al nostro server proxy/tunnel (es. trycloudflare o /lba/live/),
+    # non fare chiamate verso le API LBA al click! Usa direttamente l'URL proxy fornito dal sito.
+    if _lba_id and not ('trycloudflare.com' in play_url or '127.0.0.1' in play_url or '/lba/live/' in play_url):
+        _is_vod = bool(it.get('is_vod', True))
+        try:
+            import json as _json
+            import os as _os
+            _sess_path = r'C:\Users\alecl\Desktop\PROJECT_HUB\core_scripts\script2\lba_session.json'
+            _sd = {}
+            if _os.path.exists(_sess_path):
+                with open(_sess_path, 'r', encoding='utf-8') as _sf:
+                    _sd = _json.load(_sf)
+            _at = _sd.get('authorisationToken', '')
+            _ref = _sd.get('refreshToken', '')
+            _bearer = _at.split(' ')[1] if ' ' in _at else _at
+            _lba_headers = {
+                'accept': 'application/json, text/plain, */*',
+                'app': 'dice',
+                'origin': 'https://lbatv.com',
+                'realm': 'dce.lba',
+                'referer': 'https://lbatv.com/',
+                'user-agent': ua_use,
+                'x-api-key': '857a1e5d-e35e-4fdf-805b-a87b6f8364bf',
+                'x-app-var': '6.60.0.1eb8551'
+            }
+            _d1 = None
+            _ep = '/api/v3/stream/vod/%s' % _lba_id if _is_vod else '/api/v3/stream/event/%s' % _lba_id
+            for _attempt in range(2):
+                if not _bearer:
+                    break
+                try:
+                    _h1 = dict(_lba_headers)
+                    _h1['authorization'] = 'Bearer ' + _bearer
+                    _req1 = urllib.request.Request('https://dce-frontoffice.imggaming.com' + _ep, headers=_h1)
+                    with urllib.request.urlopen(_req1, timeout=8) as _r1:
+                        _d1 = _json.loads(_r1.read().decode('utf-8'))
+                    break
+                except urllib.error.HTTPError as _he:
+                    if _he.code == 401 and _ref and _attempt == 0:
+                        log('LBA: Token scaduto, autorinnovo via /api/v1/init/...')
+                        _mixed = 'Mixed ' + _at + ' ' + _ref if not _at.startswith('Mixed') else _at
+                        _rh = dict(_lba_headers)
+                        _rh['authorization'] = _mixed
+                        _rh['content-type'] = 'application/json'
+                        _req_ref = urllib.request.Request('https://dce-frontoffice.imggaming.com/api/v1/init/?readUserProfiles=true', headers=_rh)
+                        with urllib.request.urlopen(_req_ref, timeout=8) as _rr:
+                            _rrd = _json.loads(_rr.read().decode('utf-8'))
+                            _new_auth = _rrd.get('authentication', {}).get('authorisationToken')
+                            if _new_auth:
+                                _sd['authorisationToken'] = _new_auth
+                                _bearer = _new_auth.split(' ')[1] if ' ' in _new_auth else _new_auth
+                                with open(_sess_path, 'w', encoding='utf-8') as _sf:
+                                    _json.dump(_sd, _sf, indent=2)
+                                continue
+                    raise
+            if _d1:
+                _cb = _d1.get('playerUrlCallback') or _d1.get('playerUriCallback')
+                if _cb:
+                    _req2 = urllib.request.Request(_cb, headers={
+                        'accept': '*/*',
+                        'origin': 'https://lbatv.com',
+                        'referer': 'https://lbatv.com/',
+                        'user-agent': ua_use
+                    })
+                    with urllib.request.urlopen(_req2, timeout=8) as _r2:
+                        _pb = _json.loads(_r2.read().decode('utf-8'))
+                    _dash = (_pb.get('dash') or [{}])[0]
+                    _fresh = _dash.get('url', '')
+                    if _fresh:
+                        log('LBA: MPD fresco generato con successo da ID %s' % _lba_id)
+                        play_url = _fresh
+        except Exception as _res_err:
+            log('LBA resolution ERR: %s' % _res_err)
+
     m = re.search(r'[?&]dazn-token=([^&]+)', play_url)
     tok = urllib.parse.unquote(m.group(1)) if m else ''
     if not tok:
         tok = (it.get('dazn_token') or '').strip()
 
-    hdrs = 'User-Agent=' + ua_use + '&Referer=https://www.dazn.com/&Origin=https://www.dazn.com&verifypeer=false'
+    _ev_referer = (it.get('referer') or '').strip()
+    if not _ev_referer:
+        _ev_referer = 'https://lbatv.com/' if (_lba_id or 'dve-streams.akamaized.net' in play_url or 'lbatv.com' in str(it.get('referer', ''))) else 'https://www.dazn.com/'
+    _ev_origin = _ev_referer.rstrip('/')
+    hdrs = 'User-Agent=' + ua_use + '&Referer=' + _ev_referer + '&Origin=' + _ev_origin + '&verifypeer=false'
     if tok and 'dazn-token=' not in mpd:
         hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
 
+    _is_hls = '.m3u8' in play_url
+
     li = xbmcgui.ListItem(path=play_url, offscreen=True)
-    li.setMimeType('application/dash+xml')
-    li.setContentLookup(False)
-    li.setProperty('inputstream', 'inputstream.adaptive')
-    li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+    if _is_hls:
+        li.setMimeType('application/vnd.apple.mpegurl')
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', 'hls')
+    else:
+        li.setMimeType('application/dash+xml')
+        li.setProperty('inputstream', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+
+    lic_url = it.get('license_url') or it.get('lic_url') or ''
     if ':' in key:
         clean_key = key.replace('|', ',')
         li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
+    elif lic_url:
+        lic_headers = it.get('lic_headers') or hdrs
+        li.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+        li.setProperty('inputstream.adaptive.license_key', lic_url + '|' + lic_headers + '|R{SSM}|')
     li.setProperty('inputstream.adaptive.stream_headers', hdrs)
     li.setProperty('inputstream.adaptive.manifest_headers', hdrs)
     bw = ADDON.getSetting('max_bandwidth').strip()
