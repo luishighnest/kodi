@@ -578,7 +578,13 @@ def parse_m3u(text):
         elif line.startswith('#EXTINF:'):
             meta = line[8:]
             label = clean_title(meta.partition(',')[2])
-            current = {'label': label, 'logo': '', 'group': 'Altri', 'props': {}}
+            current = {'label': label, 'logo': '', 'group': 'Altri', 'props': {}, 'tvg_id': '', 'tvg_name': ''}
+            m = re.search(r'tvg-id="([^"]*)"', meta)
+            if m:
+                current['tvg_id'] = m.group(1)
+            m = re.search(r'tvg-name="([^"]*)"', meta)
+            if m:
+                current['tvg_name'] = m.group(1)
             m = re.search(r'tvg-logo="([^"]*)"', meta)
             if m:
                 current['logo'] = m.group(1)
@@ -4246,12 +4252,61 @@ def event_m3u_view(list_key, group=None):
         else:
             target_channels = channels
 
+        epg = epg_load() if ADDON.getSetting('epg_enabled') == 'true' else None
         for idx, ch in enumerate(target_channels):
-            li = xbmcgui.ListItem(label=lbl(ch['label']))
-            if ch.get('logo'):
-                li.setArt({'thumb': ch['logo'], 'icon': ch['logo']})
-            else:
-                li.setArt({'thumb': cfg['thumb'], 'icon': cfg['thumb']})
+            ch_label = ch['label']
+            prog_txt = ''
+            plot_lines = []
+            cur_img = ''
+            
+            # 1. Prova prima con guida_sky_now (canale / tvg-name / label)
+            names_to_try = [ch_label]
+            if ch.get('tvg_name'):
+                names_to_try.append(ch['tvg_name'])
+            if ch.get('tvg_id'):
+                names_to_try.append(ch['tvg_id'])
+                
+            cur_sky, nxt_sky = None, None
+            for n in names_to_try:
+                cur_sky, nxt_sky = _guida_sky_now(n)
+                if cur_sky and cur_sky.get('titolo'):
+                    break
+            
+            if cur_sky and cur_sky.get('titolo'):
+                prog_txt = '%s %s' % (cur_sky.get('ora', ''), cur_sky.get('titolo', ''))
+                cur_img = cur_sky.get('immagine', '')
+                plot_lines.append('In onda: %s %s' % (cur_sky.get('ora', ''), cur_sky.get('titolo', '')))
+                if nxt_sky and nxt_sky.get('titolo'):
+                    plot_lines.append('Successivo: %s %s' % (nxt_sky.get('ora', ''), nxt_sky.get('titolo', '')))
+            elif epg:
+                # 2. Fallback su XMLTV / epg_now
+                ids_to_try = []
+                if ch.get('tvg_id'):
+                    ids_to_try.append(ch['tvg_id'])
+                ids_to_try.extend(names_to_try)
+                for cid_try in ids_to_try:
+                    cur_epg, nxt_epg = _epg_now(cid_try, epg)
+                    if cur_epg:
+                        prog_txt = _sky_epg_label(cur_epg)
+                        plot_lines.append('Ora %02d:%02d %s' % (cur_epg[0].hour, cur_epg[0].minute, _epg_short(cur_epg[2], 60)))
+                        if nxt_epg:
+                            plot_lines.append('Poi %02d:%02d %s' % (nxt_epg[0].hour, nxt_epg[0].minute, _epg_short(nxt_epg[2], 60)))
+                        break
+
+            disp_label = ch_label
+            if prog_txt:
+                disp_label = '%s [COLOR 00FF00]• %s[/COLOR]' % (ch_label, prog_txt)
+                
+            li = xbmcgui.ListItem(label=lbl(disp_label))
+            thumb_art = cur_img or ch.get('logo') or cfg['thumb']
+            icon_art = ch.get('logo') or cfg['thumb']
+            li.setArt({'thumb': thumb_art, 'icon': icon_art})
+            
+            video_info = {'title': ch_label, 'mediatype': 'video'}
+            if plot_lines:
+                video_info['plot'] = '\n'.join(plot_lines)
+            li.setInfo('video', video_info)
+            
             li.setProperty('IsPlayable', 'true')
             play_url = BASE + '?action=event_m3u_play&list=' + list_key + '&idx=' + str(idx)
             if group:
