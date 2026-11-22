@@ -1210,6 +1210,12 @@ def resolve_vavoo(url, title='', prog=''):
 
 def sky_view():
     home_button()
+    # Lista Canali 0 - SPORT 0 (Nexusss Worker M3U)
+    li_sp0 = xbmcgui.ListItem(label=lbl('Lista Canali 0 - SPORT 0'))
+    li_sp0.setArt({'thumb': LOGO_BASE + 'sport.webp', 'icon': LOGO_BASE + 'sport.webp'})
+    li_sp0.setInfo('video', {'title': 'Lista Canali 0 - SPORT 0', 'plot': 'Canali Live & Sport da Nexusss Worker (M3U)'})
+    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=sport0', li_sp0, isFolder=True)
+
     # Lista Canali 1 - SKY SPORT diretto (ex SKY 1)
     try:
         c = _sky_counts(CAT_SPORT)
@@ -4112,6 +4118,11 @@ EVENT_M3U_SOURCES = {
         'title': 'Wuffy IPTV',
         'url': 'https://raw.githubusercontent.com/luishighnest/kodi/main/wuffy_iptv.m3u',
         'thumb': LOGO_BASE + 'sport.webp'
+    },
+    'sport0': {
+        'title': 'SPORT 0',
+        'url': 'https://zp.nexusss.workers.dev/.m3u',
+        'thumb': LOGO_BASE + 'sport.webp'
     }
 }
 
@@ -4143,6 +4154,8 @@ def event_m3u_view(list_key, group=None):
         return
     if group:
         back_button(BASE + '?action=event_m3u&list=' + list_key)
+    elif list_key in ('sport0', 'wuffy'):
+        back_button(BASE + '?action=sky')
     else:
         back_button(BASE + '?action=events')
     xbmcplugin.setContent(HANDLE, 'videos')
@@ -4304,6 +4317,8 @@ def event_m3u_play(list_key, idx, group=None):
             key = props.get('license_key', '').strip()
         if key and ':' in key:
             clean_key = key.replace('|', ',')
+            li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
+            li.setProperty('inputstream.adaptive.license_key', clean_key)
             li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
 
         for k, v in props.items():
