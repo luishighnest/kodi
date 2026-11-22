@@ -4311,18 +4311,16 @@ def event_m3u_play(list_key, idx, group=None):
         elif '.m3u8' in u_low:
             li.setProperty('inputstream.adaptive.manifest_type', 'hls')
 
-        # Gestione DRM ClearKey
+        # Gestione DRM ClearKey (in Kodi 21 InputStream Adaptive non ammette il mix di license_type e drm_legacy)
         key = props.get('inputstream.adaptive.license_key', '').strip()
         if not key:
             key = props.get('license_key', '').strip()
         if key and ':' in key:
             clean_key = key.replace('|', ',')
-            li.setProperty('inputstream.adaptive.license_type', 'org.w3.clearkey')
-            li.setProperty('inputstream.adaptive.license_key', clean_key)
             li.setProperty('inputstream.adaptive.drm_legacy', 'org.w3.clearkey|' + clean_key)
 
         for k, v in props.items():
-            if k in ('inputstream.adaptive.license_type', 'inputstream.adaptive.license_key'):
+            if 'license' in k or 'drm' in k:
                 continue
             if k == 'inputstream' and not v:
                 continue
