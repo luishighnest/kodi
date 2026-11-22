@@ -957,6 +957,7 @@ def _sky_expiry(cid):
 
 
 def resolve_sky(parIn, title, prog=''):
+    _ensure_player_stopped()
     try:
         resp = requests.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(parIn),
                             headers={'User-Agent': API_UA}, timeout=20)
@@ -4301,11 +4302,28 @@ def _matchora_resolve(chid, host='matchora.to', timeout=30):
     return None, (last.get('reason') if (isinstance(last, dict)) else 'timeout') or 'timeout'
 
 
+def _ensure_player_stopped():
+    """Se un video/audio e' gia' in riproduzione, lo ferma e attende che il player sia libero.
+    Evita il freeze di frame/audio residui del flusso precedente e conflitti di decifratura DRM."""
+    try:
+        p = xbmc.Player()
+        if p.isPlaying():
+            p.stop()
+            # Breve attesa per dare tempo a Kodi e inputstream.adaptive di deallocare i buffer
+            for _ in range(10):
+                if not p.isPlaying():
+                    break
+                xbmc.sleep(50)
+            xbmc.sleep(100)
+    except Exception as e:
+        log('ensure_player_stopped ERR: %s' % e)
+
 def event_m3u_play(list_key, idx, group=None):
     """Player universale per le liste eventi M3U:
     - Risolve le pagine web/embed (es. Matchora -> m3u8)
     - Gestisce correttamente il DRM ClearKey per Kodi 20/21
     - Applica gli header necessari."""
+    _ensure_player_stopped()
     try:
         channels = _event_m3u_fetch(list_key)
         if group and group != 'ALL':
@@ -6129,6 +6147,7 @@ def _resolve_test_item(it):
 
 
 def test_play(cat, idx):
+    _ensure_player_stopped()
     try:
         data = _test_fetch()
         it = (data.get(cat) or [])[int(idx)]
@@ -6147,6 +6166,7 @@ def test_play(cat, idx):
 
 
 def eventi1_play(cat, idx):
+    _ensure_player_stopped()
     try:
         data = _eventi1_fetch()
         it = _eventi1_sorted_items(data, cat)[int(idx)]
