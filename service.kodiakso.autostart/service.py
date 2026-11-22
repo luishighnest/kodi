@@ -14,8 +14,8 @@ TARGET = 'plugin.video.kodiakso'
 REPO_ID = 'repository.luishighnest'
 REPO_URL = 'https://luishighnest.github.io/kodi'
 
-REPO_REFRESH_S = 4
-POLL_MAX_S = 30
+REPO_REFRESH_S = 2
+POLL_MAX_S = 10
 
 _installed_cache = {'ver': None}
 
@@ -176,33 +176,31 @@ def _auto_update():
     monitor = xbmc.Monitor()
     xbmc.log('[PZ8 Autostart] Trovato aggiornamento PZ8: v%s -> v%s' % (cur, new), xbmc.LOGINFO)
 
-    # 1. Prova metodo nativo Kodi
-    has_repo = xbmc.getCondVisibility('System.HasAddon(%s)' % REPO_ID)
     updated = False
 
-    if has_repo:
-        try:
-            xbmc.executebuiltin('UpdateAddonRepos')
-            _wait(monitor, REPO_REFRESH_S)
-            xbmc.executebuiltin('InstallAddon(%s)' % TARGET)
+    # 1. ZIP diretto (affidabile, nessuna dipendenza dal repo installato)
+    xbmc.log('[PZ8 Autostart] Avvio aggiornamento diretto via ZIP...', xbmc.LOGINFO)
+    if _direct_zip_update(new):
+        updated = True
 
-            # Polling per verificare se Kodi ha completato
-            deadline = time.time() + 15
-            while time.time() < deadline:
-                if _installed_version() == new:
-                    updated = True
-                    break
-                if monitor.abortRequested():
-                    return False
-                monitor.waitForAbort(0.5)
-        except Exception as e:
-            xbmc.log('[PZ8 Autostart] Metodo nativo fallito: %s' % e, xbmc.LOGWARNING)
-
-    # 2. Se non c'è il repo o il metodo nativo non ha scritto su disco entro 15s -> direct zip update
-    if not updated and _installed_version() != new:
-        xbmc.log('[PZ8 Autostart] Avvio aggiornamento diretto via ZIP...', xbmc.LOGINFO)
-        if _direct_zip_update(new):
-            updated = True
+    # 2. Se il ZIP non ha funzionato, prova metodo nativo Kodi come fallback
+    if not updated:
+        has_repo = xbmc.getCondVisibility('System.HasAddon(%s)' % REPO_ID)
+        if has_repo:
+            try:
+                xbmc.executebuiltin('UpdateAddonRepos')
+                _wait(monitor, REPO_REFRESH_S)
+                xbmc.executebuiltin('InstallAddon(%s)' % TARGET)
+                deadline = time.time() + POLL_MAX_S
+                while time.time() < deadline:
+                    if _installed_version() == new:
+                        updated = True
+                        break
+                    if monitor.abortRequested():
+                        return False
+                    monitor.waitForAbort(0.5)
+            except Exception as e:
+                xbmc.log('[PZ8 Autostart] Metodo nativo fallito: %s' % e, xbmc.LOGWARNING)
 
     if updated or _installed_version() == new:
         _installed_cache['ver'] = new
@@ -217,7 +215,7 @@ def _auto_update():
 def xbmcgui_notify(version):
     try:
         import xbmcgui
-        xbmcgui.Dialog().notification('PZ8', 'Aggiornato alla v%s' % version, xbmcgui.NOTIFICATION_INFO, 5000)
+        xbmcgui.Dialog().notification('PZ8', '✅ Aggiornato alla v%s!' % version, xbmcgui.NOTIFICATION_INFO, 8000)
     except Exception:
         pass
 

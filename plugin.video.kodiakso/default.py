@@ -863,9 +863,12 @@ def _sky_expiry_net(cid):
     """Scarica la scadenza di UN canale dall'API. Ritorna (cid, datetime|None)."""
     exp = None
     try:
-        resp = _SKY_SESS.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(cid), timeout=20)
+        resp = _SKY_SESS.get(API + '?numTest=A1A159&id=' + urllib.parse.quote(cid), timeout=6)
         resp.raise_for_status()
-        data = json.loads(xor_decrypt(resp.json()['data']))
+        raw = resp.json().get('data')
+        if not raw:
+            return cid, None
+        data = json.loads(xor_decrypt(raw))
         exp = _parse_fine(data.get('fine', ''))
         if exp:
             exp += timedelta(hours=2)
@@ -1164,6 +1167,56 @@ def gsearch_view(q=''):
         xbmc.executebuiltin('Container.Update("%s", replace)' % _tmdb_url('gsearch', q=q))
 
 
+def _sky_counts_cached(cat):
+    """Versione istantanea: serve i conteggi dalla cache su disco (stale-while-revalidate).
+    Non blocca mai la rete. Aggiorna in background se la cache e' scaduta (> 1800s)."""
+    cache_key = 'sky_counts_' + cat.replace(' ', '_').lower()[:20]
+    cached = _disk_load(cache_key, 1800)
+    if cached and isinstance(cached, dict) and cached.get('counts'):
+        # Cache valida: aggiorna in bg se > 300s
+        age = __import__('time').time() - (cached.get('ts', 0))
+        if age > 300:
+            def _refresh_counts_bg():
+                try:
+                    c = _sky_counts(cat)
+                    _disk_save(cache_key, {'counts': c, 'ts': __import__('time').time()})
+                except Exception:
+                    pass
+            _bg(_refresh_counts_bg)
+        return cached['counts']
+    # Nessuna cache: aggiorna in background, ritorna conteggi vuoti subito
+    def _populate_counts_bg():
+        try:
+            c = _sky_counts(cat)
+            _disk_save(cache_key, {'counts': c, 'ts': __import__('time').time()})
+        except Exception:
+            pass
+    _bg(_populate_counts_bg)
+    return None  # nessun conteggio disponibile
+
+def _sky2_counts_cached():
+    """Versione istantanea di _sky2_counts: stale-while-revalidate su disco."""
+    cached = _disk_load('sky2_counts_v2', 1800)
+    if cached and isinstance(cached, dict) and cached.get('counts'):
+        age = __import__('time').time() - (cached.get('ts', 0))
+        if age > 300:
+            def _refresh_sky2_bg():
+                try:
+                    c = _sky2_counts()
+                    _disk_save('sky2_counts_v2', {'counts': c, 'ts': __import__('time').time()})
+                except Exception:
+                    pass
+            _bg(_refresh_sky2_bg)
+        return cached['counts']
+    def _populate_sky2_bg():
+        try:
+            c = _sky2_counts()
+            _disk_save('sky2_counts_v2', {'counts': c, 'ts': __import__('time').time()})
+        except Exception:
+            pass
+    _bg(_populate_sky2_bg)
+    return None
+
 def _sky_counts(cat):
     counts = {'ok': 0, 'soon': 0, 'exp': 0}
     canali = sky_channels().get(cat, [])
@@ -1217,10 +1270,10 @@ def sky_view():
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=sport0', li_sp0, isFolder=True)
 
     # Lista Canali 1 - SKY SPORT diretto (ex SKY 1)
-    try:
-        c = _sky_counts(CAT_SPORT)
-        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT) + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
-    except Exception:
+    c = _sky_counts_cached(CAT_SPORT)
+    if c:
+        label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT) + ' | CANALI ATTIVI: %d • CANALI IN SCADENZA: %d • CANALI SCADUTI: %d' % (c.get('ok', 0), c.get('soon', 0), c.get('exp', 0))
+    else:
         label_sport = lbl('Lista Canali 1 - ' + CAT_SPORT)
     li0 = xbmcgui.ListItem(label=label_sport)
     li0.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
@@ -1229,10 +1282,10 @@ def sky_view():
     xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
 
     # Lista Canali 2 - SKY 2 (dall'API Upstash Redis / sky2.json aggiornato con Pz8 tasto 2)
-    try:
-        c_all = _sky2_counts()
-        label_sky2 = lbl('Lista Canali 2 - SKY 2 (Tutti i Canali)') + ' | CANALI ATTIVI: %d \u2022 CANALI IN SCADENZA: %d \u2022 CANALI SCADUTI: %d' % (c_all.get('ok', 0), c_all.get('soon', 0), c_all.get('exp', 0))
-    except Exception:
+    c_all = _sky2_counts_cached()
+    if c_all:
+        label_sky2 = lbl('Lista Canali 2 - SKY 2 (Tutti i Canali)') + ' | CANALI ATTIVI: %d • CANALI IN SCADENZA: %d • CANALI SCADUTI: %d' % (c_all.get('ok', 0), c_all.get('soon', 0), c_all.get('exp', 0))
+    else:
         label_sky2 = lbl('Lista Canali 2 - SKY 2 (Tutti i Canali)')
     sky2_url = BASE + '?action=sky2'
     li2 = xbmcgui.ListItem(label=label_sky2)
