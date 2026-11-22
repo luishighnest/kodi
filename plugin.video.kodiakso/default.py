@@ -1281,17 +1281,6 @@ def sky_view():
     url0 = BASE + '?action=skycat&cat=' + urllib.parse.quote(CAT_SPORT) + '&back=' + urllib.parse.quote(BASE + '?action=sky')
     xbmcplugin.addDirectoryItem(HANDLE, url0, li0, isFolder=True)
 
-    # Lista Canali 2 - SKY 2 (dall'API Upstash Redis / sky2.json aggiornato con Pz8 tasto 2)
-    c_all = _sky2_counts_cached()
-    if c_all:
-        label_sky2 = lbl('Lista Canali 2 - SKY 2 (Tutti i Canali)') + ' | CANALI ATTIVI: %d • CANALI IN SCADENZA: %d • CANALI SCADUTI: %d' % (c_all.get('ok', 0), c_all.get('soon', 0), c_all.get('exp', 0))
-    else:
-        label_sky2 = lbl('Lista Canali 2 - SKY 2 (Tutti i Canali)')
-    sky2_url = BASE + '?action=sky2'
-    li2 = xbmcgui.ListItem(label=label_sky2)
-    li2.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li2.setInfo('video', {'title': 'Lista Canali 2 - SKY 2', 'plot': 'Tutti i canali Sky 2 (Sport, Cinema, Intrattenimento, Bambini, TV e Altri) dall API Upstash Redis (Pz8)'})
-    xbmcplugin.addDirectoryItem(HANDLE, sky2_url, li2, isFolder=True)
 
     sky3_url = BASE + '?action=sky3'
     li3 = xbmcgui.ListItem(label=lbl('Lista Canali 3 (Eventi Live)'))
@@ -1311,11 +1300,6 @@ def sky_view():
     li5.setInfo('video', {'title': 'Lista Canali 5', 'plot': 'Eventi CalcioStreaming DiretteCommunity'})
     xbmcplugin.addDirectoryItem(HANDLE, sky5_url, li5, isFolder=True)
 
-    sky6_url = BASE + '?action=sky6'
-    li6 = xbmcgui.ListItem(label=lbl('Lista Canali 6 (MPD)'))
-    li6.setArt({'thumb': LOGO_BASE + 'skyhd.png', 'icon': LOGO_BASE + 'skyhd.png'})
-    li6.setInfo('video', {'title': 'Lista Canali 6 (MPD)', 'plot': 'Categoria vuota'})
-    xbmcplugin.addDirectoryItem(HANDLE, sky6_url, li6, isFolder=True)
 
     sky7_url = BASE + '?action=sky7'
     li7 = xbmcgui.ListItem(label=lbl('Lista Canali 7 (IPTV)'))
@@ -4188,13 +4172,37 @@ def _event_m3u_fetch(list_key, force=False):
         return []
     now = time.time()
     c = _EVENT_M3U_CACHE.get(list_key)
+    # Cache in RAM valida: servila subito
     if not force and c and (now - c.get('ts', 0)) < 900:
         return c.get('channels', [])
+    # Prova cache su disco se RAM vuota
+    if not c:
+        disk = _disk_load('m3u_' + list_key, 3600)
+        if disk and isinstance(disk, dict) and disk.get('channels'):
+            c = disk
+            _EVENT_M3U_CACHE[list_key] = c
+    # Se abbiamo dati (anche stale), servili subito e aggiorna in background
+    if c and c.get('channels') and not force:
+        if now - c.get('ts', 0) >= 900:
+            def _m3u_bg_refresh():
+                try:
+                    r = requests.get(cfg['url'], headers={'User-Agent': UA}, timeout=8)
+                    r.encoding = 'utf-8'
+                    channels = parse_m3u(r.text)
+                    if channels:
+                        _EVENT_M3U_CACHE[list_key] = {'ts': time.time(), 'channels': channels}
+                        _disk_save('m3u_' + list_key, _EVENT_M3U_CACHE[list_key])
+                except Exception as e:
+                    log('event_m3u bg refresh %s ERR: %s' % (list_key, e))
+            _bg(_m3u_bg_refresh)
+        return c.get('channels', [])
+    # Nessun dato: blocca ma con timeout ridotto
     try:
-        r = requests.get(cfg['url'], headers={'User-Agent': UA}, timeout=25)
+        r = requests.get(cfg['url'], headers={'User-Agent': UA}, timeout=8)
         r.encoding = 'utf-8'
         channels = parse_m3u(r.text)
         _EVENT_M3U_CACHE[list_key] = {'ts': now, 'channels': channels}
+        _disk_save('m3u_' + list_key, _EVENT_M3U_CACHE[list_key])
         return channels
     except Exception as e:
         log('event_m3u fetch %s ERR: %s' % (list_key, e))
@@ -4401,7 +4409,7 @@ def event_m3u_play(list_key, idx, group=None):
     if not is_stream:
         # Risolvi redirect (il server ritorna 302 con token, blocca UA Kodi)
         try:
-            rr = requests.get(url, headers={'User-Agent': UA}, allow_redirects=True, timeout=10, stream=True)
+            rr = requests.get(url, headers={'User-Agent': UA}, allow_redirects=True, timeout=4, stream=True)
             if rr.url and rr.url != url:
                 url = rr.url
             rr.close()
@@ -4461,9 +4469,6 @@ def events_view():
     li.setArt({'thumb': LOGO_BASE + 'skyhd.png'})
     xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=skycinema', li, isFolder=True)
 
-    li = xbmcgui.ListItem(label=lbl('Lista 11 - Vavoo'))
-    li.setArt({'thumb': LOGO_BASE + 'tv_icon.png'})
-    xbmcplugin.addDirectoryItem(HANDLE, BASE + '?action=event_m3u&list=vavoo', li, isFolder=True)
 
     li = xbmcgui.ListItem(label=lbl('Lista 12 - XtraFR'))
     li.setArt({'thumb': LOGO_BASE + 'eventi_icon.png'})
@@ -5664,7 +5669,7 @@ def _fetch_upstash_key(key_name):
     try:
         url = '%s/get/stream:%s' % (UPSTASH_URL, key_name)
         headers = {'Authorization': UPSTASH_TOKEN}
-        r = requests.get(url, headers=headers, timeout=12)
+        r = requests.get(url, headers=headers, timeout=6)
         if r.status_code == 200:
             res = r.json().get('result')
             if res:
@@ -5677,7 +5682,8 @@ def _fetch_upstash_key(key_name):
 
 
 def _eventi1_fetch():
-    """Eventi 1: scarica gli eventi in tempo reale dall'API Upstash Redis (stream:eventi_mpd) collegata a script2."""
+    """Eventi 1: scarica gli eventi in tempo reale dall'API Upstash Redis (stream:eventi_mpd) collegata a script2.
+    Stale-while-revalidate: serve dati dalla cache subito, aggiorna in background."""
     now = time.time()
     # 0. Controlla file locale dazn_event.json di script2 se presente sulla stessa macchina
     local_p = r'C:\Users\alecl\Desktop\PROJECT_HUB\core_scripts\script2\dazn_event.json'
@@ -5692,21 +5698,61 @@ def _eventi1_fetch():
         except Exception:
             pass
 
+    # Cache RAM fresca (< 30s): servila subito
     if _EVENTI1_CACHE['data'] is not None and (now - _EVENTI1_CACHE['ts'] < 30):
         return _EVENTI1_CACHE['data']
 
-    # 1. API Upstash Redis (stream:eventi_mpd) - sempre in tempo reale da script2!
+    # Se abbiamo dati in RAM (anche stale > 30s): servili e aggiorna in bg
+    if _EVENTI1_CACHE['data'] is not None:
+        def _eventi1_bg_refresh():
+            try:
+                data = _fetch_upstash_key('eventi_mpd')
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _EVENTI1_CACHE['data'] = data
+                    _EVENTI1_CACHE['ts'] = time.time()
+                    _disk_save('eventi1_data', data)
+                    return
+                data = _fetch_upstash_key('eventi') or _fetch_upstash_key('test') or _test_fetch()
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _EVENTI1_CACHE['data'] = data
+                    _EVENTI1_CACHE['ts'] = time.time()
+                    _disk_save('eventi1_data', data)
+            except Exception:
+                pass
+        _bg(_eventi1_bg_refresh)
+        return _EVENTI1_CACHE['data']
+
+    # Nessuna cache RAM: prova disco prima di andare in rete
+    disk = _disk_load('eventi1_data', 1800)
+    if disk and isinstance(disk, (dict,)) and len(disk) > 0:
+        _EVENTI1_CACHE['data'] = disk
+        _EVENTI1_CACHE['ts'] = now - 31  # forza bg refresh al prossimo giro
+        def _eventi1_bg_warm():
+            try:
+                data = _fetch_upstash_key('eventi_mpd')
+                if data and isinstance(data, dict) and len(data) > 0:
+                    _EVENTI1_CACHE['data'] = data
+                    _EVENTI1_CACHE['ts'] = time.time()
+                    _disk_save('eventi1_data', data)
+            except Exception:
+                pass
+        _bg(_eventi1_bg_warm)
+        return disk
+
+    # Nessun dato: blocca ma una sola chiamata
     data = _fetch_upstash_key('eventi_mpd')
     if data and isinstance(data, dict) and len(data) > 0:
         _EVENTI1_CACHE['data'] = data
         _EVENTI1_CACHE['ts'] = time.time()
+        _disk_save('eventi1_data', data)
         return data
 
-    # 2. Fallback su stream:eventi o stream:test o _test_fetch()
+    # Fallback
     data = _fetch_upstash_key('eventi') or _fetch_upstash_key('test') or _test_fetch()
     if data and isinstance(data, dict) and len(data) > 0:
         _EVENTI1_CACHE['data'] = data
         _EVENTI1_CACHE['ts'] = time.time()
+        _disk_save('eventi1_data', data)
         return data
 
     return _EVENTI1_CACHE['data'] or {}
