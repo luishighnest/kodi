@@ -5733,7 +5733,7 @@ def _test_fetch():
     return {}
 
 UPSTASH_URL = 'https://ace-seal-162556.upstash.io'
-UPSTASH_TOKEN = 'Bearer gQAAAAAAAnr8AAIgcDEyZjRkYjEwYmUzZDY0M2RhYjZkNjhmMDFjNGVkMjVmYw'
+UPSTASH_TOKEN = 'Bearer gQAAAAAAAnr8AAIgcDE4ZGY1OTM0ZjA0OTE0OGQ2OGY3YmU0NWZlZGJkMDU4MA'
 
 
 def _fetch_upstash_key(key_name):
