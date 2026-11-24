@@ -6183,8 +6183,9 @@ def _resolve_test_item(it):
         _ev_referer = 'https://lbatv.com/' if (_lba_id or 'dve-streams.akamaized.net' in play_url or 'lbatv.com' in str(it.get('referer', ''))) else 'https://www.dazn.com/'
     _ev_origin = _ev_referer.rstrip('/')
     hdrs = 'User-Agent=' + ua_use + '&Referer=' + _ev_referer + '&Origin=' + _ev_origin + '&verifypeer=false'
-    if tok and 'dazn-token=' not in mpd:
+    if tok:
         hdrs += '&dazn-token=' + urllib.parse.quote(tok, safe='')
+        hdrs += '&Cookie=' + urllib.parse.quote('dazn-token=' + tok, safe='')
 
     _is_hls = '.m3u8' in play_url
 
@@ -6197,6 +6198,7 @@ def _resolve_test_item(it):
         li.setMimeType('application/dash+xml')
         li.setProperty('inputstream', 'inputstream.adaptive')
         li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+        li.setProperty('inputstream.adaptive.manifest_update_parameter', 'full')
 
     lic_url = it.get('license_url') or it.get('lic_url') or ''
     if ':' in key:
